@@ -1,65 +1,77 @@
-import Image from "next/image";
+import NavBar from "@/components/layout/NavBar";
+import YieldOverviewCard from "@/components/shared/YieldOverviewCard";
+import AuctionModule from "@/components/modules/auction/AuctionModule";
+import HoldingsModule from "@/components/modules/holdings/HoldingsModule";
+import LeverageModule from "@/components/modules/leverage/LeverageModule";
+import USTHoldersModule from "@/components/modules/ust-holders/USTHoldersModule";
+import { PlaceholderModule } from "@/components/modules/PlaceholderModule";
+
+const placeholderModules = [
+  { id: "yield-curve", number: "05", title: "收益率曲线", titleEn: "Yield Curve", description: "美国国债各期限收益率叠加对比，追踪曲线形态变化与期限利差信号。" },
+  { id: "decomposition", number: "06", title: "成分分解", titleEn: "Decomposition", description: "将长期利率分解为期限溢价、实际利率和通胀预期三大成分（Clarida 四分法）。" },
+  { id: "scorecard", number: "07", title: "因子计分卡", titleEn: "Scorecard", description: "多因子评分模型——对增长、通胀、政策、供求等因子分别打分并综合形成市场立场。" },
+  { id: "policy", number: "08", title: "货币政策", titleEn: "Monetary Policy", description: "追踪美联储政策利率路径、市场隐含降息概率及流动性管道。" },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen flex flex-col">
+      {/* 顶部导航 */}
+      <NavBar />
+
+      {/* 看板标题 */}
+      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-slate-900 text-white mt-12">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <h1 className="text-3xl font-bold tracking-tight">美债因子看板</h1>
+          <p className="text-lg text-blue-200 mt-1 font-light">US Rates Factor Desk</p>
+          <p className="text-sm text-blue-300/70 mt-3 max-w-2xl">
+            多维度追踪美国国债市场的核心驱动因子——从供给拍卖、持仓流向、杠杆周期到跨市场联动，为利率研究提供一站式量化参考。
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+
+      {/* 收益率概览卡片（所有模块之前） */}
+      <YieldOverviewCard />
+
+      {/* ★ 模块 01：供给与拍卖 */}
+      <AuctionModule />
+
+      {/* ★ 模块 02：持仓与资金流 */}
+      <HoldingsModule />
+
+      {/* ★ 模块 03：杠杆率 */}
+      <LeverageModule />
+
+      {/* ★ 模块 04：UST 买卖机构 */}
+      <USTHoldersModule />
+
+      {/* 占位模块 */}
+      {placeholderModules.map((m) => (
+        <PlaceholderModule key={m.id} {...m} />
+      ))}
+
+      {/* 跨市场、事件与观点 */}
+      <PlaceholderModule
+        id="cross-market"
+        number="09"
+        title="跨市场背景"
+        titleEn="Cross-Market"
+        description="对比全球主要经济体利率走势、风险资产及通胀商品价格，提供宏观交叉验证。"
+      />
+      <PlaceholderModule
+        id="events"
+        number="10"
+        title="事件与观点"
+        titleEn="Events & Views"
+        description="追踪关键经济数据发布日历、央行官员讲话及市场投资观点。"
+      />
+
+      {/* 页脚 */}
+      <footer className="py-8 px-4 text-center text-xs text-gray-400 border-t border-gray-200 mt-8">
+        <p>美债因子看板 · Treasury Factor Monitor</p>
+        <p className="mt-1">数据来源：Treasury FiscalData · CFTC COT · BIS · FRED</p>
+        <p className="mt-1">数据快照：2026-05-18 收盘 · 非实时研究看板</p>
+      </footer>
     </div>
   );
 }
