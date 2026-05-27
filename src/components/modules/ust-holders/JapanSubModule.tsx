@@ -11,9 +11,12 @@ import type { JapanHoldingsTrend, JapanWeeklyFlow, JapanKeyMetrics } from "@/typ
 // ============================================================
 // 日本当局持仓 & 市场数据（截至 2026-05-26）
 // 来源：
-//   - TIC slt_table5.html: 日本美债持仓（月频，2026-03 最新）
-//   - 日本MOF 证券交易统计: 周度跨境资金流
+//   - TIC slt_table5.html: 日本美债持仓（月频，2026-03 最新）— 唯一可拆分美债的官方数据
+//   - 日本MOF 证券交易统计: 周度跨境资金流（外国债券+股票，不可单独拆分美债）
 //   - 市场数据: USD/JPY, JGB 10Y, BOJ 政策利率
+// NOTE: MOF 数据口径为"日本居民对全部外国证券的净买入/净卖出"，含外国中长期债券、
+//   外国短期债券、外国股票/投资基金份额，无法直接拆出"美国国债"单项。
+//   如需日本对美债专项数据，仅 TIC 月频持仓变动可用。
 // ============================================================
 
 /** 日本美债持仓趋势（月频，TIC 数据，2024-01 至 2026-03） */
@@ -47,16 +50,19 @@ const japanHoldingsTrend: JapanHoldingsTrend[] = [
   { date: "2026-03", holdings: 1192, change: -47 },  // TIC 已验证
 ];
 
-/** MOF 周度资金流（近8周，2026年4月-5月，模拟日本对外证券投资） */
+/** MOF 周度资金流（近8周，2026年4月-5月，日本对外国证券合计净买入）
+ *  单位：十亿日元（netForeignBonds = 中长期+短期外国债券；netForeignStocks = 外国股票/基金）
+ *  正值 = 净买入海外证券，负值 = 净卖出
+ *  注意：该数据不可直接拆分美国国债，仅反映日本整体的对外证券投资方向 */
 const japanWeeklyFlows: JapanWeeklyFlow[] = [
-  { weekStart: "03-30", netForeignBonds: 1230, netForeignStocks: -320, netUST: 8.2 },
-  { weekStart: "04-06", netForeignBonds: -980, netForeignStocks: 150, netUST: -6.5 },
-  { weekStart: "04-13", netForeignBonds: 560, netForeignStocks: -180, netUST: 3.7 },
-  { weekStart: "04-20", netForeignBonds: -2150, netForeignStocks: -410, netUST: -14.3 },
-  { weekStart: "04-27", netForeignBonds: -840, netForeignStocks: 220, netUST: -5.6 },
-  { weekStart: "05-04", netForeignBonds: 340, netForeignStocks: -90, netUST: 2.3 },
-  { weekStart: "05-11", netForeignBonds: -1200, netForeignStocks: -280, netUST: -8.0 },
-  { weekStart: "05-18", netForeignBonds: -630, netForeignStocks: 110, netUST: -4.2 },
+  { weekStart: "03-30", netForeignBonds: 1230, netForeignStocks: -320 },
+  { weekStart: "04-06", netForeignBonds: -980, netForeignStocks: 150 },
+  { weekStart: "04-13", netForeignBonds: 560, netForeignStocks: -180 },
+  { weekStart: "04-20", netForeignBonds: -2150, netForeignStocks: -410 },
+  { weekStart: "04-27", netForeignBonds: -840, netForeignStocks: 220 },
+  { weekStart: "05-04", netForeignBonds: 340, netForeignStocks: -90 },
+  { weekStart: "05-11", netForeignBonds: -1200, netForeignStocks: -280 },
+  { weekStart: "05-18", netForeignBonds: -630, netForeignStocks: 110 },
 ];
 
 /** 日本关键指标（2026-05-26） */
@@ -163,9 +169,11 @@ function WeeklyFlowChart({ data }: { data: JapanWeeklyFlow[] }) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">日本对外证券投资周度流向（MOF）</CardTitle>
+        <CardTitle className="text-base">日本对外国证券投资周度流向（MOF）</CardTitle>
         <p className="text-xs text-gray-500">
-          日本投资者净买入外国债券/股票（十亿日元）。正值 = 净买入海外资产（可能含美债）
+          日本居民对外国中长期/短期债券与股票/投资基金的净买入（十亿日元）。
+          <br />
+          <span className="text-amber-600 font-medium">⚠ MOF 数据为全部外国证券合计，不可直接拆分为美债。正值 = 净买入海外资产。</span>
         </p>
       </CardHeader>
       <CardContent>
@@ -186,7 +194,7 @@ function WeeklyFlowChart({ data }: { data: JapanWeeklyFlow[] }) {
               contentStyle={{ fontSize: 12, borderRadius: 8 }}
               formatter={(v, n) => {
                 const val = Number(v);
-                const label = String(n) === "netForeignBonds" ? "外国债券" : "外国股票";
+                const label = String(n) === "netForeignBonds" ? "外国债券（含中长期+短期）" : "外国股票/投资基金";
                 return [`${val > 0 ? "+" : ""}${val} 亿日元`, label];
               }}
             />
@@ -223,22 +231,16 @@ function WeeklyFlowChart({ data }: { data: JapanWeeklyFlow[] }) {
           </BarChart>
         </ResponsiveContainer>
 
-        {/* 美债预估净买入 */}
-        <div className="mt-3 grid grid-cols-8 gap-1">
-          {data.map((d) => (
-            <div key={d.weekStart} className="text-center">
-              <p className="text-[10px] text-gray-400">{d.weekStart}</p>
-              <p className={`text-xs font-medium ${d.netUST >= 0 ? "text-red-500" : "text-green-500"}`}>
-                {d.netUST >= 0 ? "+" : ""}{d.netUST}
-              </p>
-              <p className="text-[9px] text-gray-400">美债B</p>
-            </div>
-          ))}
+        <div className="mt-3 p-2 rounded bg-amber-50 border border-amber-100">
+          <p className="text-[11px] text-amber-700 leading-relaxed">
+            <strong>口径说明：</strong>MOF 统计的是日本居民对<b>全部外国</b>（不限于美国）的中长期债券、短期债券和股票/投资基金的净买入/净卖出。
+            外国中长期债券可能以美债为主，但也包含欧债、澳债等。如需日本对美债专项持仓与变动，请参见上方 TIC 月频图表。
+          </p>
         </div>
         <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>来源：日本财务省（MOF）证券交易统计 · 周频</span>
+          <span>来源：日本财务省（MOF）证券交易统计 · 周频 · 2014年起正值=净买入</span>
           <a
-            href="https://www.mof.go.jp/english/policy/international_policy/reference/itn_transfer_in_securities/index.htm"
+            href="https://www.mof.go.jp/english/policy/international_policy/reference/itn_transactions_in_securities/index.htm"
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
@@ -349,8 +351,8 @@ function JapanSignals() {
     },
     {
       type: "neutral" as const,
-      title: "MOF数据显示4月一度净卖出海外债券",
-      desc: "MOF周度/月度数据均显示4月日本投资者对海外债券有阶段性净卖出，但5月后部分周度数据恢复净买入，需观察是否转化为持续回流日本国内债市。",
+      title: "MOF显示日本投资者4月一度净卖出海外债券",
+      desc: "MOF周度数据显示日本投资者4月对海外中长期/短期债券有阶段性净卖出，但5月后部分周度恢复净买入。需注意MOF数据为全部外国证券（非仅美债），需观察是否转化为持续回流日本国内债市。TIC月频持仓变动为判断日本对美债具体流向的更可靠指标。",
     },
   ];
 
@@ -424,15 +426,25 @@ export default function JapanSubModule() {
       {/* 数据来源引用 */}
       <div className="mt-4 pt-3 border-t border-red-100">
         <p className="text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>数据来源：Treasury TIC · 日本MOF证券交易统计 · 市场数据</span>
-          <a
-            href="https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
-          >
-            原始数据 ↗
-          </a>
+          <span>数据来源：Treasury TIC（美债专项，月频）· 日本MOF证券交易统计（全部外国证券，周频）· 市场数据（手动更新）</span>
+          <span className="flex gap-3">
+            <a
+              href="https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              TIC ↗
+            </a>
+            <a
+              href="https://www.mof.go.jp/english/policy/international_policy/reference/itn_transactions_in_securities/index.htm"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              MOF ↗
+            </a>
+          </span>
         </p>
       </div>
     </div>
