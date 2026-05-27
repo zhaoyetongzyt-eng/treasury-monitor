@@ -78,11 +78,17 @@ export interface ForeignHolderDetail {
 /** UST 买卖机构 - 汇总 */
 export interface USTFlowSummary {
   totalOutstanding: number;    // 美债总存量（万亿美元）
+  totalOutstandingSource?: string;
   fedHoldings: number;         // 美联储持有（万亿美元）
+  fedHoldingsSource?: string;
   foreignHoldings: number;     // 外国持有（万亿美元）
-  domesticHoldings: number;    // 国内私人持有（万亿美元）
+  foreignHoldingsSource?: string;
+  domesticHoldings: number;    // 国内私人持有（万亿美元，估算）
+  domesticHoldingsSource?: string;
   netForeignFlow: number;      // 外资净流动（十亿美元，正=净买入）
+  netForeignFlowSource?: string;
   netFedFlow: number;          // 美联储净购买（十亿美元）
+  netFedFlowSource?: string;
   snapshotDate: string;        // 数据快照日期
 }
 

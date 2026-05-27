@@ -70,12 +70,12 @@ function trendBadge(trend: string) {
 /** 资金流总览面板 */
 function FlowOverview({ summary, fedLatest }: { summary: USTFlowSummary; fedLatest: USTHoldersResponse["fedLatest"] }) {
   const items = [
-    { label: "可流通美债总量", value: summary.totalOutstanding, unit: "万亿", color: "text-gray-900" },
-    { label: "外国持有", value: summary.foreignHoldings, unit: "万亿", color: "text-blue-700" },
-    { label: "美联储持有", value: summary.fedHoldings, unit: "万亿", color: "text-purple-700", sub: `截至 ${fedLatest.date}` },
-    { label: "国内私人持有", value: summary.domesticHoldings, unit: "万亿", color: "text-amber-700" },
-    { label: "外资净流动(月)", value: summary.netForeignFlow, unit: "亿", color: summary.netForeignFlow >= 0 ? "text-red-600" : "text-green-600" },
-    { label: "美联储净购买(5周)", value: summary.netFedFlow, unit: "亿", color: summary.netFedFlow >= 0 ? "text-red-600" : "text-green-600" },
+    { label: "可流通美债总量", value: summary.totalOutstanding, unit: "万亿美元", color: "text-gray-900", source: summary.totalOutstandingSource },
+    { label: "外国持有", value: summary.foreignHoldings, unit: "万亿美元", color: "text-blue-700", source: summary.foreignHoldingsSource },
+    { label: "美联储持有", value: summary.fedHoldings, unit: "万亿美元", color: "text-purple-700", sub: `面值 · 截至 ${fedLatest.date}`, source: summary.fedHoldingsSource },
+    { label: "国内私人持有", value: summary.domesticHoldings, unit: "万亿美元", color: "text-amber-700", isEstimated: true, source: summary.domesticHoldingsSource },
+    { label: "外资净流动(月)", value: summary.netForeignFlow, unit: "十亿美元", color: summary.netForeignFlow >= 0 ? "text-red-600" : "text-green-600", altUnit: `${Math.abs(summary.netForeignFlow * 10).toFixed(0)}亿美元`, source: summary.netForeignFlowSource },
+    { label: "美联储净购买(5周)", value: summary.netFedFlow, unit: "十亿美元", color: summary.netFedFlow >= 0 ? "text-red-600" : "text-green-600", altUnit: `${Math.abs(summary.netFedFlow * 10).toFixed(0)}亿美元`, source: summary.netFedFlowSource },
   ];
 
   return (
@@ -87,16 +87,22 @@ function FlowOverview({ summary, fedLatest }: { summary: USTFlowSummary; fedLate
       <CardContent>
         <div className="grid grid-cols-3 gap-3">
           {items.map((item) => (
-            <div key={item.label} className="text-center p-2 rounded-lg bg-white/70">
-              <p className="text-xs text-gray-500 mb-1">{item.label}</p>
+            <div key={item.label} className="text-center p-2 rounded-lg bg-white/70" title={item.source}>
+              <p className="text-xs text-gray-500 mb-1">{item.label}{item.isEstimated ? "*" : ""}</p>
               <p className={`text-lg font-bold font-mono ${item.color}`}>
-                {typeof item.value === "number" && item.value >= 0 && item.unit === "亿" ? "+" : ""}{item.value}
+                {item.value > 0 && (item.label.includes("净流动") || item.label.includes("净购买")) ? "+" : ""}{item.value}
                 <span className="text-xs font-normal ml-0.5">{item.unit}</span>
               </p>
+              {item.altUnit && (
+                <p className="text-[10px] text-gray-400">{item.altUnit}</p>
+              )}
               {item.sub && <p className="text-[10px] text-gray-400 mt-0.5">{item.sub}</p>}
             </div>
           ))}
         </div>
+        <p className="mt-2 text-[10px] text-gray-400">
+          * 国内私人持有 = 总量 − 外国 − 美联储（估算残差项）· 外资净流动 = TIC 持仓月变动 · 美联储净购买 = FRED TREAST 5周面值变动
+        </p>
       </CardContent>
     </Card>
   );
@@ -147,7 +153,7 @@ function HolderTable({ holders, z1Date }: { holders: USTHolder[]; z1Date: string
           </TableBody>
         </Table>
         <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>来源：Federal Reserve Z.1 L.210 · 季频 · {z1Date}</span>
+          <span>来源：Federal Reserve Z.1 L.210 · 季频 · {z1Date} · 变动 = Q4 2025 持仓水平 − Q4 2024 持仓水平 · 市值计价</span>
           <a
             href="https://www.federalreserve.gov/releases/z1/"
             target="_blank"
@@ -162,8 +168,8 @@ function HolderTable({ holders, z1Date }: { holders: USTHolder[]; z1Date: string
   );
 }
 
-/** 卖出方 vs 买入方 摘要 */
-function BuySellSplit({ holders }: { holders: USTHolder[] }) {
+/** 买卖方对比 — Z.1 Q4 2025 vs Q4 2024 持仓水平变动 */
+function BuySellSplit({ holders, z1Date, z1PublicationDate }: { holders: USTHolder[]; z1Date: string; z1PublicationDate: string }) {
   const buyers = holders.filter((h) => h.trend === "增持");
   const sellers = holders.filter((h) => h.trend === "减持");
 
@@ -174,11 +180,13 @@ function BuySellSplit({ holders }: { holders: USTHolder[] }) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">买卖方对比</CardTitle>
-        <p className="text-xs text-gray-400">Z.1 Q4 2025 年度变动汇总</p>
+        <p className="text-xs text-gray-400">
+          Z.1 {z1Date} vs Q4 2024 · 持仓水平变动（{z1PublicationDate} 发布）
+        </p>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
-          {/* 买入方 */}
+          {/* 净增持方 */}
           <div className="p-3 rounded-lg bg-red-50 border border-red-100">
             <p className="text-xs text-gray-500 mb-2">净增持方（{buyers.length} 类）</p>
             <p className="text-lg font-bold font-mono text-red-600">
@@ -194,7 +202,7 @@ function BuySellSplit({ holders }: { holders: USTHolder[] }) {
             </div>
           </div>
 
-          {/* 卖出方 */}
+          {/* 净减持方 */}
           <div className="p-3 rounded-lg bg-green-50 border border-green-100">
             <p className="text-xs text-gray-500 mb-2">净减持方（{sellers.length} 类）</p>
             <p className="text-lg font-bold font-mono text-green-600">
@@ -211,16 +219,16 @@ function BuySellSplit({ holders }: { holders: USTHolder[] }) {
           </div>
         </div>
 
-        {/* 净效果 */}
-        <div className="mt-3 p-3 rounded-lg bg-blue-50 text-center">
-          <p className="text-xs text-gray-500 mb-1">净效果</p>
-          <p className={`text-base font-bold font-mono ${totalBuyerChange + totalSellerChange > 0 ? "text-red-600" : "text-green-600"}`}>
-            净{totalBuyerChange + totalSellerChange > 0 ? "增持" : "减持"} ${Math.abs(totalBuyerChange + totalSellerChange).toFixed(0)}B/年
+        {/* 结论 — 替换为审慎表述 */}
+        <div className="mt-3 p-3 rounded-lg bg-blue-50 text-left space-y-1">
+          <p className="text-xs font-medium text-blue-800">2025年美债需求结构</p>
+          <p className="text-xs text-blue-700 leading-relaxed">
+            货币市场基金（+$522.9B）、共同基金（+${holders.find(h => h.category === "共同基金")?.change.toFixed(1)}B）、
+            家庭部门（+${holders.find(h => h.category === "家庭与非营利")?.change.toFixed(1)}B）与外国部门（+${holders.find(h => h.category === "外国官方与私人")?.change.toFixed(1)}B）
+            为全年主要增持方；美联储 Z.1 市值口径下持仓小幅变动，2026年5月边际上已转为滚续与储备管理购买。
           </p>
-          <p className="text-xs text-gray-400 mt-1">
-            {totalBuyerChange + totalSellerChange > 0
-              ? "整体需求偏强，买方力量占优"
-              : "卖方力量占优，但美联储结束QT为积极信号"}
+          <p className="text-[10px] text-blue-500 mt-1">
+            注：以上变动 = Q4 2025 持仓水平 − Q4 2024 持仓水平（Z.1 L.210 市值口径）。外资 TIC 月频数据与 Z.1 季频数据口径不同，不可直接混用。所有部门持仓变动之和与总存量变动存在统计误差。
           </p>
         </div>
       </CardContent>
@@ -400,7 +408,7 @@ export default function USTHoldersModule() {
         <FlowOverview summary={data.flowSummary} fedLatest={data.fedLatest} />
 
         {/* 买卖方对比 */}
-        <BuySellSplit holders={data.holders} />
+        <BuySellSplit holders={data.holders} z1Date={data.z1Date} z1PublicationDate={data.z1PublicationDate} />
 
         {/* 持有者结构表格 */}
         <div className="lg:col-span-2">

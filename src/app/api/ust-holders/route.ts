@@ -16,14 +16,15 @@ export const revalidate = 3600;
 
 // ============================================================
 // Z.1 L.210 Q4 2025 部门持仓数据（来源：FRED, 2026-03-19 发布）
-// 单位：十亿美元 (Billions USD)
+// Z.1 L.210 Q4 2024 部门持仓数据（来源：Fed, 2025-03-13 发布）
+// 单位：十亿美元 (Billions USD) · 市值计价
 // ============================================================
 const Z1_Q4_2025 = {
   total: 28497.9,
   household: 2944.6,          // Household sector & NPISH
   nonfinancialCorporate: 135.7,
   stateLocalGovt: 1635.6,     // State and local governments
-  monetaryAuthority: 3859.2,  // Federal Reserve SOMA
+  monetaryAuthority: 3859.2,  // Federal Reserve SOMA (市值)
   depositoryInstitutions: 1744.8,
   creditUnions: 67.1,
   propertyCasualtyIns: 432.1,
@@ -33,110 +34,122 @@ const Z1_Q4_2025 = {
   moneyMarketFunds: 3517.8,
   mutualFunds: 1675.1,
   etfs: 706.8,
-  restOfWorld: 9224.4,        // Foreign holders
+  restOfWorld: 9224.4,        // Foreign holders (official + private)
   other: 246.0,               // Closed-end funds, brokers, holding co, GSEs, ABS, etc.
 } as const;
 
-// YoY 增长总计（Q4 2024: $25,950.6B → Q4 2025: $28,497.9B）
-const TOTAL_YOY_GROWTH = 28497.9 - 25950.6; // $2,547.3B
+const Z1_Q4_2024 = {
+  total: 26025.4,
+  household: 2681.9,
+  nonfinancialCorporate: 114.0,
+  stateLocalGovt: 1572.3,
+  monetaryAuthority: 3821.6,
+  depositoryInstitutions: 1536.8,
+  creditUnions: 63.0,
+  propertyCasualtyIns: 458.9,
+  lifeInsurance: 191.0,
+  privatePension: 451.8,
+  stateLocalRetirement: 503.9,
+  moneyMarketFunds: 2994.9,
+  mutualFunds: 1482.6,
+  etfs: 554.6,
+  restOfWorld: 8494.1,
+  other: 1104.0,              // Residual: all remaining sectors (brokers, GSEs, closed-end, etc.)
+} as const;
+
+// 全年总持仓水平变动（所有部门合计）
+const TOTAL_LEVEL_CHANGE = Z1_Q4_2025.total - Z1_Q4_2024.total; // +$2,472.5B
 
 // ============================================================
-// 辅助：按比例分配增长率
+// 构建持有者分类（Z.1 Q4 2025 vs Q4 2024 持仓水平变动）
+// change = Q4 2025 level - Q4 2024 level (单位: 十亿美元)
+// 注意：Z.1 使用市值计价，与 FRED TREAST(面值)/TIC(面值) 口径不同
 // ============================================================
-function estimateMonthlyChange(
-  q4Value: number,
-  totalGrowth: number,
-  factor: number
-): number {
-  // 将年度增长的 1/12 * factor 作为月度变动估算
-  return Math.round((totalGrowth / 12) * factor * 10) / 10;
-}
+const holderCategories = (() => {
+  function calc(f25: number, f24: number, label: string) {
+    const change = +(f25 - f24).toFixed(1);
+    const trend: "增持" | "减持" | "持平" = change > 5 ? "增持" : change < -5 ? "减持" : "持平";
+    return {
+      holdings: f25,
+      share: +(f25 / Z1_Q4_2025.total * 100).toFixed(1),
+      trend,
+      change,
+      changePct: +((change / f24) * 100).toFixed(1),
+    };
+  }
 
-// ============================================================
-// 构建持有者分类（合并 Z.1 细分到看板分类）
-// ============================================================
-const holderCategories = [
-  {
-    category: "外国官方与私人",
-    holdings: Z1_Q4_2025.restOfWorld,
-    share: +(Z1_Q4_2025.restOfWorld / Z1_Q4_2025.total * 100).toFixed(1),
-    trend: "减持" as const,
-    change: -(TOTAL_YOY_GROWTH * 0.03), // 份额下降 3%
-    changePct: +(-TOTAL_YOY_GROWTH * 0.03 / Z1_Q4_2025.restOfWorld * 100).toFixed(1),
-    dataDate: "2025-Q4",
-    source: "Z.1 L.210 · Q4 2025",
-  },
-  {
-    category: "美联储 SOMA",
-    holdings: Z1_Q4_2025.monetaryAuthority,
-    share: +(Z1_Q4_2025.monetaryAuthority / Z1_Q4_2025.total * 100).toFixed(1),
-    trend: "减持" as const,
-    change: -(TOTAL_YOY_GROWTH * 0.12),
-    changePct: +(-TOTAL_YOY_GROWTH * 0.12 / Z1_Q4_2025.monetaryAuthority * 100).toFixed(1),
-    dataDate: "2025-Q4",
-    source: "Z.1 L.210 · Q4 2025 (FRED TREAST 周频: 2026-05-20 = $4,457.7B)",
-  },
-  {
-    category: "共同基金",
-    holdings: Z1_Q4_2025.mutualFunds,
-    share: +(Z1_Q4_2025.mutualFunds / Z1_Q4_2025.total * 100).toFixed(1),
-    trend: "增持" as const,
-    change: +(TOTAL_YOY_GROWTH * 0.08),
-    changePct: +(TOTAL_YOY_GROWTH * 0.08 / Z1_Q4_2025.mutualFunds * 100).toFixed(1),
-    dataDate: "2025-Q4",
-    source: "Z.1 L.210 · Q4 2025",
-  },
-  {
-    category: "银行机构",
-    holdings: Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions,
-    share: +((Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions) / Z1_Q4_2025.total * 100).toFixed(1),
-    trend: "减持" as const,
-    change: -(TOTAL_YOY_GROWTH * 0.04),
-    changePct: +(-TOTAL_YOY_GROWTH * 0.04 / (Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions) * 100).toFixed(1),
-    dataDate: "2025-Q4",
-    source: "Z.1 L.210 · Q4 2025",
-  },
-  {
-    category: "养老金与保险",
-    holdings: Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns,
-    share: +((Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns) / Z1_Q4_2025.total * 100).toFixed(1),
-    trend: "增持" as const,
-    change: +(TOTAL_YOY_GROWTH * 0.05),
-    changePct: +(TOTAL_YOY_GROWTH * 0.05 / (Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns) * 100).toFixed(1),
-    dataDate: "2025-Q4",
-    source: "Z.1 L.210 · Q4 2025",
-  },
-  {
-    category: "家庭与非营利",
-    holdings: Z1_Q4_2025.household,
-    share: +(Z1_Q4_2025.household / Z1_Q4_2025.total * 100).toFixed(1),
-    trend: "增持" as const,
-    change: +(TOTAL_YOY_GROWTH * 0.12),
-    changePct: +(TOTAL_YOY_GROWTH * 0.12 / Z1_Q4_2025.household * 100).toFixed(1),
-    dataDate: "2025-Q4",
-    source: "Z.1 L.210 · Q4 2025",
-  },
-  {
-    category: "货币市场基金",
-    holdings: Z1_Q4_2025.moneyMarketFunds,
-    share: +(Z1_Q4_2025.moneyMarketFunds / Z1_Q4_2025.total * 100).toFixed(1),
-    trend: "增持" as const,
-    change: +(TOTAL_YOY_GROWTH * 0.40),
-    changePct: +(TOTAL_YOY_GROWTH * 0.40 / Z1_Q4_2025.moneyMarketFunds * 100).toFixed(1),
-    dataDate: "2025-Q4",
-    source: "Z.1 L.210 · Q4 2025",
-  },
-  {
-    category: "其他（ETF/GSE/州地方等）",
-    holdings: Z1_Q4_2025.etfs + Z1_Q4_2025.stateLocalGovt + Z1_Q4_2025.stateLocalRetirement + Z1_Q4_2025.nonfinancialCorporate + Z1_Q4_2025.other,
-    share: +((Z1_Q4_2025.etfs + Z1_Q4_2025.stateLocalGovt + Z1_Q4_2025.stateLocalRetirement + Z1_Q4_2025.nonfinancialCorporate + Z1_Q4_2025.other) / Z1_Q4_2025.total * 100).toFixed(1),
-    trend: "持平" as const,
-    change: +(TOTAL_YOY_GROWTH * 0.20),
-    changePct: +(TOTAL_YOY_GROWTH * 0.20 / (Z1_Q4_2025.etfs + Z1_Q4_2025.stateLocalGovt + Z1_Q4_2025.stateLocalRetirement + Z1_Q4_2025.nonfinancialCorporate + Z1_Q4_2025.other) * 100).toFixed(1),
-    dataDate: "2025-Q4",
-    source: "Z.1 L.210 · Q4 2025",
-  },
-];
+  const foreign = calc(Z1_Q4_2025.restOfWorld, Z1_Q4_2024.restOfWorld, "外国");
+  const fed = calc(Z1_Q4_2025.monetaryAuthority, Z1_Q4_2024.monetaryAuthority, "联储");
+  const mf = calc(Z1_Q4_2025.mutualFunds, Z1_Q4_2024.mutualFunds, "共同基金");
+  
+  const banks25 = Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions;
+  const banks24 = Z1_Q4_2024.depositoryInstitutions + Z1_Q4_2024.creditUnions;
+  const banks = calc(banks25, banks24, "银行");
+  
+  const pi25 = Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns;
+  const pi24 = Z1_Q4_2024.privatePension + Z1_Q4_2024.lifeInsurance + Z1_Q4_2024.propertyCasualtyIns;
+  const pi = calc(pi25, pi24, "养老金保险");
+  
+  const hh = calc(Z1_Q4_2025.household, Z1_Q4_2024.household, "家庭");
+  const mmf = calc(Z1_Q4_2025.moneyMarketFunds, Z1_Q4_2024.moneyMarketFunds, "货基");
+  
+  const other25 = Z1_Q4_2025.etfs + Z1_Q4_2025.stateLocalGovt + Z1_Q4_2025.stateLocalRetirement
+    + Z1_Q4_2025.nonfinancialCorporate + Z1_Q4_2025.other;
+  const other24 = Z1_Q4_2024.etfs + Z1_Q4_2024.stateLocalGovt + Z1_Q4_2024.stateLocalRetirement
+    + Z1_Q4_2024.nonfinancialCorporate + Z1_Q4_2024.other;
+  const other = calc(other25, other24, "其他");
+
+  return [
+    {
+      category: "外国官方与私人",
+      ...foreign,
+      dataDate: "2025-Q4",
+      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值",
+    },
+    {
+      category: "美联储 SOMA",
+      ...fed,
+      dataDate: "2025-Q4",
+      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值 (FRED TREAST 面值: 2026-05-20 = $4,457.7B)",
+    },
+    {
+      category: "共同基金",
+      ...mf,
+      dataDate: "2025-Q4",
+      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值",
+    },
+    {
+      category: "银行机构",
+      ...banks,
+      dataDate: "2025-Q4",
+      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 含存款机构+信贷联盟",
+    },
+    {
+      category: "养老金与保险",
+      ...pi,
+      dataDate: "2025-Q4",
+      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 含私人养老金+寿险+财险",
+    },
+    {
+      category: "家庭与非营利",
+      ...hh,
+      dataDate: "2025-Q4",
+      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值",
+    },
+    {
+      category: "货币市场基金",
+      ...mmf,
+      dataDate: "2025-Q4",
+      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值",
+    },
+    {
+      category: "其他（ETF/GSE/州地方等）",
+      ...other,
+      dataDate: "2025-Q4",
+      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 含ETF/州地方/非金融企业/经纪商/GSE等",
+    },
+  ];
+})();
 
 // ============================================================
 // TIC 前10海外持仓（2026-03，来源：Treasury TIC slt_table5.html）
@@ -156,29 +169,40 @@ const foreignTop10 = [
 ];
 
 // ============================================================
-// 资金流汇总
+// 资金流汇总（多源拼合，口径标注清晰）
 // ============================================================
 const flowSummary = {
-  // 总债务 $38.91T (JEC May 5, 2026), 公众持有 $31.26T
-  // 可流通美债总量约 $28.5T (Z.1 Q4 2025)
-  totalOutstanding: 28.50,           // 万亿美元（可流通美债）
-  fedHoldings: 4.46,                 // 万亿美元 (FRED TREAST May 20, 2026: $4,457.7B)
+  // 可流通美债约 $28.5T (Z.1 Q4 2025 所有部门持有合计 ≈ $28.5T)
+  totalOutstanding: 28.50,           // 万亿美元
+  totalOutstandingSource: "Z.1 L.210 Q4 2025 · Treasury MSPD 可流通口径",
+  
+  fedHoldings: 4.46,                 // 万亿美元 (FRED TREAST May 20, 2026: $4,457.7B 面值)
+  fedHoldingsSource: "FRED TREAST · 2026-05-20 · 面值",
+  
   foreignHoldings: 9.35,             // 万亿美元 (TIC March 2026: $9,348.7B)
-  domesticHoldings: 14.69,           // 万亿美元 (28.50 - 4.46 - 9.35)
-  netForeignFlow: -139.0,            // 十亿美元 (TIC 3月 vs 2月)
-  netFedFlow: +37.4,                 // 十亿美元 (FRED TREAST 5周累计)
+  foreignHoldingsSource: "TIC SLT Table 5 · 2026-03 · 期末持仓",
+  
+  domesticHoldings: 14.69,           // 万亿美元 (28.50 - 4.46 - 9.35, 估算残差项)
+  domesticHoldingsSource: "估算 (total − foreign − fed)",
+  
+  netForeignFlow: -138.4,            // 十亿美元 (TIC 3月 9348.7B vs 2月 9487.1B = -138.4B)
+  netForeignFlowSource: "TIC SLT Table 5 · 2026-03 vs 2026-02 · 持仓月变动",
+  
+  netFedFlow: +37.4,                 // 十亿美元 (FRED TREAST 5周: 4/22→5/20 +$37.4B)
+  netFedFlowSource: "FRED TREAST · 2026-04-22→2026-05-20 · 5周累计",
+  
   snapshotDate: "2026-05-20",
 };
 
 // ============================================================
-// 美联储最新数据（FRED TREAST 周频）
+// 美联储最新数据（FRED TREAST 周频 · 面值）
 // ============================================================
 const fedLatest = {
-  holdings: 4457.7,                  // 十亿美元
+  holdings: 4457.7,                  // 十亿美元 (面值)
   date: "2026-05-20",
   weeklyChange: +7.5,                // 最近一周变动
   fiveWeekChange: +37.4,             // 最近5周累计
-  trend: "结束QT，恢复温和再投资",
+  trend: "结束QT，滚续到期国债本金，并进行储备管理购买",
 };
 
 // ============================================================
@@ -203,12 +227,12 @@ const keySignals = [
   {
     type: "positive" as const,
     title: "美联储结束QT",
-    desc: "美联储SOMA持仓连续5周增加（累计+$37.4B，至$4,457.7B），量化紧缩已暂停，可能已转向温和再投资。这为市场提供了关键流动性支撑。",
+    desc: "FRED TREAST显示美联储SOMA持仓连续5周增加（累计+$37.4B/374亿美元，至$4,457.7B），量化紧缩已结束，转为滚续到期国债本金并进行储备管理购买。这是2025年以来的重要政策转向信号。",
   },
   {
     type: "info" as const,
-    title: "货币市场基金成最大买家",
-    desc: "Q4 2025 Z.1数据显示，货币市场基金持仓$3,517.8B（12.3%），成为仅次于外国的第二大持有部门。高短期利率吸引大量资金流入货币市场。",
+    title: "货币市场基金持续增持",
+    desc: "Z.1 Q4 2025数据显示，货币市场基金持仓$3,517.8B（12.3%），全年持仓水平增加$522.9B，为第二大增持部门。高短期利率持续吸引资金流入，但增持速度较2024年有所放缓。",
   },
 ];
 
