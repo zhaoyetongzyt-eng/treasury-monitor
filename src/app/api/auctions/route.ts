@@ -189,6 +189,13 @@ export async function GET() {
     });
 
     // 发行结构概要
+    // dataFreshness 应取所有已完成拍卖中的最新日期（而非排序后第一条的日期）
+    const auctionDates = auctions.map((a) => a.auctionDate).filter(Boolean);
+    const latestDate =
+      auctionDates.length > 0
+        ? auctionDates.sort().reverse()[0]
+        : null;
+
     const issuance = {
       totalAuctioned: auctions.reduce((s, a) => s + a.offeringAmount, 0),
       recordCount: auctions.length,
@@ -196,7 +203,7 @@ export async function GET() {
         auctions.length > 0
           ? Math.round((auctions.reduce((s, a) => s + a.bidToCover, 0) / auctions.length) * 100) / 100
           : 0,
-      dataFreshness: auctions[0]?.auctionDate ?? null,
+      dataFreshness: latestDate,
     };
 
     // ============================================================

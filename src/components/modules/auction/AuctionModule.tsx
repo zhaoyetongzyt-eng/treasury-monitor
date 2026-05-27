@@ -78,7 +78,7 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
       <CardHeader className="pb-2">
         <CardTitle className="text-base">已完成拍卖 · 评分表</CardTitle>
         <p className="text-xs text-gray-400 mt-0.5">
-          各期限最新一场已完成拍卖的中标利率、投标倍数与评级
+          各期限最新一场已完成拍卖的规模、Bills投资收益率 / Notes与Bonds高收益率、投标倍数与自定义评级
         </p>
       </CardHeader>
       <CardContent>
@@ -87,7 +87,7 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
             <TableRow>
               <TableHead>品种</TableHead>
               <TableHead className="text-right">规模 ($B)</TableHead>
-              <TableHead className="text-right">中标利率</TableHead>
+              <TableHead className="text-right">中标收益率</TableHead>
               <TableHead className="text-right">投标倍数</TableHead>
               <TableHead className="text-right">评级</TableHead>
             </TableRow>
@@ -115,18 +115,21 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
             ))}
           </TableBody>
         </Table>
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <p className="text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-            <span>数据来源：Treasury FiscalData · Auctions Query</span>
-            <a
-              href="https://fiscaldata.treasury.gov/datasets/auctions-query/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
-            >
-              原始数据 ↗
-            </a>
+        <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">
+          <p className="text-xs text-gray-400">
+            数据来源：Treasury FiscalData · Treasury Securities Auctions Data
           </p>
+          <p className="text-xs text-gray-400">
+            注：Bills 使用 Investment Rate；Notes/Bonds 使用 High Yield；评级为自定义模型评级，非财政部官方字段。
+          </p>
+          <a
+            href="https://fiscaldata.treasury.gov/datasets/auctions-query/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-600 hover:text-blue-800 underline underline-offset-2"
+          >
+            FiscalData 原始数据 ↗
+          </a>
         </div>
       </CardContent>
     </Card>
@@ -337,7 +340,7 @@ function AuctionIssuanceCard({
           </span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-500">最新数据日期</span>
+          <span className="text-sm text-gray-500">最新完成拍卖日期</span>
           <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
             {issuance?.dataFreshness ?? "--"}
           </Badge>
