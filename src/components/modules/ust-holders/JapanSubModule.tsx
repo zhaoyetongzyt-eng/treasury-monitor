@@ -305,6 +305,35 @@ function KeyMetricsPanel({
             </div>
           ))}
         </div>
+        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+          <span>来源：FRED (DEXJPUS · IRLTLT01JPM156N · TRESEGJPM052N · DGS10) · BOJ 政策利率</span>
+          <span className="flex gap-2">
+            <a
+              href="https://fred.stlouisfed.org/series/DEXJPUS"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              USD/JPY ↗
+            </a>
+            <a
+              href="https://fred.stlouisfed.org/series/IRLTLT01JPM156N"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              JGB 10Y ↗
+            </a>
+            <a
+              href="https://fred.stlouisfed.org/series/DGS10"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              UST 10Y ↗
+            </a>
+          </span>
+        </p>
       </CardContent>
     </Card>
   );
@@ -416,6 +445,27 @@ function JapanSignals({
             <p className="text-xs text-gray-600 leading-relaxed">{s.desc}</p>
           </div>
         ))}
+        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+          <span>来源：TIC SLT Table 5 · FRED · 日本MOF</span>
+          <span className="flex gap-2">
+            <a
+              href="https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              TIC ↗
+            </a>
+            <a
+              href="https://fred.stlouisfed.org/graph/?g=JAPAN"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              FRED ↗
+            </a>
+          </span>
+        </p>
       </CardContent>
     </Card>
   );
