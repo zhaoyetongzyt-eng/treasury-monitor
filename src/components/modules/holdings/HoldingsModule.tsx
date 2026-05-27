@@ -101,7 +101,7 @@ function CFTCTable({
       {/* 表格 */}
       <Card className="lg:col-span-3">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">CFTC 期货持仓明细（TFF报告·周频）</CardTitle>
+          <CardTitle className="text-base">CFTC 期货持仓明细（TFF · Futures Only · 周频）</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -145,17 +145,24 @@ function CFTCTable({
             </TableBody>
           </Table>
           {!isLoading && (
-            <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-              <span>来源：CFTC TFF · 周频 · 数据截至 {dataDate}</span>
+            <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">
+              <p className="text-xs text-gray-400">
+                来源：CFTC Traders in Financial Futures, Futures Only。周频 · 数据截至 {dataDate}
+              </p>
+              <p className="text-xs text-gray-400">
+                注：净头寸 = Long − Short，不含 Spreading。长端为 10Y Note、Ultra 10Y、UST Bond、Ultra UST Bond 合计；
+                前端为 2Y Note、5Y Note 合计。历史分位为自定义回溯计算，非 CFTC 官方字段。
+                Dealer/Intermediary 为 CFTC 中介分类，非基差交易直接映射。
+              </p>
               <a
                 href="https://www.cftc.gov/dea/newcot/FinFutWk.txt"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+                className="text-xs text-blue-600 hover:text-blue-800 underline underline-offset-2"
               >
-                原始数据 ↗
+                原始数据 ↗ (CFTC FinFutWk.txt)
               </a>
-            </p>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -361,8 +368,8 @@ export default function HoldingsModule() {
               </Badge>
             )}
             {!cftcLoading && !cftcError && (
-              <Badge className="text-xs bg-green-50 text-green-700 border-green-200">
-                {cftcSource.includes("内置") ? "内置" : "实时"}
+              <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                周频
               </Badge>
             )}
           </div>
