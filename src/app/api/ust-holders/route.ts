@@ -40,33 +40,31 @@ const Z1_Q4_2025 = {
 
 const Z1_Q4_2024 = {
   total: 26025.4,
-  household: 2681.9,
+  household: 2626.3,          // Line 5: Household sector & NPISH
   nonfinancialCorporate: 114.0,
   stateLocalGovt: 1572.3,
-  monetaryAuthority: 3821.6,
+  monetaryAuthority: 3819.9,  // Line 9: Monetary authority (Fed SOMA)
   depositoryInstitutions: 1536.8,
-  creditUnions: 63.0,
-  propertyCasualtyIns: 458.9,
-  lifeInsurance: 191.0,
-  privatePension: 451.8,
+  creditUnions: 62.8,
+  propertyCasualtyIns: 447.0,
+  lifeInsurance: 186.0,
+  privatePension: 440.1,
   stateLocalRetirement: 503.9,
   moneyMarketFunds: 2994.9,
-  mutualFunds: 1482.6,
+  mutualFunds: 1503.7,        // Line 32: Mutual funds
   etfs: 554.6,
-  restOfWorld: 8494.1,
-  other: 1104.0,              // Residual: all remaining sectors (brokers, GSEs, closed-end, etc.)
+  restOfWorld: 8558.4,        // Line 42: Rest of the world
+  other: 1104.0,              // Not used individually — "其他" computed as residual below
 } as const;
-
-// 全年总持仓水平变动（所有部门合计）
-const TOTAL_LEVEL_CHANGE = Z1_Q4_2025.total - Z1_Q4_2024.total; // +$2,472.5B
 
 // ============================================================
 // 构建持有者分类（Z.1 Q4 2025 vs Q4 2024 持仓水平变动）
-// change = Q4 2025 level - Q4 2024 level (单位: 十亿美元)
-// 注意：Z.1 使用市值计价，与 FRED TREAST(面值)/TIC(面值) 口径不同
+// change = Q4 2025 level - Q4 2024 level (单位: 十亿美元，期末余额，非季调)
+// "其他" = L.210 Total assets − 七类合计（残差项）
+// 注意：Z.1 市值计价，与 FRED TREAST(面值)/TIC(面值) 口径不同
 // ============================================================
 const holderCategories = (() => {
-  function calc(f25: number, f24: number, label: string) {
+  function calc(f25: number, f24: number) {
     const change = +(f25 - f24).toFixed(1);
     const trend: "增持" | "减持" | "持平" = change > 5 ? "增持" : change < -5 ? "减持" : "持平";
     return {
@@ -78,75 +76,75 @@ const holderCategories = (() => {
     };
   }
 
-  const foreign = calc(Z1_Q4_2025.restOfWorld, Z1_Q4_2024.restOfWorld, "外国");
-  const fed = calc(Z1_Q4_2025.monetaryAuthority, Z1_Q4_2024.monetaryAuthority, "联储");
-  const mf = calc(Z1_Q4_2025.mutualFunds, Z1_Q4_2024.mutualFunds, "共同基金");
+  const foreign = calc(Z1_Q4_2025.restOfWorld, Z1_Q4_2024.restOfWorld);
+  const fed = calc(Z1_Q4_2025.monetaryAuthority, Z1_Q4_2024.monetaryAuthority);
+  const mf = calc(Z1_Q4_2025.mutualFunds, Z1_Q4_2024.mutualFunds);
   
   const banks25 = Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions;
   const banks24 = Z1_Q4_2024.depositoryInstitutions + Z1_Q4_2024.creditUnions;
-  const banks = calc(banks25, banks24, "银行");
+  const banks = calc(banks25, banks24);
   
   const pi25 = Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns;
   const pi24 = Z1_Q4_2024.privatePension + Z1_Q4_2024.lifeInsurance + Z1_Q4_2024.propertyCasualtyIns;
-  const pi = calc(pi25, pi24, "养老金保险");
+  const pi = calc(pi25, pi24);
   
-  const hh = calc(Z1_Q4_2025.household, Z1_Q4_2024.household, "家庭");
-  const mmf = calc(Z1_Q4_2025.moneyMarketFunds, Z1_Q4_2024.moneyMarketFunds, "货基");
-  
-  const other25 = Z1_Q4_2025.etfs + Z1_Q4_2025.stateLocalGovt + Z1_Q4_2025.stateLocalRetirement
-    + Z1_Q4_2025.nonfinancialCorporate + Z1_Q4_2025.other;
-  const other24 = Z1_Q4_2024.etfs + Z1_Q4_2024.stateLocalGovt + Z1_Q4_2024.stateLocalRetirement
-    + Z1_Q4_2024.nonfinancialCorporate + Z1_Q4_2024.other;
-  const other = calc(other25, other24, "其他");
+  const hh = calc(Z1_Q4_2025.household, Z1_Q4_2024.household);
+  const mmf = calc(Z1_Q4_2025.moneyMarketFunds, Z1_Q4_2024.moneyMarketFunds);
+
+  // "其他" = Total − 七类合计（残差项）
+  const sum7_25 = foreign.holdings + fed.holdings + mf.holdings + banks25 + pi25 + hh.holdings + mmf.holdings;
+  const other25 = Z1_Q4_2025.total - sum7_25;
+  const other24 = Z1_Q4_2024.total - (Z1_Q4_2024.restOfWorld + Z1_Q4_2024.monetaryAuthority + Z1_Q4_2024.mutualFunds + banks24 + pi24 + Z1_Q4_2024.household + Z1_Q4_2024.moneyMarketFunds);
+  const other = calc(other25, other24);
 
   return [
     {
-      category: "外国官方与私人",
+      category: "外国部门 / Rest of world",
       ...foreign,
       dataDate: "2025-Q4",
-      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值",
+      source: "Z.1 L.210 Line 42 · Q4 2025 vs Q4 2024 · 市值",
     },
     {
-      category: "美联储 SOMA",
+      category: "美联储 / Monetary authority",
       ...fed,
       dataDate: "2025-Q4",
-      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值 (FRED TREAST 面值: 2026-05-20 = $4,457.7B)",
+      source: "Z.1 L.210 Line 9 · Q4 2025 vs Q4 2024 · 市值 (FRED TREAST 面值: 2026-05-20 = $4,457.7B)",
     },
     {
       category: "共同基金",
       ...mf,
       dataDate: "2025-Q4",
-      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值",
+      source: "Z.1 L.210 Line 32 · Q4 2025 vs Q4 2024 · 市值",
     },
     {
-      category: "银行机构",
+      category: "银行机构*",
       ...banks,
       dataDate: "2025-Q4",
-      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 含存款机构+信贷联盟",
+      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · U.S.-chartered depository institutions (Line 12) + Credit unions (Line 15)",
     },
     {
-      category: "养老金与保险",
+      category: "私人养老金与保险**",
       ...pi,
       dataDate: "2025-Q4",
-      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 含私人养老金+寿险+财险",
+      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · Property-casualty insurance (Line 16) + Life insurance (Line 19) + Private pension funds (Line 22)",
     },
     {
-      category: "家庭与非营利",
+      category: "家庭部门",
       ...hh,
       dataDate: "2025-Q4",
-      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值",
+      source: "Z.1 L.210 Line 5 · Q4 2025 vs Q4 2024 · Household sector & NPISH",
     },
     {
       category: "货币市场基金",
       ...mmf,
       dataDate: "2025-Q4",
-      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值",
+      source: "Z.1 L.210 Line 29 · Q4 2025 vs Q4 2024 · 市值",
     },
     {
-      category: "其他（ETF/GSE/州地方等）",
+      category: "其他（残差项）",
       ...other,
       dataDate: "2025-Q4",
-      source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 含ETF/州地方/非金融企业/经纪商/GSE等",
+      source: "Z.1 L.210 · Total assets − 上述七类合计 · 含ETF/州地方/非金融企业/经纪商/GSE等",
     },
   ];
 })();

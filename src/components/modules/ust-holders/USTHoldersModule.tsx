@@ -159,7 +159,7 @@ function HolderTable({ holders, z1Date }: { holders: USTHolder[]; z1Date: string
           </TableBody>
         </Table>
         <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>来源：Federal Reserve Z.1 L.210 · 季频 · {z1Date} · 变动 = Q4 2025 持仓水平 − Q4 2024 持仓水平 · 市值计价</span>
+          <span>来源：Federal Reserve Z.1 L.210 · 季频 · {z1Date} · 期末余额 · 非季调 · 可流通美债（扣除溢价/折价）</span>
           <a
             href="https://www.federalreserve.gov/releases/z1/"
             target="_blank"
@@ -168,6 +168,9 @@ function HolderTable({ holders, z1Date }: { holders: USTHolder[]; z1Date: string
           >
             原始数据 ↗
           </a>
+        </p>
+        <p className="text-[10px] text-gray-400 mt-1">
+          * 银行机构 = U.S.-chartered depository institutions + Credit unions · ** 私人养老金与保险 = Property-casualty insurance companies + Life insurance companies + Private pension funds · 其他 = L.210 Total assets − 上述七类合计 · 变动 = 2025:Q4 持仓水平 − 2024:Q4 持仓水平 · 单位为十亿美元（Billions USD）
         </p>
       </CardContent>
     </Card>
@@ -225,16 +228,19 @@ function BuySellSplit({ holders, z1Date, z1PublicationDate }: { holders: USTHold
           </div>
         </div>
 
-        {/* 结论 — 替换为审慎表述 */}
+        {/* 结论 */}
         <div className="mt-3 p-3 rounded-lg bg-blue-50 text-left space-y-1">
           <p className="text-xs font-medium text-blue-800">2025年美债需求结构</p>
           <p className="text-xs text-blue-700 leading-relaxed">
-            货币市场基金（+$522.9B）、共同基金（+${holders.find(h => h.category === "共同基金")?.change.toFixed(1)}B）、
-            家庭部门（+${holders.find(h => h.category === "家庭与非营利")?.change.toFixed(1)}B）与外国部门（+${holders.find(h => h.category === "外国官方与私人")?.change.toFixed(1)}B）
-            为全年主要增持方；美联储 Z.1 市值口径下持仓小幅变动，2026年5月边际上已转为滚续与储备管理购买。
+            货币市场基金（+${holders.find(h => h.category === "货币市场基金")?.change.toFixed(0)}B）、
+            家庭部门（+${holders.find(h => h.category === "家庭部门")?.change.toFixed(0)}B）、
+            外国部门（+${holders.find(h => h.category === "外国部门 / Rest of world")?.change.toFixed(0)}B）与
+            共同基金（+${holders.find(h => h.category === "共同基金")?.change.toFixed(0)}B）
+            为全年主要增持方；美联储 Z.1 市值口径下持仓小幅变动（+${holders.find(h => h.category === "美联储 / Monetary authority")?.change.toFixed(0)}B），
+            2026年5月边际上已转为滚续与储备管理购买。
           </p>
           <p className="text-[10px] text-blue-500 mt-1">
-            注：以上变动 = Q4 2025 持仓水平 − Q4 2024 持仓水平（Z.1 L.210 市值口径）。外资 TIC 月频数据与 Z.1 季频数据口径不同，不可直接混用。所有部门持仓变动之和与总存量变动存在统计误差。
+            注：以上变动 = Q4 2025 持仓水平 − Q4 2024 持仓水平（Z.1 L.210 期末余额、非季调、可流通美债扣除溢价/折价）。外资 TIC 月频数据与 Z.1 季频数据口径不同，不可直接混用。所有部门持仓变动之和与总存量变动存在统计误差。
           </p>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-2">
