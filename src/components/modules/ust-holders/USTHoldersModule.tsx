@@ -100,9 +100,15 @@ function FlowOverview({ summary, fedLatest }: { summary: USTFlowSummary; fedLate
             </div>
           ))}
         </div>
-        <p className="mt-2 text-[10px] text-gray-400">
+        <p className="mt-2 text-[10px] text-gray-400 mb-1">
           * 国内私人持有 = 总量 − 外国 − 美联储（估算残差项）· 外资净流动 = TIC 持仓月变动 · 美联储净购买 = FRED TREAST 5周面值变动
         </p>
+        <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+          <a href="https://fiscaldata.treasury.gov/datasets/monthly-statement-public-debt/" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:text-blue-800 underline underline-offset-2">Treasury MSPD ↗</a>
+          <a href="https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:text-blue-800 underline underline-offset-2">TIC Table 5 ↗</a>
+          <a href="https://fred.stlouisfed.org/series/TREAST" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:text-blue-800 underline underline-offset-2">FRED TREAST ↗</a>
+          <a href="https://www.federalreserve.gov/releases/z1/" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:text-blue-800 underline underline-offset-2">Z.1 L.210 ↗</a>
+        </div>
       </CardContent>
     </Card>
   );
@@ -230,6 +236,11 @@ function BuySellSplit({ holders, z1Date, z1PublicationDate }: { holders: USTHold
           <p className="text-[10px] text-blue-500 mt-1">
             注：以上变动 = Q4 2025 持仓水平 − Q4 2024 持仓水平（Z.1 L.210 市值口径）。外资 TIC 月频数据与 Z.1 季频数据口径不同，不可直接混用。所有部门持仓变动之和与总存量变动存在统计误差。
           </p>
+        </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-2">
+          <a href="https://www.federalreserve.gov/releases/z1/" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:text-blue-800 underline underline-offset-2">Z.1 L.210 Q4 2025 ↗</a>
+          <a href="https://www.federalreserve.gov/releases/z1/20250313/html/l210.htm" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:text-blue-800 underline underline-offset-2">Z.1 L.210 Q4 2024 ↗</a>
+          <a href="https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:text-blue-800 underline underline-offset-2">TIC Table 5 ↗</a>
         </div>
       </CardContent>
     </Card>
