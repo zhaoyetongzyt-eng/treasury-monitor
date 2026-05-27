@@ -41,7 +41,6 @@ interface CFTCPositionItem {
   segment: string;
   netPosition: string;
   netContracts: number;
-  percentile: number;
   remark: string;
 }
 
@@ -210,44 +209,6 @@ function determineSegment(tenor: string): string {
   return "长端(10Y/30Y)";
 }
 
-/** 自定义历史分位估算（非 CFTC 官方字段）
- *  基于当前净头寸/总持仓的绝对值，用分段线性映射到 1-99。
- *  这是启发式近似值，非严格的历史滚动分位。 */
-function estimatePercentile(rawContracts: ReturnType<typeof buildRawContracts>): Map<string, Record<string, number>> {
-  const ratios: { key: string; ratio: number }[] = [];
-
-  for (const c of rawContracts) {
-    ratios.push({
-      key: `AssetManager_${determineSegment(c.tenor)}`,
-      ratio: c.amNet / c.oi,
-    });
-  }
-
-  for (const c of rawContracts) {
-    ratios.push({
-      key: `LeveragedFunds_${determineSegment(c.tenor)}`,
-      ratio: -c.lfNet / c.oi,
-    });
-  }
-
-  const result = new Map<string, Record<string, number>>();
-
-  for (const r of ratios) {
-    const absRatio = Math.abs(r.ratio);
-    let pct: number;
-    if (absRatio > 0.3) pct = 90 + Math.min(10, (absRatio - 0.3) * 50);
-    else if (absRatio > 0.2) pct = 75 + (absRatio - 0.2) * 150;
-    else if (absRatio > 0.1) pct = 50 + (absRatio - 0.1) * 250;
-    else pct = 10 + absRatio * 400;
-    pct = Math.min(99, Math.max(1, Math.round(pct)));
-
-    if (!result.has(r.key)) result.set(r.key, {});
-    result.get(r.key)!["percentile"] = pct;
-  }
-
-  return result;
-}
-
 function buildRawContracts(contracts: RawTFFRecord[]) {
   return contracts.map((c) => ({
     name: c.name,
@@ -261,8 +222,6 @@ function buildRawContracts(contracts: RawTFFRecord[]) {
 }
 
 function buildResponse(rawContracts: ReturnType<typeof buildRawContracts>, dataDate: string, dataSource: string) {
-  const percentiles = estimatePercentile(rawContracts);
-
   const positions: CFTCPositionItem[] = [];
 
   const amFront = rawContracts.filter((c) => determineSegment(c.tenor) === "前端(2Y/5Y)");
@@ -276,7 +235,6 @@ function buildResponse(rawContracts: ReturnType<typeof buildRawContracts>, dataD
     segment: "长端(10Y/30Y)",
     netPosition: amBackNet > 0 ? "净多头" : "净空头",
     netContracts: amBackNet,
-    percentile: percentiles.get(`AssetManager_长端(10Y/30Y)`)?.percentile ?? 50,
     remark: "",
   });
   positions.push({
@@ -284,7 +242,6 @@ function buildResponse(rawContracts: ReturnType<typeof buildRawContracts>, dataD
     segment: "前端(2Y/5Y)",
     netPosition: amFrontNet > 0 ? "净多头" : "净空头",
     netContracts: amFrontNet,
-    percentile: percentiles.get(`AssetManager_前端(2Y/5Y)`)?.percentile ?? 50,
     remark: "",
   });
 
@@ -296,7 +253,6 @@ function buildResponse(rawContracts: ReturnType<typeof buildRawContracts>, dataD
     segment: "长端(10Y/30Y)",
     netPosition: lfBackNet > 0 ? "净多头" : "净空头",
     netContracts: lfBackNet,
-    percentile: percentiles.get(`LeveragedFunds_长端(10Y/30Y)`)?.percentile ?? 50,
     remark: lfBackNet < -200000 ? "接近极值" : "",
   });
   positions.push({
@@ -304,7 +260,6 @@ function buildResponse(rawContracts: ReturnType<typeof buildRawContracts>, dataD
     segment: "前端(2Y/5Y)",
     netPosition: lfFrontNet > 0 ? "净多头" : "净空头",
     netContracts: lfFrontNet,
-    percentile: percentiles.get(`LeveragedFunds_前端(2Y/5Y)`)?.percentile ?? 50,
     remark: lfFrontNet < -300000 ? "接近极值" : "",
   });
 
@@ -317,7 +272,6 @@ function buildResponse(rawContracts: ReturnType<typeof buildRawContracts>, dataD
     segment: "全期限",
     netPosition: dealerNet > 0 ? "净多头" : "净空头",
     netContracts: dealerNet,
-    percentile: 50,
     remark: Math.abs(dealerNet) > 500000 ? "规模庞大·需关注" : "非基差交易直接映射",
   });
 

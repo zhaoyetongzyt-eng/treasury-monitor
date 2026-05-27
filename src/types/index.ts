@@ -23,7 +23,6 @@ export interface CFTCPosition {
   segment: string;            // 长端(10Y/30Y) / 前端(2Y/5Y)
   netPosition: "净多头" | "净空头" | "中性";
   netContracts: number;       // 净持仓合约数
-  percentile: number;         // 历史百分位
   remark?: string;            // 备注（如"极值水平"）
 }
 

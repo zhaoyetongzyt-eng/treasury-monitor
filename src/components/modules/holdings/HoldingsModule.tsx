@@ -41,7 +41,6 @@ function SkeletonRow() {
       <TableCell><div className="h-4 w-20 bg-gray-200 rounded animate-pulse" /></TableCell>
       <TableCell><div className="h-4 w-16 bg-gray-200 rounded animate-pulse" /></TableCell>
       <TableCell className="text-right"><div className="h-4 w-16 bg-gray-200 rounded animate-pulse ml-auto" /></TableCell>
-      <TableCell className="text-right"><div className="h-4 w-12 bg-gray-200 rounded animate-pulse ml-auto" /></TableCell>
       <TableCell className="text-right"><div className="h-4 w-20 bg-gray-200 rounded animate-pulse ml-auto" /></TableCell>
     </TableRow>
   );
@@ -111,7 +110,6 @@ function CFTCTable({
                 <TableHead>期限段</TableHead>
                 <TableHead className="text-right">净持仓方向</TableHead>
                 <TableHead className="text-right">净头寸</TableHead>
-                <TableHead className="text-right">历史分位</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -132,14 +130,6 @@ function CFTCTable({
                           {(row.netContracts / 1000).toFixed(0)}k
                         </span>
                       </TableCell>
-                      <TableCell className="text-right font-mono">
-                        <span className={
-                          row.percentile > 80 ? "text-red-600 font-semibold" :
-                          row.percentile < 20 ? "text-emerald-600 font-semibold" : ""
-                        }>
-                          {row.percentile}%
-                        </span>
-                      </TableCell>
                     </TableRow>
                   ))}
             </TableBody>
@@ -151,7 +141,7 @@ function CFTCTable({
               </p>
               <p className="text-xs text-gray-400">
                 注：净头寸 = Long − Short，不含 Spreading。长端为 10Y Note、Ultra 10Y、UST Bond、Ultra UST Bond 合计；
-                前端为 2Y Note、5Y Note 合计。历史分位为自定义回溯计算，非 CFTC 官方字段。
+                前端为 2Y Note、5Y Note 合计。
                 Dealer/Intermediary 为 CFTC 中介分类，非基差交易直接映射。
               </p>
               <a
