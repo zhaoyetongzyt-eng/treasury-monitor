@@ -106,7 +106,7 @@ export interface JapanWeeklyFlow {
   netForeignStocks: number;    // 净买入外国股票/投资基金份额（十亿日元）
 }
 
-/** 日本视角 - 关键指标 */
+/** 日本视角 - 关键指标（组件内使用） */
 export interface JapanKeyMetrics {
   usdJpy: number;              // USD/JPY 汇率
   usdJpyChange: number;        // 日变动
@@ -115,6 +115,37 @@ export interface JapanKeyMetrics {
   ustJgbSpread: number;        // 美日10Y利差（bp）
   fxReserves: number;          // 外汇储备（万亿美元）
   dataDate: string;            // 数据日期
+}
+
+/** 日本视角 - 关键指标项（UI 展示用） */
+export interface JapanMetricItem {
+  label: string;
+  value: string;
+  change: number;
+  unit: string;
+  sub: string;
+}
+
+/** /api/japan-metrics 响应 */
+export interface JapanMetricsResponse {
+  success: boolean;
+  dataDate: string;
+  dataSource: string;
+  metrics: JapanMetricItem[];
+  usdJpy: number;
+  usdJpyChange: number;
+  bojPolicyRate: number;
+  jgb10YYield: number;
+  ust10YYield: number;
+  ustJgbSpread: number;
+  fxReserves: number;
+  weeklyFlows: JapanWeeklyFlow[];
+  updatedAt: string;
+  freshness: {
+    status: "实时" | "部分实时" | "降级模式";
+    fredStatus: "ok" | "error";
+    mofStatus: "ok" | "error" | "not_attempted";
+  };
 }
 
 /** 收益率曲线摘要 */

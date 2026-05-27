@@ -1,26 +1,32 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend, Cell,
 } from "recharts";
-import type { JapanHoldingsTrend, JapanWeeklyFlow, JapanKeyMetrics } from "@/types";
+import type { JapanHoldingsTrend, JapanWeeklyFlow, JapanMetricsResponse } from "@/types";
 
 // ============================================================
-// 日本当局持仓 & 市场数据（截至 2026-05-26）
-// 来源：
-//   - TIC slt_table5.html: 日本美债持仓（月频，2026-03 最新）— 唯一可拆分美债的官方数据
-//   - 日本MOF 证券交易统计: 周度跨境资金流（外国债券+股票，不可单独拆分美债）
-//   - 市场数据: USD/JPY, JGB 10Y, BOJ 政策利率
+// 日本当局持仓 & 市场数据
+// 数据来源：
+//   - /api/japan-metrics: FRED (USD/JPY, JGB 10Y, 外汇储备, UST 10Y) + MOF 周度资金流
+//   - /api/tic: TIC 月频日本美债持仓（唯一可拆分美债的官方数据）
+//
 // NOTE: MOF 数据口径为"日本居民对全部外国证券的净买入/净卖出"，含外国中长期债券、
 //   外国短期债券、外国股票/投资基金份额，无法直接拆出"美国国债"单项。
 //   如需日本对美债专项数据，仅 TIC 月频持仓变动可用。
 // ============================================================
 
-/** 日本美债持仓趋势（月频，TIC 数据，2024-01 至 2026-03） */
-const japanHoldingsTrend: JapanHoldingsTrend[] = [
+// ============================================================
+// TIC 日本美债持仓趋势（内置 fallback，数据截至 2026-03）
+// 来源：Treasury TIC SLT Table 5
+// ============================================================
+
+const FALLBACK_HOLDINGS_TREND: JapanHoldingsTrend[] = [
   { date: "2024-01", holdings: 1153, change: +9 },
   { date: "2024-02", holdings: 1168, change: +15 },
   { date: "2024-03", holdings: 1178, change: +10 },
@@ -47,41 +53,34 @@ const japanHoldingsTrend: JapanHoldingsTrend[] = [
   { date: "2025-12", holdings: 1130, change: +25 },
   { date: "2026-01", holdings: 1178, change: +48 },
   { date: "2026-02", holdings: 1239, change: +61 },
-  { date: "2026-03", holdings: 1192, change: -47 },  // TIC 已验证
+  { date: "2026-03", holdings: 1192, change: -47 },
 ];
 
-/** MOF 周度资金流（近8周，2026年4月-5月，日本对外国证券合计净买入）
- *  单位：十亿日元（netForeignBonds = 中长期+短期外国债券；netForeignStocks = 外国股票/基金）
- *  正值 = 净买入海外证券，负值 = 净卖出
- *  注意：该数据不可直接拆分美国国债，仅反映日本整体的对外证券投资方向 */
-const japanWeeklyFlows: JapanWeeklyFlow[] = [
-  { weekStart: "03-30", netForeignBonds: 1230, netForeignStocks: -320 },
-  { weekStart: "04-06", netForeignBonds: -980, netForeignStocks: 150 },
-  { weekStart: "04-13", netForeignBonds: 560, netForeignStocks: -180 },
-  { weekStart: "04-20", netForeignBonds: -2150, netForeignStocks: -410 },
-  { weekStart: "04-27", netForeignBonds: -840, netForeignStocks: 220 },
-  { weekStart: "05-04", netForeignBonds: 340, netForeignStocks: -90 },
-  { weekStart: "05-11", netForeignBonds: -1200, netForeignStocks: -280 },
-  { weekStart: "05-18", netForeignBonds: -630, netForeignStocks: 110 },
-];
+// ============================================================
+// 从 TIC API 提取日本持仓趋势
+// ============================================================
 
-/** 日本关键指标（2026-05-26） */
-const japanKeyMetrics: JapanKeyMetrics = {
-  usdJpy: 144.25,
-  usdJpyChange: +0.43,
-  bojPolicyRate: 0.75,
-  jgb10YYield: 2.72,
-  ustJgbSpread: 184,
-  fxReserves: 1.38,
-  dataDate: "2026-05-26",
-};
+interface TICApiResponse {
+  success: boolean;
+  holdings?: Array<{
+    country: string;
+    amount: number;
+    trend: string;
+    change: number;
+    isMajor: boolean;
+  }>;
+  dataDate?: string;
+}
+
+// TIC API 返回的是最新快照，我们需要从历史数据构建趋势。
+// 由于 TIC API 目前只返回最新数据，趋势仍使用内置数据。
+// 未来可扩展为从 TIC 历史 CSV 直接解析。
 
 // ============================================================
 // 子组件：持仓趋势图
 // ============================================================
 
 function HoldingsTrendChart({ data }: { data: JapanHoldingsTrend[] }) {
-  // 高亮最近6个点
   const last6 = data.slice(-6);
 
   return (
@@ -112,7 +111,6 @@ function HoldingsTrendChart({ data }: { data: JapanHoldingsTrend[] }) {
               contentStyle={{ fontSize: 12, borderRadius: 8 }}
               formatter={(v) => [String(v) + " B", "持仓"]}
             />
-            {/* 参考线 1150 */}
             <Line
               type="monotone"
               dataKey={() => 1150}
@@ -133,7 +131,6 @@ function HoldingsTrendChart({ data }: { data: JapanHoldingsTrend[] }) {
           </LineChart>
         </ResponsiveContainer>
 
-        {/* 最近6月变化 */}
         <div className="mt-3 grid grid-cols-6 gap-1">
           {last6.map((d) => (
             <div key={d.date} className="text-center">
@@ -165,7 +162,7 @@ function HoldingsTrendChart({ data }: { data: JapanHoldingsTrend[] }) {
 // 子组件：周度资金流
 // ============================================================
 
-function WeeklyFlowChart({ data }: { data: JapanWeeklyFlow[] }) {
+function WeeklyFlowChart({ data, freshness }: { data: JapanWeeklyFlow[]; freshness?: string }) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -173,7 +170,14 @@ function WeeklyFlowChart({ data }: { data: JapanWeeklyFlow[] }) {
         <p className="text-xs text-gray-500">
           日本居民对外国中长期/短期债券与股票/投资基金的净买入（十亿日元）。
           <br />
-          <span className="text-amber-600 font-medium">⚠ MOF 数据为全部外国证券合计，不可直接拆分为美债。正值 = 净买入海外资产。</span>
+          <span className="text-amber-600 font-medium">
+            ⚠ MOF 数据为全部外国证券合计，不可直接拆分为美债。正值 = 净买入海外资产。
+          </span>
+          {freshness && (
+            <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-green-50 text-green-700 border border-green-200">
+              {freshness}
+            </span>
+          )}
         </p>
       </CardHeader>
       <CardContent>
@@ -257,57 +261,35 @@ function WeeklyFlowChart({ data }: { data: JapanWeeklyFlow[] }) {
 // 子组件：关键指标面板
 // ============================================================
 
-function KeyMetricsPanel({ metrics }: { metrics: JapanKeyMetrics }) {
-  const items = [
-    {
-      label: "USD/JPY",
-      value: metrics.usdJpy.toFixed(2),
-      change: metrics.usdJpyChange,
-      unit: "",
-      sub: "日元贬值 = 干预风险↑",
-    },
-    {
-      label: "BOJ政策利率",
-      value: metrics.bojPolicyRate.toFixed(2),
-      change: 0,
-      unit: "%",
-      sub: "2026年4月已加息至0.75%，7月或再加息",
-    },
-    {
-      label: "日本10Y国债",
-      value: metrics.jgb10YYield.toFixed(2),
-      change: 0,
-      unit: "%",
-      sub: "已突破2.72%关口，创15年新高",
-    },
-    {
-      label: "美日10Y利差",
-      value: metrics.ustJgbSpread.toString(),
-      change: 0,
-      unit: "bp",
-      sub: "美国4.56% vs 日本2.72%",
-    },
-    {
-      label: "外汇储备",
-      value: metrics.fxReserves.toFixed(2),
-      change: 0,
-      unit: "万亿美元",
-      sub: "干预弹药库规模",
-    },
-  ];
-
+function KeyMetricsPanel({
+  metrics,
+  dataDate,
+  freshness,
+}: {
+  metrics: JapanMetricsResponse["metrics"];
+  dataDate: string;
+  freshness: string;
+}) {
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">日本关键指标快照</CardTitle>
-        <p className="text-xs text-gray-500">
-          {metrics.dataDate} 收盘 ·{" "}
-          <span className="text-amber-600 font-medium">⚠ 手动更新</span>
+        <p className="text-xs text-gray-500 flex items-center gap-2">
+          <span>{dataDate}</span>
+          <span className={`px-1.5 py-0.5 rounded text-[10px] border ${
+            freshness === "实时"
+              ? "bg-green-50 text-green-700 border-green-200"
+              : freshness === "部分实时"
+              ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+              : "bg-amber-50 text-amber-700 border-amber-200"
+          }`}>
+            {freshness === "实时" ? "✅ FRED + MOF 实时" : freshness === "部分实时" ? "⚡ 部分实时" : "⚠ 降级模式"}
+          </span>
         </p>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-5 gap-3">
-          {items.map((item) => (
+          {metrics.map((item) => (
             <div key={item.label} className="text-center p-2 rounded-lg bg-gray-50">
               <p className="text-[11px] text-gray-500 mb-1">{item.label}</p>
               <p className="text-lg font-bold text-gray-800">
@@ -329,10 +311,60 @@ function KeyMetricsPanel({ metrics }: { metrics: JapanKeyMetrics }) {
 }
 
 // ============================================================
+// Skeleton 加载态
+// ============================================================
+
+function MetricsSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <Skeleton className="h-5 w-36" />
+        <Skeleton className="h-3 w-48 mt-1" />
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-5 gap-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="text-center p-2 rounded-lg bg-gray-50">
+              <Skeleton className="h-3 w-16 mx-auto mb-1" />
+              <Skeleton className="h-6 w-20 mx-auto" />
+              <Skeleton className="h-3 w-24 mx-auto mt-1" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function WeeklyFlowSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <Skeleton className="h-5 w-48" />
+        <Skeleton className="h-3 w-64 mt-1" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-[200px] w-full" />
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================
 // 子组件：信号解读
 // ============================================================
 
-function JapanSignals() {
+function JapanSignals({
+  usdJpy,
+  jgb10Y,
+  ust10Y,
+  ustJgbSpread,
+}: {
+  usdJpy: number;
+  jgb10Y: number;
+  ust10Y: number;
+  ustJgbSpread: number;
+}) {
   const signals = [
     {
       type: "bearish" as const,
@@ -341,13 +373,13 @@ function JapanSignals() {
     },
     {
       type: "neutral" as const,
-      title: "USD/JPY接近159，干预风险仍需关注",
-      desc: "日元仍处弱势区间，USD/JPY接近159–160关口。若汇率波动加快，日本外汇干预风险上升，但是否干预取决于汇率速度、波动率和官方表态。",
+      title: `USD/JPY接近${Math.round(usdJpy)}，干预风险仍需关注`,
+      desc: `日元仍处弱势区间，USD/JPY接近${Math.round(usdJpy)}–${Math.round(usdJpy) + 1}关口。若汇率波动加快，日本外汇干预风险上升，但是否干预取决于汇率速度、波动率和官方表态。`,
     },
     {
       type: "bullish" as const,
       title: "美日10Y利差明显收窄",
-      desc: "日本10Y升至约2.72%，美国10Y约4.51%–4.56%，美日10Y利差已从此前约289bp压缩至约180bp附近，削弱日本资金继续配置美债的边际吸引力。",
+      desc: `日本10Y升至约${jgb10Y.toFixed(2)}%，美国10Y约${ust10Y.toFixed(2)}%，美日10Y利差已从此前约289bp压缩至约${ustJgbSpread}bp附近，削弱日本资金继续配置美债的边际吸引力。`,
     },
     {
       type: "neutral" as const,
@@ -394,6 +426,49 @@ function JapanSignals() {
 // ============================================================
 
 export default function JapanSubModule() {
+  const [metrics, setMetrics] = useState<JapanMetricsResponse["metrics"] | null>(null);
+  const [weeklyFlows, setWeeklyFlows] = useState<JapanWeeklyFlow[] | null>(null);
+  const [dataDate, setDataDate] = useState<string>("");
+  const [freshness, setFreshness] = useState<string>("降级模式");
+  const [usdJpy, setUsdJpy] = useState(159.34);
+  const [jgb10Y, setJgb10Y] = useState(2.70);
+  const [ust10Y, setUst10Y] = useState(4.47);
+  const [ustJgbSpread, setUstJgbSpread] = useState(177);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchData() {
+      try {
+        const res = await fetch("/api/japan-metrics");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: JapanMetricsResponse = await res.json();
+        if (!cancelled) {
+          setMetrics(data.metrics);
+          setWeeklyFlows(data.weeklyFlows);
+          setDataDate(data.dataDate);
+          setFreshness(data.freshness.status);
+          setUsdJpy(data.usdJpy);
+          setJgb10Y(data.jgb10YYield);
+          setUst10Y(data.ust10YYield);
+          setUstJgbSpread(data.ustJgbSpread);
+          setError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "数据加载失败");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchData();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div className="lg:col-span-2">
       {/* 分区标题 */}
@@ -408,25 +483,76 @@ export default function JapanSubModule() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* 持仓趋势 */}
-        <HoldingsTrendChart data={japanHoldingsTrend} />
+        {/* 持仓趋势（TIC - 仍用内置数据） */}
+        <HoldingsTrendChart data={FALLBACK_HOLDINGS_TREND} />
 
-        {/* 周度资金流 */}
-        <WeeklyFlowChart data={japanWeeklyFlows} />
+        {/* 周度资金流（MOF - API 动态） */}
+        {loading ? (
+          <WeeklyFlowSkeleton />
+        ) : weeklyFlows ? (
+          <WeeklyFlowChart
+            data={weeklyFlows}
+            freshness={
+              freshness === "实时" || freshness === "部分实时"
+                ? "MOF 实时"
+                : undefined
+            }
+          />
+        ) : (
+          <WeeklyFlowChart data={[]} />
+        )}
       </div>
 
       <div className="mt-4 space-y-4">
-        {/* 关键指标 */}
-        <KeyMetricsPanel metrics={japanKeyMetrics} />
+        {/* 关键指标（FRED + BOJ - API 动态） */}
+        {loading ? (
+          <MetricsSkeleton />
+        ) : error ? (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">日本关键指标快照</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-red-500">数据加载失败: {error}，使用降级数据</p>
+              <KeyMetricsPanel
+                metrics={[
+                  { label: "USD/JPY", value: "159.34", change: +0.14, unit: "", sub: "日元贬值 = 干预风险↑" },
+                  { label: "BOJ政策利率", value: "0.75", change: 0, unit: "%", sub: "2025年12月加息至0.75%" },
+                  { label: "日本10Y国债", value: "2.70", change: 0, unit: "%", sub: "收益率持续攀升" },
+                  { label: "美日10Y利差", value: "177", change: 0, unit: "bp", sub: "美国4.47% vs 日本2.70%" },
+                  { label: "外汇储备", value: "1.26", change: 0, unit: "万亿美元", sub: "干预弹药库规模" },
+                ]}
+                dataDate="2026-05-27"
+                freshness="降级模式"
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <KeyMetricsPanel
+            metrics={metrics!}
+            dataDate={dataDate}
+            freshness={freshness}
+          />
+        )}
 
-        {/* 信号解读 */}
-        <JapanSignals />
+        {/* 信号解读（动态数值） */}
+        <JapanSignals
+          usdJpy={usdJpy}
+          jgb10Y={jgb10Y}
+          ust10Y={ust10Y}
+          ustJgbSpread={ustJgbSpread}
+        />
       </div>
 
       {/* 数据来源引用 */}
       <div className="mt-4 pt-3 border-t border-red-100">
         <p className="text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>数据来源：Treasury TIC（美债专项，月频）· 日本MOF证券交易统计（全部外国证券，周频）· 市场数据（手动更新）</span>
+          <span>
+            数据来源：FRED (DEXJPUS, IRLTLT01JPM156N, TRESEGJPM052N, DGS10) · 日本MOF证券交易统计 · Treasury TIC
+            {freshness !== "实时" && (
+              <span className="ml-1 text-amber-500">（{freshness}，部分数据来自内置 fallback）</span>
+            )}
+          </span>
           <span className="flex gap-3">
             <a
               href="https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html"
@@ -443,6 +569,14 @@ export default function JapanSubModule() {
               className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
             >
               MOF ↗
+            </a>
+            <a
+              href="https://fred.stlouisfed.org/graph/?g=JAPAN"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              FRED ↗
             </a>
           </span>
         </p>
