@@ -350,9 +350,8 @@ async function fetchLive(): Promise<CFTCApiResponse> {
   }
 
   const rawContracts = buildRawContracts(contracts);
-  const dataDate = contracts[0]?.reportDate
-    ? `20${contracts[0].reportDate.substring(0, 2)}-${contracts[0].reportDate.substring(2, 4)}-${contracts[0].reportDate.substring(4, 6)}`
-    : "unknown";
+  // fields[2] 已是 YYYY-MM-DD 格式，直接使用，不再做 YYMMDD→YYYY-MM-DD 转换
+  const dataDate = contracts[0]?.reportDate || "unknown";
 
   return buildResponse(rawContracts, dataDate, "CFTC 实时");
 }
