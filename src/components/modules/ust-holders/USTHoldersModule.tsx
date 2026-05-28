@@ -48,18 +48,18 @@ function trendColor(trend: string) {
     case "减持":
       return "text-green-600";
     default:
-      return "text-gray-500";
+      return "text-slate-400";
   }
 }
 
 function trendBadge(trend: string) {
   switch (trend) {
     case "增持":
-      return "bg-red-100 text-red-700 border-red-200";
+      return "bg-red-100 text-red-300 border-red-700/30";
     case "减持":
-      return "bg-green-100 text-green-700 border-green-200";
+      return "bg-green-100 text-green-700 border-green-700/30";
     default:
-      return "bg-gray-100 text-gray-600 border-gray-200";
+      return "bg-gray-100 text-slate-400 border-slate-600/30";
   }
 }
 
@@ -70,7 +70,7 @@ function trendBadge(trend: string) {
 /** 资金流总览面板 */
 function FlowOverview({ summary, fedLatest }: { summary: USTFlowSummary; fedLatest: USTHoldersResponse["fedLatest"] }) {
   const items = [
-    { label: "可流通美债总量", value: summary.totalOutstanding, unit: "万亿美元", color: "text-gray-900", source: summary.totalOutstandingSource },
+    { label: "可流通美债总量", value: summary.totalOutstanding, unit: "万亿美元", color: "text-slate-100", source: summary.totalOutstandingSource },
     { label: "外国持有", value: summary.foreignHoldings, unit: "万亿美元", color: "text-blue-700", source: summary.foreignHoldingsSource },
     { label: "美联储持有", value: summary.fedHoldings, unit: "万亿美元", color: "text-purple-700", sub: `面值 · 截至 ${fedLatest.date}`, source: summary.fedHoldingsSource },
     { label: "国内私人持有", value: summary.domesticHoldings, unit: "万亿美元", color: "text-amber-700", isEstimated: true, source: summary.domesticHoldingsSource },
@@ -82,25 +82,25 @@ function FlowOverview({ summary, fedLatest }: { summary: USTFlowSummary; fedLate
     <Card className="col-span-full border-blue-200 bg-gradient-to-br from-blue-50/50 to-slate-50/50">
       <CardHeader className="pb-2">
         <CardTitle className="text-base">资金流总览</CardTitle>
-        <p className="text-xs text-gray-400">数据快照：{summary.snapshotDate} · 美联储：{fedLatest.trend}</p>
+        <p className="text-xs text-slate-500">数据快照：{summary.snapshotDate} · 美联储：{fedLatest.trend}</p>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-3 gap-3">
           {items.map((item) => (
-            <div key={item.label} className="text-center p-2 rounded-lg bg-white/70" title={item.source}>
-              <p className="text-xs text-gray-500 mb-1">{item.label}{item.isEstimated ? "*" : ""}</p>
+            <div key={item.label} className="text-center p-2 rounded-lg bg-[rgba(15,23,42,0.5)]" title={item.source}>
+              <p className="text-xs text-slate-400 mb-1">{item.label}{item.isEstimated ? "*" : ""}</p>
               <p className={`text-lg font-bold font-mono ${item.color}`}>
                 {item.value > 0 && (item.label.includes("净流动") || item.label.includes("净购买")) ? "+" : ""}{item.value}
                 <span className="text-xs font-normal ml-0.5">{item.unit}</span>
               </p>
               {item.altUnit && (
-                <p className="text-[10px] text-gray-400">{item.altUnit}</p>
+                <p className="text-[10px] text-slate-500">{item.altUnit}</p>
               )}
-              {item.sub && <p className="text-[10px] text-gray-400 mt-0.5">{item.sub}</p>}
+              {item.sub && <p className="text-[10px] text-slate-500 mt-0.5">{item.sub}</p>}
             </div>
           ))}
         </div>
-        <p className="mt-2 text-[10px] text-gray-400 mb-1">
+        <p className="mt-2 text-[10px] text-slate-500 mb-1">
           * 国内私人持有 = 总量 − 外国 − 美联储（估算残差项）· 外资净流动 = TIC 持仓月变动 · 美联储净购买 = FRED TREAST 5周面值变动
         </p>
         <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
@@ -122,9 +122,9 @@ function HolderTable({ holders, z1Date }: { holders: USTHolder[]; z1Date: string
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <CardTitle className="text-base">美债持有者结构</CardTitle>
-            <p className="text-xs text-gray-400">按持有人类别划分 · Z.1 {z1Date} · 可流通美债</p>
+            <p className="text-xs text-slate-500">按持有人类别划分 · Z.1 {z1Date} · 可流通美债</p>
           </div>
-          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="text-xs bg-blue-900/20 text-blue-700 border-blue-200">
             Z.1 L.210
           </Badge>
         </div>
@@ -145,8 +145,8 @@ function HolderTable({ holders, z1Date }: { holders: USTHolder[]; z1Date: string
               <TableRow key={h.category}>
                 <TableCell className="font-medium text-sm">{h.category}</TableCell>
                 <TableCell className="text-right font-mono text-sm">${h.holdings.toFixed(0)}B</TableCell>
-                <TableCell className="text-right text-sm text-gray-500">{h.share}%</TableCell>
-                <TableCell className={`text-right font-mono text-sm ${h.change > 0 ? "text-red-600" : h.change < 0 ? "text-green-600" : "text-gray-400"}`}>
+                <TableCell className="text-right text-sm text-slate-400">{h.share}%</TableCell>
+                <TableCell className={`text-right font-mono text-sm ${h.change > 0 ? "text-red-600" : h.change < 0 ? "text-green-600" : "text-slate-500"}`}>
                   {h.change > 0 ? "+" : ""}{h.change.toFixed(0)}B
                 </TableCell>
                 <TableCell className="text-center">
@@ -158,7 +158,7 @@ function HolderTable({ holders, z1Date }: { holders: USTHolder[]; z1Date: string
             ))}
           </TableBody>
         </Table>
-        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+        <p className="mt-3 text-xs text-slate-500 flex justify-between flex-wrap gap-2">
           <span>来源：Federal Reserve Z.1 L.210 · 季频 · {z1Date} · 期末余额 · 非季调 · 可流通美债（扣除溢价/折价）</span>
           <a
             href="https://www.federalreserve.gov/releases/z1/"
@@ -169,7 +169,7 @@ function HolderTable({ holders, z1Date }: { holders: USTHolder[]; z1Date: string
             原始数据 ↗
           </a>
         </p>
-        <p className="text-[10px] text-gray-400 mt-1">
+        <p className="text-[10px] text-slate-500 mt-1">
           * 银行机构 = U.S.-chartered depository institutions + Credit unions · ** 私人养老金与保险 = Property-casualty insurance companies + Life insurance companies + Private pension funds · 其他 = L.210 Total assets − 上述七类合计 · 变动 = 2025:Q4 持仓水平 − 2024:Q4 持仓水平 · 单位为十亿美元（Billions USD）
         </p>
       </CardContent>
@@ -189,22 +189,22 @@ function BuySellSplit({ holders, z1Date, z1PublicationDate }: { holders: USTHold
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">买卖方对比</CardTitle>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-slate-500">
           Z.1 {z1Date} vs Q4 2024 · 持仓水平变动（{z1PublicationDate} 发布）
         </p>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
           {/* 净增持方 */}
-          <div className="p-3 rounded-lg bg-red-50 border border-red-100">
-            <p className="text-xs text-gray-500 mb-2">净增持方（{buyers.length} 类）</p>
+          <div className="p-3 rounded-lg bg-red-900/20 border border-red-100">
+            <p className="text-xs text-slate-400 mb-2">净增持方（{buyers.length} 类）</p>
             <p className="text-lg font-bold font-mono text-red-600">
               +${totalBuyerChange.toFixed(0)}B
             </p>
             <div className="mt-2 space-y-1">
               {buyers.map((b) => (
                 <div key={b.category} className="flex justify-between text-xs">
-                  <span className="text-gray-600">{b.category}</span>
+                  <span className="text-slate-400">{b.category}</span>
                   <span className="font-mono text-red-600">+{b.change.toFixed(0)}B</span>
                 </div>
               ))}
@@ -212,15 +212,15 @@ function BuySellSplit({ holders, z1Date, z1PublicationDate }: { holders: USTHold
           </div>
 
           {/* 净减持方 */}
-          <div className="p-3 rounded-lg bg-green-50 border border-green-100">
-            <p className="text-xs text-gray-500 mb-2">净减持方（{sellers.length} 类）</p>
+          <div className="p-3 rounded-lg bg-green-900/20 border border-green-100">
+            <p className="text-xs text-slate-400 mb-2">净减持方（{sellers.length} 类）</p>
             <p className="text-lg font-bold font-mono text-green-600">
               {totalSellerChange.toFixed(0)}B
             </p>
             <div className="mt-2 space-y-1">
               {sellers.map((s) => (
                 <div key={s.category} className="flex justify-between text-xs">
-                  <span className="text-gray-600">{s.category}</span>
+                  <span className="text-slate-400">{s.category}</span>
                   <span className="font-mono text-green-600">{s.change.toFixed(0)}B</span>
                 </div>
               ))}
@@ -229,7 +229,7 @@ function BuySellSplit({ holders, z1Date, z1PublicationDate }: { holders: USTHold
         </div>
 
         {/* 结论 */}
-        <div className="mt-3 p-3 rounded-lg bg-blue-50 text-left space-y-1">
+        <div className="mt-3 p-3 rounded-lg bg-blue-900/20 text-left space-y-1">
           <p className="text-xs font-medium text-blue-800">2025年美债需求结构</p>
           <p className="text-xs text-blue-700 leading-relaxed">
             货币市场基金（+${holders.find(h => h.category === "货币市场基金")?.change.toFixed(0)}B）、
@@ -261,9 +261,9 @@ function ForeignHoldersTable({ holders, dataDate }: { holders: ForeignHolderDeta
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <CardTitle className="text-base">海外前10持仓国/地区</CardTitle>
-            <p className="text-xs text-gray-400">{dataDate} TIC 数据 · 月度发布</p>
+            <p className="text-xs text-slate-500">{dataDate} TIC 数据 · 月度发布</p>
           </div>
-          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+          <Badge variant="outline" className="text-xs bg-green-900/20 text-green-700 border-green-700/30">
             TIC
           </Badge>
         </div>
@@ -283,8 +283,8 @@ function ForeignHoldersTable({ holders, dataDate }: { holders: ForeignHolderDeta
           </TableHeader>
           <TableBody>
             {holders.map((h) => (
-              <TableRow key={h.country} className={h.rank <= 3 ? "bg-gray-50/50" : ""}>
-                <TableCell className="text-sm text-gray-400">#{h.rank}</TableCell>
+              <TableRow key={h.country} className={h.rank <= 3 ? "bg-[rgba(15,23,42,0.3)]" : ""}>
+                <TableCell className="text-sm text-slate-500">#{h.rank}</TableCell>
                 <TableCell className="font-medium text-sm">{h.country}</TableCell>
                 <TableCell className="text-right font-mono text-sm">${h.holdings}</TableCell>
                 <TableCell className={`text-right font-mono text-sm ${h.isBuyer ? "text-red-600" : "text-green-600"}`}>
@@ -294,16 +294,16 @@ function ForeignHoldersTable({ holders, dataDate }: { holders: ForeignHolderDeta
                   {h.yoyChangePct > 0 ? "+" : ""}{h.yoyChangePct}%
                 </TableCell>
                 <TableCell className="text-center">
-                  <Badge variant="outline" className={`text-xs ${h.isBuyer ? "bg-red-100 text-red-700 border-red-200" : "bg-green-100 text-green-700 border-green-200"}`}>
+                  <Badge variant="outline" className={`text-xs ${h.isBuyer ? "bg-red-100 text-red-300 border-red-700/30" : "bg-green-100 text-green-700 border-green-700/30"}`}>
                     {h.isBuyer ? "买入" : "卖出"}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-xs text-gray-400">{h.note || "-"}</TableCell>
+                <TableCell className="text-xs text-slate-500">{h.note || "-"}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+        <p className="mt-3 text-xs text-slate-500 flex justify-between flex-wrap gap-2">
           <span>来源：Treasury TIC SLT Table 5 · 月频 · {dataDate}</span>
           <a
             href="https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html"
@@ -322,8 +322,8 @@ function ForeignHoldersTable({ holders, dataDate }: { holders: ForeignHolderDeta
 /** 关键信号提醒 */
 function KeySignals({ signals }: { signals: USTHoldersResponse["keySignals"] }) {
   const typeStyles: Record<string, string> = {
-    warning: "border-amber-300 bg-amber-50",
-    info: "border-blue-300 bg-blue-50",
+    warning: "border-amber-300 bg-amber-900/20",
+    info: "border-blue-300 bg-blue-900/20",
     positive: "border-emerald-300 bg-emerald-50",
   };
 
@@ -345,9 +345,9 @@ function KeySignals({ signals }: { signals: USTHoldersResponse["keySignals"] }) 
               <Badge variant="outline" className="text-xs">
                 {typeLabels[s.type]}
               </Badge>
-              <span className="text-sm font-semibold text-gray-800">{s.title}</span>
+              <span className="text-sm font-semibold text-slate-200">{s.title}</span>
             </div>
-            <p className="text-xs text-gray-600 leading-relaxed">{s.desc}</p>
+            <p className="text-xs text-slate-400 leading-relaxed">{s.desc}</p>
           </div>
         ))}
       </CardContent>
@@ -387,7 +387,7 @@ export default function USTHoldersModule() {
           titleEn="UST Buyers & Sellers"
           description="追踪美债市场主要买卖方的持仓变化：谁在买？谁在卖？外资、美联储、银行、基金、散户各方的边际行为及其市场含义。"
         />
-        <div className="flex items-center justify-center py-20 text-sm text-gray-400">
+        <div className="flex items-center justify-center py-20 text-sm text-slate-500">
           <span className="animate-pulse">加载持有者结构数据...</span>
         </div>
       </section>
@@ -403,7 +403,7 @@ export default function USTHoldersModule() {
           titleEn="UST Buyers & Sellers"
           description="追踪美债市场主要买卖方的持仓变化。"
         />
-        <div className="p-8 rounded-lg bg-red-50 border border-red-200 text-center">
+        <div className="p-8 rounded-lg bg-red-900/25 border border-red-500/25 text-center">
           <p className="text-red-600 font-medium">数据加载失败</p>
           <p className="text-sm text-red-400 mt-1">{error}</p>
         </div>
@@ -447,8 +447,8 @@ export default function USTHoldersModule() {
       </div>
 
       {/* 数据来源引用 */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <p className="text-xs text-gray-400 mb-2">数据引用：</p>
+      <div className="mt-6 pt-4 border-t border-slate-600/30">
+        <p className="text-xs text-slate-500 mb-2">数据引用：</p>
         <div className="flex flex-wrap gap-3">
           {data.dataSources.map((ds) => (
             <a
@@ -462,7 +462,7 @@ export default function USTHoldersModule() {
             </a>
           ))}
         </div>
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-xs text-slate-500 mt-2">
           Z.1 数据截至 {data.z1Date}（{data.z1PublicationDate} 发布）· Fed 数据截至 2026-05-20 · TIC 数据截至 2026-03
         </p>
       </div>

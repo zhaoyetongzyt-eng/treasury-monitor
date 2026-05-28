@@ -87,28 +87,28 @@ function HoldingsTrendChart({ data }: { data: JapanHoldingsTrend[] }) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">日本美债持仓趋势（TIC 月频）</CardTitle>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-slate-400">
           过去 27 个月持仓走势（十亿美元）。虚线 = 1,150 参考线
         </p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.08)" />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 11, fill: "#888" }}
+              tick={{ fontSize: 11, fill: "#64748b" }}
               tickLine={false}
               interval="preserveStartEnd"
             />
             <YAxis
               domain={[1000, 1280]}
-              tick={{ fontSize: 11, fill: "#888" }}
+              tick={{ fontSize: 11, fill: "#64748b" }}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
-              contentStyle={{ fontSize: 12, borderRadius: 8 }}
+              contentStyle={{ fontSize: 12, borderRadius: 8, background: "rgba(15,23,42,0.9)", border: "1px solid rgba(148,163,184,0.15)", color: "#e2e8f0" }}
               formatter={(v) => [String(v) + " B", "持仓"]}
             />
             <Line
@@ -134,7 +134,7 @@ function HoldingsTrendChart({ data }: { data: JapanHoldingsTrend[] }) {
         <div className="mt-3 grid grid-cols-6 gap-1">
           {last6.map((d) => (
             <div key={d.date} className="text-center">
-              <p className="text-[10px] text-gray-400">{d.date.slice(2)}</p>
+              <p className="text-[10px] text-slate-500">{d.date.slice(2)}</p>
               <p className="text-xs font-medium">{d.holdings}</p>
               <p className={`text-[10px] ${d.change >= 0 ? "text-red-500" : "text-green-500"}`}>
                 {d.change >= 0 ? "+" : ""}{d.change}B
@@ -142,7 +142,7 @@ function HoldingsTrendChart({ data }: { data: JapanHoldingsTrend[] }) {
             </div>
           ))}
         </div>
-        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+        <p className="mt-3 text-xs text-slate-500 flex justify-between flex-wrap gap-2">
           <span>来源：Treasury TIC SLT Table 5 · 月频</span>
           <a
             href="https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html"
@@ -167,14 +167,14 @@ function WeeklyFlowChart({ data, freshness }: { data: JapanWeeklyFlow[]; freshne
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">日本对外国证券投资周度流向（MOF）</CardTitle>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-slate-400">
           日本居民对外国中长期/短期债券与股票/投资基金的净买入（十亿日元）。
           <br />
           <span className="text-amber-600 font-medium">
             ⚠ MOF 数据为全部外国证券合计，不可直接拆分为美债。正值 = 净买入海外资产。
           </span>
           {freshness && (
-            <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-green-50 text-green-700 border border-green-200">
+            <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-green-900/20 text-green-700 border border-green-700/30">
               {freshness}
             </span>
           )}
@@ -183,19 +183,19 @@ function WeeklyFlowChart({ data, freshness }: { data: JapanWeeklyFlow[]; freshne
       <CardContent>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.08)" />
             <XAxis
               dataKey="weekStart"
-              tick={{ fontSize: 11, fill: "#888" }}
+              tick={{ fontSize: 11, fill: "#64748b" }}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 11, fill: "#888" }}
+              tick={{ fontSize: 11, fill: "#64748b" }}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
-              contentStyle={{ fontSize: 12, borderRadius: 8 }}
+              contentStyle={{ fontSize: 12, borderRadius: 8, background: "rgba(15,23,42,0.9)", border: "1px solid rgba(148,163,184,0.15)", color: "#e2e8f0" }}
               formatter={(v, n) => {
                 const val = Number(v);
                 const label = String(n) === "netForeignBonds" ? "外国债券（含中长期+短期）" : "外国股票/投资基金";
@@ -235,13 +235,13 @@ function WeeklyFlowChart({ data, freshness }: { data: JapanWeeklyFlow[]; freshne
           </BarChart>
         </ResponsiveContainer>
 
-        <div className="mt-3 p-2 rounded bg-amber-50 border border-amber-100">
+        <div className="mt-3 p-2 rounded bg-amber-900/20 border border-amber-700/30">
           <p className="text-[11px] text-amber-700 leading-relaxed">
             <strong>口径说明：</strong>MOF 统计的是日本居民对<b>全部外国</b>（不限于美国）的中长期债券、短期债券和股票/投资基金的净买入/净卖出。
             外国中长期债券可能以美债为主，但也包含欧债、澳债等。如需日本对美债专项持仓与变动，请参见上方 TIC 月频图表。
           </p>
         </div>
-        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+        <p className="mt-3 text-xs text-slate-500 flex justify-between flex-wrap gap-2">
           <span>来源：日本财务省（MOF）证券交易统计 · 周频 · 2014年起正值=净买入</span>
           <a
             href="https://www.mof.go.jp/english/policy/international_policy/reference/itn_transactions_in_securities/index.htm"
@@ -274,14 +274,14 @@ function KeyMetricsPanel({
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">日本关键指标快照</CardTitle>
-        <p className="text-xs text-gray-500 flex items-center gap-2">
+        <p className="text-xs text-slate-400 flex items-center gap-2">
           <span>{dataDate}</span>
           <span className={`px-1.5 py-0.5 rounded text-[10px] border ${
             freshness === "实时"
-              ? "bg-green-50 text-green-700 border-green-200"
+              ? "bg-green-900/20 text-green-700 border-green-700/30"
               : freshness === "部分实时"
               ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-              : "bg-amber-50 text-amber-700 border-amber-200"
+              : "bg-amber-900/20 text-amber-700 border-amber-200"
           }`}>
             {freshness === "实时" ? "✅ FRED + MOF 实时" : freshness === "部分实时" ? "⚡ 部分实时" : "⚠ 降级模式"}
           </span>
@@ -290,22 +290,22 @@ function KeyMetricsPanel({
       <CardContent>
         <div className="grid grid-cols-5 gap-3">
           {metrics.map((item) => (
-            <div key={item.label} className="text-center p-2 rounded-lg bg-gray-50">
-              <p className="text-[11px] text-gray-500 mb-1">{item.label}</p>
-              <p className="text-lg font-bold text-gray-800">
+            <div key={item.label} className="text-center p-2 rounded-lg bg-[rgba(15,23,42,0.4)]">
+              <p className="text-[11px] text-slate-400 mb-1">{item.label}</p>
+              <p className="text-lg font-bold text-slate-200">
                 {item.value}
-                <span className="text-xs font-normal text-gray-400 ml-0.5">{item.unit}</span>
+                <span className="text-xs font-normal text-slate-500 ml-0.5">{item.unit}</span>
               </p>
               {item.change !== 0 && (
                 <p className={`text-xs mt-0.5 ${item.change >= 0 ? "text-red-500" : "text-green-500"}`}>
                   {item.change >= 0 ? "+" : ""}{item.change.toFixed(2)}
                 </p>
               )}
-              <p className="text-[10px] text-gray-400 mt-1 leading-tight">{item.sub}</p>
+              <p className="text-[10px] text-slate-500 mt-1 leading-tight">{item.sub}</p>
             </div>
           ))}
         </div>
-        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+        <p className="mt-3 text-xs text-slate-500 flex justify-between flex-wrap gap-2">
           <span>来源：FRED (DEXJPUS · IRLTLT01JPM156N · TRESEGJPM052N · DGS10) · BOJ 政策利率</span>
           <span className="flex gap-2">
             <a
@@ -353,7 +353,7 @@ function MetricsSkeleton() {
       <CardContent>
         <div className="grid grid-cols-5 gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="text-center p-2 rounded-lg bg-gray-50">
+            <div key={i} className="text-center p-2 rounded-lg bg-[rgba(15,23,42,0.4)]">
               <Skeleton className="h-3 w-16 mx-auto mb-1" />
               <Skeleton className="h-6 w-20 mx-auto" />
               <Skeleton className="h-3 w-24 mx-auto mt-1" />
@@ -418,9 +418,9 @@ function JapanSignals({
   ];
 
   const typeStyles: Record<string, string> = {
-    bullish: "border-red-200 bg-red-50",
-    bearish: "border-green-200 bg-green-50",
-    neutral: "border-gray-200 bg-gray-50",
+    bullish: "border-red-700/30 bg-red-900/20",
+    bearish: "border-green-700/30 bg-green-900/20",
+    neutral: "border-slate-600/30 bg-[rgba(15,23,42,0.4)]",
   };
   const typeLabels: Record<string, string> = {
     bullish: "对美债利好",
@@ -440,12 +440,12 @@ function JapanSignals({
               <Badge variant="outline" className="text-xs">
                 {typeLabels[s.type]}
               </Badge>
-              <span className="text-sm font-semibold text-gray-800">{s.title}</span>
+              <span className="text-sm font-semibold text-slate-200">{s.title}</span>
             </div>
-            <p className="text-xs text-gray-600 leading-relaxed">{s.desc}</p>
+            <p className="text-xs text-slate-400 leading-relaxed">{s.desc}</p>
           </div>
         ))}
-        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+        <p className="mt-3 text-xs text-slate-500 flex justify-between flex-wrap gap-2">
           <span>来源：TIC SLT Table 5 · FRED · 日本MOF</span>
           <span className="flex gap-2">
             <a
@@ -523,13 +523,13 @@ export default function JapanSubModule() {
     <div className="lg:col-span-2">
       {/* 分区标题 */}
       <div className="flex items-center gap-3 mb-4 mt-2">
-        <div className="h-px flex-1 bg-gray-200" />
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-200">
-          <span className="w-3 h-3 rounded-full bg-red-500" />
-          <span className="text-sm font-semibold text-red-700">日本视角</span>
+        <div className="h-px flex-1 bg-slate-700/40" />
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-900/25 border border-red-500/25">
+          <span className="w-3 h-3 rounded-full bg-red-900/200" />
+          <span className="text-sm font-semibold text-red-300">日本视角</span>
           <span className="text-xs text-red-400">Japan Lens</span>
         </div>
-        <div className="h-px flex-1 bg-gray-200" />
+        <div className="h-px flex-1 bg-slate-700/40" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -596,7 +596,7 @@ export default function JapanSubModule() {
 
       {/* 数据来源引用 */}
       <div className="mt-4 pt-3 border-t border-red-100">
-        <p className="text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+        <p className="text-xs text-slate-500 flex justify-between flex-wrap gap-2">
           <span>
             数据来源：FRED (DEXJPUS, IRLTLT01JPM156N, TRESEGJPM052N, DGS10) · 日本MOF证券交易统计 · Treasury TIC
             {freshness !== "实时" && (

@@ -56,7 +56,7 @@ function LoadingSkeleton() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="p-3 rounded-lg border border-gray-100 bg-gray-50">
+                  <div key={i} className="p-3 rounded-lg border border-slate-700/40 bg-[rgba(15,23,42,0.5)]">
                     <Skeleton className="h-4 w-16 mb-2" />
                     <Skeleton className="h-8 w-20 mb-2" />
                     <Skeleton className="h-4 w-24" />
@@ -74,9 +74,9 @@ function LoadingSkeleton() {
 }
 
 const trendBadge = (trend: string) => {
-  if (trend === "上升") return "border-red-300 text-red-700 bg-red-50";
+  if (trend === "上升") return "border-red-300 text-red-300 bg-red-900/20";
   if (trend === "下降") return "border-emerald-300 text-emerald-700 bg-emerald-50";
-  return "border-gray-300 text-gray-700 bg-gray-50";
+  return "border-slate-600/40 text-slate-300 bg-[rgba(15,23,42,0.4)]";
 };
 
 const SECTOR_ICONS: Record<string, string> = {
@@ -103,7 +103,7 @@ function LeverageSummary({ data, dataDate, dataSource }: {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">三部门杠杆率 · 债务/GDP（%）</CardTitle>
-          <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+          <Badge className="text-xs bg-blue-900/20 text-blue-700 border-blue-200">
             {dataDate}
           </Badge>
         </div>
@@ -113,12 +113,12 @@ function LeverageSummary({ data, dataDate, dataSource }: {
           {data.map((item) => (
             <div
               key={item.sector}
-              className="p-3 rounded-lg border border-gray-200 bg-white hover:shadow-sm transition-shadow"
+              className="p-3 rounded-lg border border-slate-600/30 bg-[rgba(15,23,42,0.5)] hover:shadow-[0_0_12px_rgba(59,130,246,0.1)] transition-shadow"
             >
-              <p className="text-xs text-gray-500 mb-1">
+              <p className="text-xs text-slate-400 mb-1">
                 {SECTOR_ICONS[item.sector] || ""} {item.sector}
               </p>
-              <p className="text-2xl font-bold text-gray-900">{item.debtToGDP}%</p>
+              <p className="text-2xl font-bold text-slate-100">{item.debtToGDP}%</p>
               <div className="flex items-center gap-2 mt-2">
                 <span className={`text-xs font-mono ${item.yoyChange > 0 ? "text-red-600" : "text-emerald-600"}`}>
                   {item.yoyChange > 0 ? "+" : ""}{item.yoyChange}pp
@@ -128,14 +128,14 @@ function LeverageSummary({ data, dataDate, dataSource }: {
                 </Badge>
               </div>
               {yoyRefQuarter && (
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-[10px] text-slate-500 mt-1">
                   同比变化，较{yoyRefQuarter}
                 </p>
               )}
             </div>
           ))}
         </div>
-        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+        <p className="mt-3 text-xs text-slate-500 flex justify-between flex-wrap gap-2">
           <span>数据来源：{dataSource}</span>
           <a
             href="https://data.bis.org/topics/TOTAL_CREDIT"
@@ -203,7 +203,7 @@ function LeverageChart({ data, isLoading }: {
             />
           </LineChart>
         </ResponsiveContainer>
-        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+        <p className="mt-3 text-xs text-slate-500 flex justify-between flex-wrap gap-2">
           <span>来源：BIS Total Credit · 市场价值计价 · 经断点调整 · 占 GDP 百分比</span>
           <a
             href="https://data.bis.org/topics/TOTAL_CREDIT"
@@ -226,14 +226,14 @@ function RiskNotes() {
         <CardTitle className="text-base">杠杆风险提示</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex items-start gap-2 p-2 rounded bg-amber-50 border border-amber-100">
+        <div className="flex items-start gap-2 p-2 rounded bg-amber-900/20 border border-amber-700/30">
           <span className="text-amber-500 text-sm mt-0.5">⚠️</span>
           <div>
             <p className="text-sm font-medium text-amber-800">杠杆基金长端净空头轧空风险</p>
             <p className="text-xs text-amber-600 mt-0.5">CFTC显示杠杆基金在美债期货长端维持显著净空头。若经济数据转弱、避险买盘升温或降息预期快速上修，空头回补可能放大长端收益率下行。历史分位需基于同一合约口径回溯计算。</p>
           </div>
         </div>
-        <div className="flex items-start gap-2 p-2 rounded bg-red-50 border border-red-100">
+        <div className="flex items-start gap-2 p-2 rounded bg-red-900/20 border border-red-100">
           <span className="text-red-500 text-sm mt-0.5">🔴</span>
           <div>
             <p className="text-sm font-medium text-red-800">基差交易去杠杆风险</p>
@@ -247,7 +247,7 @@ function RiskNotes() {
             <p className="text-xs text-emerald-600 mt-0.5">家庭与非金融企业债务/GDP自疫情后高位回落，私人部门杠杆压力下降，有助于降低由私人信用扩张触发的系统性风险。</p>
           </div>
         </div>
-        <div className="flex items-start gap-2 p-2 rounded bg-blue-50 border border-blue-100">
+        <div className="flex items-start gap-2 p-2 rounded bg-blue-900/20 border border-blue-700/30">
           <span className="text-blue-500 text-sm mt-0.5">ℹ️</span>
           <div>
             <p className="text-sm font-medium text-blue-800">政府杠杆率高位波动</p>
@@ -297,8 +297,8 @@ export default function LeverageModule() {
           titleEn="Leverage Ratios"
           description="追踪美国三部门（家庭/企业/政府）债务占 GDP 比率，评估系统性杠杆风险与潜在去杠杆压力。"
         />
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="py-6 text-center text-red-700">
+        <Card className="border-red-700/30 bg-red-900/20">
+          <CardContent className="py-6 text-center text-red-300">
             <p className="font-medium">数据加载失败</p>
             <p className="text-sm mt-1 text-red-500">{error}</p>
             <button

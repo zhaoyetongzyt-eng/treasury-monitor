@@ -26,12 +26,13 @@ const navItems: NavItem[] = [
 
 export default function NavBar() {
   const [activeId, setActiveId] = useState("status");
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPos = window.scrollY + 100;
+      setScrolled(window.scrollY > 20);
 
-      // 从后往前遍历 navItems，避免 filter(Boolean) 导致的索引错位
+      const scrollPos = window.scrollY + 100;
       for (let i = navItems.length - 1; i >= 0; i--) {
         const el = document.getElementById(navItems[i].id);
         if (!el) continue;
@@ -56,26 +57,51 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+    <nav
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        scrolled
+          ? "bg-[rgba(11,17,32,0.92)] backdrop-blur-xl border-b border-[rgba(148,163,184,0.1)] shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
+          : "bg-[rgba(11,17,32,0.75)] backdrop-blur-md border-b border-[rgba(148,163,184,0.06)]"
+      )}
+    >
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center h-12 gap-1 overflow-x-auto scrollbar-hide">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => scrollTo(item.id)}
-              className={cn(
-                "shrink-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap",
-                activeId === item.id
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-              )}
-            >
-              {item.number && (
-                <span className="mr-1 opacity-70">{item.number}</span>
-              )}
-              {item.title}
-            </button>
-          ))}
+        <div className="flex items-center h-13 gap-0">
+          {/* 品牌名称 */}
+          <div className="shrink-0 flex items-center gap-2 pr-4 mr-2 border-r border-[rgba(148,163,184,0.12)]">
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+              <span className="text-white text-[10px] font-bold">T</span>
+            </div>
+            <span className="text-xs font-semibold text-slate-200 tracking-wide whitespace-nowrap">
+              Treasury Monitor
+            </span>
+          </div>
+
+          {/* 导航项 */}
+          <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide flex-1 py-2">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => scrollTo(item.id)}
+                className={cn(
+                  "shrink-0 px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 whitespace-nowrap",
+                  activeId === item.id
+                    ? "bg-blue-600/90 text-white shadow-[0_0_12px_rgba(59,130,246,0.3)]"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-[rgba(148,163,184,0.08)]"
+                )}
+              >
+                {item.number && (
+                  <span className={cn(
+                    "mr-1 text-[10px]",
+                    activeId === item.id ? "opacity-70" : "opacity-40"
+                  )}>
+                    {item.number}
+                  </span>
+                )}
+                {item.title}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </nav>

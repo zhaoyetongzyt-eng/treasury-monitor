@@ -21,15 +21,15 @@ import type { CFTCPosition, TICHolding } from "@/types";
 // 颜色工具（中国惯例：涨红跌绿）
 // ============================================================
 const positionColor = (pos: string) => {
-  if (pos === "净多头") return "bg-emerald-100 text-emerald-800 border-emerald-200";
-  if (pos === "净空头") return "bg-red-100 text-red-800 border-red-200";
-  return "bg-gray-100 text-gray-800 border-gray-200";
+  if (pos === "净多头") return "bg-emerald-900/30 text-emerald-300 border-emerald-700/40";
+  if (pos === "净空头") return "bg-red-100 text-red-800 border-red-700/30";
+  return "bg-gray-100 text-slate-200 border-slate-600/30";
 };
 
 const trendColor = (trend: string) => {
   if (trend === "上升") return "text-red-600";
   if (trend === "下降") return "text-emerald-600";
-  return "text-gray-600";
+  return "text-slate-400";
 };
 
 // ============================================================
@@ -38,10 +38,10 @@ const trendColor = (trend: string) => {
 function SkeletonRow() {
   return (
     <TableRow>
-      <TableCell><div className="h-4 w-20 bg-gray-200 rounded animate-pulse" /></TableCell>
-      <TableCell><div className="h-4 w-16 bg-gray-200 rounded animate-pulse" /></TableCell>
-      <TableCell className="text-right"><div className="h-4 w-16 bg-gray-200 rounded animate-pulse ml-auto" /></TableCell>
-      <TableCell className="text-right"><div className="h-4 w-20 bg-gray-200 rounded animate-pulse ml-auto" /></TableCell>
+      <TableCell><div className="h-4 w-20 bg-slate-700/40 rounded animate-pulse" /></TableCell>
+      <TableCell><div className="h-4 w-16 bg-slate-700/40 rounded animate-pulse" /></TableCell>
+      <TableCell className="text-right"><div className="h-4 w-16 bg-slate-700/40 rounded animate-pulse ml-auto" /></TableCell>
+      <TableCell className="text-right"><div className="h-4 w-20 bg-slate-700/40 rounded animate-pulse ml-auto" /></TableCell>
     </TableRow>
   );
 }
@@ -83,7 +83,7 @@ function CFTCTable({
                 <XAxis type="number" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} fontSize={11} />
                 <YAxis type="category" dataKey="name" fontSize={11} width={80} />
                 <Tooltip
-                  contentStyle={{ fontSize: 12, borderRadius: 8 }}
+                  contentStyle={{ fontSize: 12, borderRadius: 8, background: "rgba(15,23,42,0.9)", border: "1px solid rgba(148,163,184,0.15)", color: "#e2e8f0" }}
                   formatter={(v) => [Number(v).toLocaleString() + " 手", "净头寸"]}
                 />
                 <Bar dataKey="net" radius={[0, 4, 4, 0]}>
@@ -135,11 +135,11 @@ function CFTCTable({
             </TableBody>
           </Table>
           {!isLoading && (
-            <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">
-              <p className="text-xs text-gray-400">
+            <div className="mt-3 pt-3 border-t border-slate-700/40 space-y-1">
+              <p className="text-xs text-slate-500">
                 来源：CFTC Traders in Financial Futures, Futures Only。周频 · 数据截至 {dataDate}
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-slate-500">
                 注：净头寸 = Long − Short，不含 Spreading。长端为 10Y Note、Ultra 10Y、UST Bond、Ultra UST Bond 合计；
                 前端为 2Y Note、5Y Note 合计。
                 Dealer/Intermediary 为 CFTC 中介分类，非基差交易直接映射。
@@ -198,7 +198,7 @@ function TICTable({
                 <XAxis type="number" tickFormatter={(v) => `$${v}B`} fontSize={11} />
                 <YAxis type="category" dataKey="name" fontSize={11} width={70} />
                 <Tooltip
-                  contentStyle={{ fontSize: 12, borderRadius: 8 }}
+                  contentStyle={{ fontSize: 12, borderRadius: 8, background: "rgba(15,23,42,0.9)", border: "1px solid rgba(148,163,184,0.15)", color: "#e2e8f0" }}
                   formatter={(v, n) => {
                     const val = Number(v);
                     return [`$${val}B`, String(n) === "amount" ? "持仓规模" : "月变动"];
@@ -249,7 +249,7 @@ function TICTable({
                       <TableCell className="text-right font-mono">${row.amount}B</TableCell>
                       <TableCell
                         className={`text-right font-mono ${
-                          row.change > 0 ? "text-red-600" : row.change < 0 ? "text-emerald-600" : "text-gray-500"
+                          row.change > 0 ? "text-red-600" : row.change < 0 ? "text-emerald-600" : "text-slate-400"
                         }`}
                       >
                         {row.change > 0 ? "+" : ""}
@@ -264,7 +264,7 @@ function TICTable({
           </Table>
           {!isLoading && (
             <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-slate-500">
                 来源：Treasury TIC SLT Table 5 · 月频 · {dataDate}
               </p>
               <div className="flex items-center gap-3">
@@ -349,7 +349,7 @@ export default function HoldingsModule() {
         {/* CFTC 部分 */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <h3 className="text-sm font-semibold text-gray-700">
+            <h3 className="text-sm font-semibold text-slate-300">
               A. 期货持仓格局
             </h3>
             {cftcDate && (
@@ -358,14 +358,14 @@ export default function HoldingsModule() {
               </Badge>
             )}
             {!cftcLoading && !cftcError && (
-              <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+              <Badge className="text-xs bg-blue-900/20 text-blue-700 border-blue-200">
                 周频
               </Badge>
             )}
           </div>
 
           {cftcError ? (
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-red-700/30 bg-red-900/20">
               <CardContent className="py-6 text-center text-red-600 text-sm">
                 {cftcError}
                 <br />
@@ -382,7 +382,7 @@ export default function HoldingsModule() {
         {/* TIC 部分 */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <h3 className="text-sm font-semibold text-gray-700">
+            <h3 className="text-sm font-semibold text-slate-300">
               B. 海外持仓结构
             </h3>
             {ticDate && (
@@ -391,14 +391,14 @@ export default function HoldingsModule() {
               </Badge>
             )}
             {!ticLoading && !ticError && (
-              <Badge className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+              <Badge className="text-xs bg-amber-900/20 text-amber-700 border-amber-200">
                 {ticSource.includes("内置") ? "内置·滞后" : "滞后约6周"}
               </Badge>
             )}
           </div>
 
           {ticError ? (
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-red-700/30 bg-red-900/20">
               <CardContent className="py-6 text-center text-red-600 text-sm">
                 {ticError}
                 <br />
