@@ -79,7 +79,7 @@ function FlowOverview({ summary, fedLatest }: { summary: USTFlowSummary; fedLate
   ];
 
   return (
-    <Card className="col-span-full border-blue-200 bg-gradient-to-br from-blue-50/50 to-slate-50/50">
+    <Card className="border-blue-200 bg-gradient-to-br from-blue-50/50 to-slate-50/50">
       <CardHeader className="pb-2">
         <CardTitle className="text-base">资金流总览</CardTitle>
         <p className="text-xs text-gray-400">数据快照：{summary.snapshotDate} · 美联储：{fedLatest.trend}</p>
