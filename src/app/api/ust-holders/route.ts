@@ -18,6 +18,12 @@ export const revalidate = 3600;
 // Z.1 L.210 Q4 2025 部门持仓数据（来源：FRED, 2026-03-19 发布）
 // Z.1 L.210 Q4 2024 部门持仓数据（来源：Fed, 2025-03-13 发布）
 // 单位：十亿美元 (Billions USD) · 市值计价
+// 
+// 注意：Z.1 的 total($28.5T) 与 MSPD 面值($30.66T) 存在差异，原因是：
+//   1. 市值 vs 面值差异（低息老券市值低于面值）
+//   2. Z.1 L.210 不完全覆盖 MSPD 中所有可流通券（如部分 CMBs 等）
+// 本 API 的 flowSummary 使用 MSPD 面值作为"可流通美债总存量"基准，
+// Z.1 仅用于部门持仓结构分析（Layer3 年度结构变化），两者不直接等同。
 // ============================================================
 const Z1_Q4_2025 = {
   total: 28497.9,
@@ -194,22 +200,23 @@ const Z1_Q3_2025 = {
 // 资金流汇总（多源拼合，口径标注清晰）
 // ============================================================
 const flowSummary = {
-  // 可流通美债约 $28.5T (Z.1 Q4 2025 所有部门持有合计 ≈ $28.5T)
-  totalOutstanding: 28.50,           // 万亿美元
-  totalOutstandingSource: "Z.1 L.210 Q4 2025 · Treasury MSPD 可流通口径",
+  // 可流通美债总存量 $30.66T (Treasury MSPD 面值口径, 2026-04-30)
+  // 来源: https://fiscaldata.treasury.gov/datasets/monthly-statement-public-debt/summary-of-treasury-securities-outstanding
+  totalOutstanding: 30.66,           // 万亿美元 (MSPD 面值: $30,656.1B)
+  totalOutstandingSource: "Treasury MSPD · 2026-04-30 · 可流通美债面值 (包含 Bills/Notes/Bonds/TIPS/FRNs)",
   
-  // 市场自由流通量 = 总存量 − 美联储SOMA (面值口径)
-  marketFloat: 24.04,                // 万亿美元 (28.50 - 4.46)
-  marketFloatSource: "估算 (total outstanding − Fed SOMA · FRED TREAST 面值)",
+  // 市场自由流通量 = 总存量 − 美联储SOMA (面值口径, 同源可比)
+  marketFloat: 26.20,                // 万亿美元 (30.66 - 4.46)
+  marketFloatSource: "估算 (MSPD total − Fed SOMA · FRED TREAST 面值)",
   
   fedHoldings: 4.46,                 // 万亿美元 (FRED TREAST May 20, 2026: $4,457.7B 面值)
   fedHoldingsSource: "FRED TREAST · 2026-05-20 · 面值",
   
   foreignHoldings: 9.35,             // 万亿美元 (TIC March 2026: $9,348.7B)
-  foreignHoldingsSource: "TIC SLT Table 5 · 2026-03 · 期末持仓",
+  foreignHoldingsSource: "TIC SLT Table 5 · 2026-03 · 期末持仓 · 面值",
   
-  domesticHoldings: 14.69,           // 万亿美元 (28.50 - 4.46 - 9.35, 估算残差项)
-  domesticHoldingsSource: "估算 (total − foreign − fed)",
+  domesticHoldings: 16.85,           // 万亿美元 (30.66 - 4.46 - 9.35, 估算残差项)
+  domesticHoldingsSource: "估算 (MSPD total − TIC foreign − FRED Fed SOMA) · 含ETF/州地方/非金融企业/经纪商/货币基金/共同基金等",
   
   netForeignFlow: -138.4,            // 十亿美元 (TIC 3月 9348.7B vs 2月 9487.1B = -138.4B)
   netForeignFlowSource: "TIC SLT Table 5 · 2026-03 vs 2026-02 · 持仓月变动",
