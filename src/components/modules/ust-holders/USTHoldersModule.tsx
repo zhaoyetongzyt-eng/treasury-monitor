@@ -102,7 +102,7 @@ function Layer1StockStructure({ summary, fedLatest }: { summary: USTFlowSummary;
       <CardHeader className="pb-2">
         <CardTitle className="text-base">美债持有人结构：谁持有存量？</CardTitle>
         <p className="text-xs text-gray-400">
-          数据快照：{summary.snapshotDate} · 注：包含美联储 SOMA 持有
+          可流通美债总存量截至 2026-04-30（Treasury MSPD 面值）· 其余数据截至 2026-05-20 · 包含美联储 SOMA 持有
         </p>
       </CardHeader>
       <CardContent>
