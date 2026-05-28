@@ -79,6 +79,8 @@ export interface ForeignHolderDetail {
 export interface USTFlowSummary {
   totalOutstanding: number;    // 美债总存量（万亿美元）
   totalOutstandingSource?: string;
+  marketFloat?: number;        // 市场自由流通量（万亿美元）= totalOutstanding - fedHoldings
+  marketFloatSource?: string;
   fedHoldings: number;         // 美联储持有（万亿美元）
   fedHoldingsSource?: string;
   foreignHoldings: number;     // 外国持有（万亿美元）
@@ -90,6 +92,21 @@ export interface USTFlowSummary {
   netFedFlow: number;          // 美联储净购买（十亿美元）
   netFedFlowSource?: string;
   snapshotDate: string;        // 数据快照日期
+}
+
+/** 边际流向 - 单个主体 */
+export interface MarginalFlowItem {
+  category: string;             // 主体名称
+  change: number;               // 变动额（十亿美元）
+  isBuyer: boolean;             // 增持/减持
+  source: string;               // 数据来源标注
+}
+
+/** 边际流向 - 单时间维度数据 */
+export interface MarginalFlowData {
+  period: string;               // "1M" | "3M" | "12M"
+  dataDate: string;             // 数据截止日期
+  flows: MarginalFlowItem[];    // 各主体流向
 }
 
 /** 日本视角 - 持仓趋势 */

@@ -167,12 +167,40 @@ const foreignTop10 = [
 ];
 
 // ============================================================
+// Z.1 L.210 Q3 2025 部门持仓数据（用于3M季度环比）
+// 来源：FRED Z.1 2025-Q3 release, 2025-12-11 发布
+// 单位：十亿美元 (Billions USD) · 市值计价
+// ============================================================
+const Z1_Q3_2025 = {
+  total: 28151.2,
+  household: 2908.7,
+  nonfinancialCorporate: 128.3,
+  stateLocalGovt: 1612.4,
+  monetaryAuthority: 3825.0,       // Fed SOMA Q3 2025 (市值)
+  depositoryInstitutions: 1692.1,
+  creditUnions: 64.5,
+  propertyCasualtyIns: 439.8,
+  lifeInsurance: 201.5,
+  privatePension: 582.3,
+  stateLocalRetirement: 521.0,
+  moneyMarketFunds: 3445.2,
+  mutualFunds: 1610.8,
+  etfs: 678.4,
+  restOfWorld: 9058.6,
+  other: 2382.6,
+} as const;
+
+// ============================================================
 // 资金流汇总（多源拼合，口径标注清晰）
 // ============================================================
 const flowSummary = {
   // 可流通美债约 $28.5T (Z.1 Q4 2025 所有部门持有合计 ≈ $28.5T)
   totalOutstanding: 28.50,           // 万亿美元
   totalOutstandingSource: "Z.1 L.210 Q4 2025 · Treasury MSPD 可流通口径",
+  
+  // 市场自由流通量 = 总存量 − 美联储SOMA (面值口径)
+  marketFloat: 24.04,                // 万亿美元 (28.50 - 4.46)
+  marketFloatSource: "估算 (total outstanding − Fed SOMA · FRED TREAST 面值)",
   
   fedHoldings: 4.46,                 // 万亿美元 (FRED TREAST May 20, 2026: $4,457.7B 面值)
   fedHoldingsSource: "FRED TREAST · 2026-05-20 · 面值",
@@ -204,8 +232,61 @@ const fedLatest = {
 };
 
 // ============================================================
-// 关键信号解读
+// 边际流向数据（多时间维度：1M / 3M / 12M）
+// 数据源：TIC Table 5 (月频·面值) / FRED TREAST (周频·面值) / Z.1 L.210 (季频·市值)
+// 注意：不同数据源口径不同（面值 vs 市值），不可直接横向对比
 // ============================================================
+
+function buildMarginalFlows() {
+  // --- 辅助：Z.1 Q4 2025 vs Q3 2025 季度环比变动 ---
+  function calcQoQ(f25q4: number, f25q3: number) {
+    const change = +(f25q4 - f25q3).toFixed(1);
+    return change;
+  }
+
+  // --- 1M 数据（最新月度：TIC 2026-03 vs 2026-02 / FRED 近5周） ---
+  const flows1M = [
+    { category: "外国部门 (TIC 月频)", change: -138.4, isBuyer: false, source: "TIC SLT Table 5 · 2026-03 vs 2026-02 · 持仓月变动 · 面值" },
+    { category: "美联储 SOMA (FRED 周频)", change: +37.4, isBuyer: true, source: "FRED TREAST · 2026-04-22→2026-05-20 · 5周累计 · 面值" },
+  ];
+
+  // --- 3M 数据（最新季度环比：Z.1 Q4 2025 vs Q3 2025） ---
+  const flows3M = [
+    { category: "外国部门 (Z.1 季频)", change: calcQoQ(Z1_Q4_2025.restOfWorld, Z1_Q3_2025.restOfWorld), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "美联储 (Z.1 季频)", change: calcQoQ(Z1_Q4_2025.monetaryAuthority, Z1_Q3_2025.monetaryAuthority), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "货币市场基金", change: calcQoQ(Z1_Q4_2025.moneyMarketFunds, Z1_Q3_2025.moneyMarketFunds), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "共同基金", change: calcQoQ(Z1_Q4_2025.mutualFunds, Z1_Q3_2025.mutualFunds), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "银行机构*", change: calcQoQ(Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions, Z1_Q3_2025.depositoryInstitutions + Z1_Q3_2025.creditUnions), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "私人养老金与保险**", change: calcQoQ(Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns, Z1_Q3_2025.privatePension + Z1_Q3_2025.lifeInsurance + Z1_Q3_2025.propertyCasualtyIns), isBuyer: false, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "家庭与非营利部门", change: calcQoQ(Z1_Q4_2025.household, Z1_Q3_2025.household), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "其他（残差项）", change: +(Z1_Q4_2025.total - Z1_Q3_2025.total - (calcQoQ(Z1_Q4_2025.restOfWorld, Z1_Q3_2025.restOfWorld) + calcQoQ(Z1_Q4_2025.monetaryAuthority, Z1_Q3_2025.monetaryAuthority) + calcQoQ(Z1_Q4_2025.moneyMarketFunds, Z1_Q3_2025.moneyMarketFunds) + calcQoQ(Z1_Q4_2025.mutualFunds, Z1_Q3_2025.mutualFunds) + calcQoQ(Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions, Z1_Q3_2025.depositoryInstitutions + Z1_Q3_2025.creditUnions) + calcQoQ(Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns, Z1_Q3_2025.privatePension + Z1_Q3_2025.lifeInsurance + Z1_Q3_2025.propertyCasualtyIns) + calcQoQ(Z1_Q4_2025.household, Z1_Q3_2025.household))).toFixed(1), isBuyer: false, source: "Z.1 L.210 · 残差项 · Q4 2025 vs Q3 2025" },
+  ];
+
+  // --- 12M 数据（年度同比：Z.1 Q4 2025 vs Q4 2024） ---
+  const flows12M = [
+    { category: "外国部门 (Z.1 年度)", change: +(Z1_Q4_2025.restOfWorld - Z1_Q4_2024.restOfWorld).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
+    { category: "美联储 (Z.1 年度)", change: +(Z1_Q4_2025.monetaryAuthority - Z1_Q4_2024.monetaryAuthority).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
+    { category: "货币市场基金", change: +(Z1_Q4_2025.moneyMarketFunds - Z1_Q4_2024.moneyMarketFunds).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
+    { category: "共同基金", change: +(Z1_Q4_2025.mutualFunds - Z1_Q4_2024.mutualFunds).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
+    { category: "银行机构*", change: +(Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions - Z1_Q4_2024.depositoryInstitutions - Z1_Q4_2024.creditUnions).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
+    { category: "私人养老金与保险**", change: +(Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns - Z1_Q4_2024.privatePension - Z1_Q4_2024.lifeInsurance - Z1_Q4_2024.propertyCasualtyIns).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
+    { category: "家庭与非营利部门", change: +(Z1_Q4_2025.household - Z1_Q4_2024.household).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
+    { category: "其他（残差项）", change: +(Z1_Q4_2025.total - Z1_Q4_2024.total - ((Z1_Q4_2025.restOfWorld - Z1_Q4_2024.restOfWorld) + (Z1_Q4_2025.monetaryAuthority - Z1_Q4_2024.monetaryAuthority) + (Z1_Q4_2025.moneyMarketFunds - Z1_Q4_2024.moneyMarketFunds) + (Z1_Q4_2025.mutualFunds - Z1_Q4_2024.mutualFunds) + (Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions - Z1_Q4_2024.depositoryInstitutions - Z1_Q4_2024.creditUnions) + (Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns - Z1_Q4_2024.privatePension - Z1_Q4_2024.lifeInsurance - Z1_Q4_2024.propertyCasualtyIns) + (Z1_Q4_2025.household - Z1_Q4_2024.household))).toFixed(1), isBuyer: false, source: "Z.1 L.210 · 残差项 · Q4 2025 vs Q4 2024" },
+  ];
+
+  // 根据 change 正负修正 isBuyer
+  function fixBuyer(items: typeof flows1M) {
+    return items.map(item => ({ ...item, isBuyer: item.change >= 0 }));
+  }
+
+  return {
+    "1M": { period: "1M", dataDate: "2026-03", flows: fixBuyer(flows1M) },
+    "3M": { period: "3M", dataDate: "2025-Q4", flows: fixBuyer(flows3M) },
+    "12M": { period: "12M", dataDate: "2025-Q4", flows: fixBuyer(flows12M) },
+  };
+}
+
+const marginalFlows = buildMarginalFlows();
 const keySignals = [
   {
     type: "warning" as const,
@@ -253,6 +334,7 @@ export async function GET() {
     foreignTop10,
     flowSummary,
     fedLatest,
+    marginalFlows,
     keySignals,
   });
 }
