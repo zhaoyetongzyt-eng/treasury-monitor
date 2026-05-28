@@ -35,7 +35,7 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--card);
+  --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) * 0.6);
@@ -47,210 +47,83 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* ============================================================
-   深蓝金融主题 — Light mode (默认) with deep-blue flavor
-   背景: 深蓝灰系  卡片: 半透明白玻璃  强调: 蓝色系
-   ============================================================ */
 :root {
-  /* 背景系 */
-  --background: #0b1120;
-  --foreground: #e2e8f0;
-
-  /* 卡片 — 半透明深蓝灰玻璃效果 */
-  --card: rgba(15, 23, 42, 0.75);
-  --card-foreground: #e2e8f0;
-
-  /* Popover */
-  --popover: rgba(15, 23, 42, 0.92);
-  --popover-foreground: #e2e8f0;
-
-  /* 主色 — 蓝色系 */
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-
-  /* 次色 */
-  --secondary: rgba(30, 41, 59, 0.8);
-  --secondary-foreground: #94a3b8;
-
-  /* 静音 */
-  --muted: rgba(30, 41, 59, 0.5);
-  --muted-foreground: #64748b;
-
-  /* Accent */
-  --accent: rgba(37, 99, 235, 0.15);
-  --accent-foreground: #93c5fd;
-
-  /* 破坏性 */
-  --destructive: #ef4444;
-
-  /* 边框 & 输入框 */
-  --border: rgba(148, 163, 184, 0.12);
-  --input: rgba(148, 163, 184, 0.15);
-  --ring: rgba(59, 130, 246, 0.4);
-
-  /* 图表色 */
-  --chart-1: #3b82f6;
-  --chart-2: #06b6d4;
-  --chart-3: #8b5cf6;
-  --chart-4: #f59e0b;
-  --chart-5: #10b981;
-
-  --radius: 0.75rem;
-
-  /* Sidebar */
-  --sidebar: rgba(15, 23, 42, 0.95);
-  --sidebar-foreground: #e2e8f0;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(37, 99, 235, 0.15);
-  --sidebar-accent-foreground: #93c5fd;
-  --sidebar-border: rgba(148, 163, 184, 0.1);
-  --sidebar-ring: rgba(59, 130, 246, 0.4);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
-/* Dark mode 保持相同主题 */
 .dark {
-  --background: #060d1a;
-  --foreground: #e2e8f0;
-  --card: rgba(10, 18, 36, 0.85);
-  --card-foreground: #e2e8f0;
-  --popover: rgba(10, 18, 36, 0.95);
-  --popover-foreground: #e2e8f0;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: rgba(15, 23, 42, 0.8);
-  --secondary-foreground: #94a3b8;
-  --muted: rgba(15, 23, 42, 0.6);
-  --muted-foreground: #64748b;
-  --accent: rgba(37, 99, 235, 0.15);
-  --accent-foreground: #93c5fd;
-  --destructive: #ef4444;
-  --border: rgba(148, 163, 184, 0.1);
-  --input: rgba(148, 163, 184, 0.12);
-  --ring: rgba(59, 130, 246, 0.4);
-  --chart-1: #3b82f6;
-  --chart-2: #06b6d4;
-  --chart-3: #8b5cf6;
-  --chart-4: #f59e0b;
-  --chart-5: #10b981;
-  --sidebar: rgba(8, 14, 28, 0.98);
-  --sidebar-foreground: #e2e8f0;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(37, 99, 235, 0.15);
-  --sidebar-accent-foreground: #93c5fd;
-  --sidebar-border: rgba(148, 163, 184, 0.08);
-  --sidebar-ring: rgba(59, 130, 246, 0.4);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-
   body {
     @apply bg-background text-foreground;
-    /* 深海军蓝径向渐变背景 */
-    background-color: #0b1120;
-    background-image:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(37, 99, 235, 0.18) 0%, transparent 70%),
-      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(6, 182, 212, 0.06) 0%, transparent 60%);
-    min-height: 100vh;
   }
-
   html {
     @apply font-sans;
-    scroll-behavior: smooth;
-  }
-
-  /* 数字使用 Mono 字体，让数据更专业 */
-  .font-data {
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
-  }
-}
-
-/* ============================================================
-   卡片玻璃拟态基础样式
-   ============================================================ */
-@layer components {
-  .glass-card {
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(148, 163, 184, 0.12);
-    box-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.2),
-      0 8px 24px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  }
-
-  .glass-card-hover {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .glass-card-hover:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 2px 6px rgba(0, 0, 0, 0.25),
-      0 12px 32px rgba(0, 0, 0, 0.35),
-      0 0 0 1px rgba(59, 130, 246, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  }
-
-  /* 卡片顶部蓝色渐变线 */
-  .card-accent-top {
-    position: relative;
-  }
-  .card-accent-top::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #3b82f6, #06b6d4);
-    border-radius: 0.75rem 0.75rem 0 0;
-  }
-
-  /* 数据高亮文字发光 */
-  .text-glow-blue {
-    text-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-  }
-
-  /* 分隔线渐变 */
-  .divider-gradient {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.2), transparent);
-  }
-
-  /* 滚动条隐藏 */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* 徽章样式 — 金融语义色 */
-  .badge-bullish {
-    background: rgba(220, 38, 38, 0.15);
-    color: #fca5a5;
-    border: 1px solid rgba(220, 38, 38, 0.25);
-  }
-  .badge-bearish {
-    background: rgba(22, 163, 74, 0.15);
-    color: #86efac;
-    border: 1px solid rgba(22, 163, 74, 0.25);
-  }
-  .badge-neutral {
-    background: rgba(148, 163, 184, 0.1);
-    color: #94a3b8;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-  }
-  .badge-warning {
-    background: rgba(245, 158, 11, 0.15);
-    color: #fcd34d;
-    border: 1px solid rgba(245, 158, 11, 0.25);
   }
 }

@@ -31,12 +31,12 @@ import type { AuctionRecord, AuctionIssuance, UpcomingAuction } from "@/types";
 
 /** 拍卖评级 → 颜色映射 */
 const ratingColors: Record<string, string> = {
-  "强劲": "bg-green-100 text-green-800 border-green-700/30",
-  "稳健": "bg-emerald-900/30 text-emerald-300 border-emerald-700/40",
-  "中性": "bg-gray-100 text-slate-200 border-slate-600/30",
-  "偏软": "bg-amber-900/30 text-amber-300 border-amber-700/40",
-  "中性偏弱": "bg-orange-900/30 text-orange-300 border-orange-700/40",
-  "疲弱·尾部": "bg-red-100 text-red-800 border-red-700/30",
+  "强劲": "bg-green-100 text-green-800 border-green-200",
+  "稳健": "bg-emerald-100 text-emerald-800 border-emerald-200",
+  "中性": "bg-gray-100 text-gray-800 border-gray-200",
+  "偏软": "bg-amber-100 text-amber-800 border-amber-200",
+  "中性偏弱": "bg-orange-100 text-orange-800 border-orange-200",
+  "疲弱·尾部": "bg-red-100 text-red-800 border-red-200",
 };
 
 // ============================================================
@@ -50,7 +50,7 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
           <CardTitle className="text-base">已完成拍卖 · 评分表</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-12 text-sm text-slate-500 animate-pulse">
+          <div className="flex items-center justify-center py-12 text-sm text-gray-400 animate-pulse">
             加载拍卖数据...
           </div>
         </CardContent>
@@ -65,7 +65,7 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
           <CardTitle className="text-base">已完成拍卖 · 评分表</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12 text-sm text-slate-500">
+          <div className="text-center py-12 text-sm text-gray-400">
             暂无拍卖数据
           </div>
         </CardContent>
@@ -77,7 +77,7 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">已完成拍卖 · 评分表</CardTitle>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <p className="text-xs text-gray-400 mt-0.5">
           各期限最新一场已完成拍卖的规模、Bills投资收益率 / Notes与Bonds高收益率、投标倍数与自定义评级
         </p>
       </CardHeader>
@@ -115,11 +115,11 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
             ))}
           </TableBody>
         </Table>
-        <div className="mt-3 pt-3 border-t border-slate-700/40 space-y-1">
-          <p className="text-xs text-slate-500">
+        <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">
+          <p className="text-xs text-gray-400">
             数据来源：Treasury FiscalData · Treasury Securities Auctions Data
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-gray-400">
             注：Bills 使用 Investment Rate；Notes/Bonds 使用 High Yield；评级为自定义模型评级，非财政部官方字段。
           </p>
           <a
@@ -153,7 +153,7 @@ function UpcomingAuctionTable({
           <CardTitle className="text-base">即将拍卖公告</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8 text-sm text-slate-500 animate-pulse">
+          <div className="flex items-center justify-center py-8 text-sm text-gray-400 animate-pulse">
             加载中...
           </div>
         </CardContent>
@@ -168,7 +168,7 @@ function UpcomingAuctionTable({
           <CardTitle className="text-base">即将拍卖公告</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-sm text-slate-500">
+          <div className="text-center py-8 text-sm text-gray-400">
             暂无已公布的未来拍卖安排
           </div>
         </CardContent>
@@ -180,7 +180,7 @@ function UpcomingAuctionTable({
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">即将拍卖公告</CardTitle>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <p className="text-xs text-gray-400 mt-0.5">
           已公布但尚未完成拍卖的国债发行安排（按计划拍卖日期排序）
         </p>
       </CardHeader>
@@ -211,8 +211,8 @@ function UpcomingAuctionTable({
             ))}
           </TableBody>
         </Table>
-        <div className="mt-3 pt-3 border-t border-slate-700/40">
-          <p className="text-xs text-slate-500 flex justify-between flex-wrap gap-2">
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <p className="text-xs text-gray-400 flex justify-between flex-wrap gap-2">
             <span>数据来源：Treasury FiscalData · Auctions Query</span>
             <a
               href="https://fiscaldata.treasury.gov/datasets/auctions-query/"
@@ -259,10 +259,10 @@ function AuctionChart({ auctions }: { auctions: AuctionRecord[] }) {
             data={chartData}
             margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
           >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148,163,184,0.08)" />
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#64748b" }} tickLine={false} />
-            <YAxis domain={[0, 4]} tick={{ fontSize: 11, fill: "#64748b" }} tickLine={false} axisLine={false} />
-            <Tooltip formatter={(v) => [Number(v).toFixed(2), "投标倍数"]} contentStyle={{ fontSize: 12, borderRadius: 8, background: "rgba(15,23,42,0.9)", border: "1px solid rgba(148,163,184,0.15)", color: "#e2e8f0" }} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+            <YAxis domain={[0, 4]} tick={{ fontSize: 11 }} />
+            <Tooltip formatter={(v) => [Number(v).toFixed(2), "投标倍数"]} />
             <Bar
               dataKey="value"
               name="最新"
@@ -309,7 +309,7 @@ function AuctionIssuanceCard({
           <CardTitle className="text-base">发行结构</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8 text-sm text-slate-500 animate-pulse">
+          <div className="flex items-center justify-center py-8 text-sm text-gray-400 animate-pulse">
             加载中...
           </div>
         </CardContent>
@@ -324,29 +324,29 @@ function AuctionIssuanceCard({
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex justify-between items-center">
-          <span className="text-sm text-slate-400">数据覆盖拍卖场次</span>
+          <span className="text-sm text-gray-500">数据覆盖拍卖场次</span>
           <span className="text-sm font-mono">{issuance?.recordCount ?? "--"} 场</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-sm text-slate-400">合计拍卖规模</span>
+          <span className="text-sm text-gray-500">合计拍卖规模</span>
           <span className="text-sm font-mono">
             ${issuance?.totalAuctioned.toFixed(0) ?? "--"}B
           </span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-sm text-slate-400">平均投标倍数</span>
+          <span className="text-sm text-gray-500">平均投标倍数</span>
           <span className="text-sm font-mono">
             {issuance?.avgBidToCover.toFixed(2) ?? "--"}
           </span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-sm text-slate-400">最新完成拍卖日期</span>
-          <Badge variant="outline" className="bg-blue-900/20 text-blue-700 border-blue-200">
+          <span className="text-sm text-gray-500">最新完成拍卖日期</span>
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
             {issuance?.dataFreshness ?? "--"}
           </Badge>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-sm text-slate-400">评级 ≥ 稳健</span>
+          <span className="text-sm text-gray-500">评级 ≥ 稳健</span>
           <span className="text-sm font-mono text-emerald-600 font-medium">
             {issuance
               ? Math.round(
@@ -356,8 +356,8 @@ function AuctionIssuanceCard({
             %
           </span>
         </div>
-        <div className="mt-3 pt-3 border-t border-slate-700/40">
-          <p className="text-xs text-slate-500 mb-1">数据引用：</p>
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <p className="text-xs text-gray-400 mb-1">数据引用：</p>
           <p className="text-xs">
             <a
               href="https://fiscaldata.treasury.gov/datasets/auctions-query/"
@@ -410,7 +410,7 @@ export default function AuctionModule() {
       />
 
       {error && (
-        <div className="mb-4 p-3 bg-red-900/25 border border-red-500/25 rounded-lg text-sm text-red-600">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
           {error} · 请检查网络后刷新页面
         </div>
       )}

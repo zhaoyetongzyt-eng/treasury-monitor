@@ -19,12 +19,12 @@ export function PlaceholderModule({
   return (
     <section id={id} className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
       <ModuleHeader number={number} title={title} titleEn={titleEn} description={description} />
-      <Card className="border-dashed border-slate-600/40">
+      <Card className="border-dashed border-gray-300">
         <CardHeader>
-          <CardTitle className="text-base text-slate-500">模块开发中</CardTitle>
+          <CardTitle className="text-base text-gray-500">模块开发中</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-gray-400">
             该模块将在后续迭代中补充数据和图表。如需优先开发此模块，请告知。
           </p>
         </CardContent>
