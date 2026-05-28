@@ -42,7 +42,7 @@ function LoadingSkeleton() {
   return (
     <section id="leverage" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
       <ModuleHeader
-        number="03"
+        number="04"
         title="杠杆率"
         titleEn="Leverage Ratios"
         description="追踪美国三部门（家庭/企业/政府）债务占 GDP 比率，评估系统性杠杆风险与潜在去杠杆压力。"
@@ -292,7 +292,7 @@ export default function LeverageModule() {
     return (
       <section id="leverage" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
         <ModuleHeader
-          number="03"
+          number="04"
           title="杠杆率"
           titleEn="Leverage Ratios"
           description="追踪美国三部门（家庭/企业/政府）债务占 GDP 比率，评估系统性杠杆风险与潜在去杠杆压力。"
@@ -316,7 +316,7 @@ export default function LeverageModule() {
   return (
     <section id="leverage" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
       <ModuleHeader
-        number="03"
+        number="04"
         title="杠杆率"
         titleEn="Leverage Ratios"
         description="追踪美国三部门（家庭/企业/政府）债务占 GDP 比率，评估系统性杠杆风险与潜在去杠杆压力。"

@@ -14,14 +14,8 @@ const navItems: NavItem[] = [
   { id: "status", number: "", title: "摘要", titleEn: "Summary" },
   { id: "auction", number: "01", title: "供给与拍卖", titleEn: "Supply & Auction" },
   { id: "holdings", number: "02", title: "持仓与资金流", titleEn: "Holdings & Flows" },
-  { id: "leverage", number: "03", title: "杠杆率", titleEn: "Leverage Ratios" },
-  { id: "ust-holders", number: "04", title: "UST 买卖机构", titleEn: "UST Buyers & Sellers" },
-  { id: "yield-curve", number: "05", title: "收益率曲线", titleEn: "Yield Curve" },
-  { id: "decomposition", number: "06", title: "成分分解", titleEn: "Decomposition" },
-  { id: "scorecard", number: "07", title: "因子计分卡", titleEn: "Scorecard" },
-  { id: "policy", number: "08", title: "货币政策", titleEn: "Monetary Policy" },
-  { id: "cross-market", number: "09", title: "跨市场背景", titleEn: "Cross-Market" },
-  { id: "events", number: "10", title: "事件与观点", titleEn: "Events & Views" },
+  { id: "ust-holders", number: "03", title: "UST 买卖机构", titleEn: "UST Buyers & Sellers" },
+  { id: "leverage", number: "04", title: "杠杆率", titleEn: "Leverage Ratios" },
 ];
 
 export default function NavBar() {

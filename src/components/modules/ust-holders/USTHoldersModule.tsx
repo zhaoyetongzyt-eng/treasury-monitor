@@ -382,7 +382,7 @@ export default function USTHoldersModule() {
     return (
       <section id="ust-holders" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
         <ModuleHeader
-          number="04"
+          number="03"
           title="UST 买卖机构"
           titleEn="UST Buyers & Sellers"
           description="追踪美债市场主要买卖方的持仓变化：谁在买？谁在卖？外资、美联储、银行、基金、散户各方的边际行为及其市场含义。"
@@ -398,7 +398,7 @@ export default function USTHoldersModule() {
     return (
       <section id="ust-holders" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
         <ModuleHeader
-          number="04"
+          number="03"
           title="UST 买卖机构"
           titleEn="UST Buyers & Sellers"
           description="追踪美债市场主要买卖方的持仓变化。"
@@ -414,7 +414,7 @@ export default function USTHoldersModule() {
   return (
     <section id="ust-holders" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
       <ModuleHeader
-        number="04"
+        number="03"
         title="UST 买卖机构"
         titleEn="UST Buyers & Sellers"
         description="追踪美债市场主要买卖方的持仓变化：谁在买？谁在卖？外资、美联储、银行、基金、散户各方的边际行为及其市场含义。"

@@ -2,16 +2,8 @@ import NavBar from "@/components/layout/NavBar";
 import YieldOverviewCard from "@/components/shared/YieldOverviewCard";
 import AuctionModule from "@/components/modules/auction/AuctionModule";
 import HoldingsModule from "@/components/modules/holdings/HoldingsModule";
-import LeverageModule from "@/components/modules/leverage/LeverageModule";
 import USTHoldersModule from "@/components/modules/ust-holders/USTHoldersModule";
-import { PlaceholderModule } from "@/components/modules/PlaceholderModule";
-
-const placeholderModules = [
-  { id: "yield-curve", number: "05", title: "收益率曲线", titleEn: "Yield Curve", description: "美国国债各期限收益率叠加对比，追踪曲线形态变化与期限利差信号。" },
-  { id: "decomposition", number: "06", title: "成分分解", titleEn: "Decomposition", description: "将长期利率分解为期限溢价、实际利率和通胀预期三大成分（Clarida 四分法）。" },
-  { id: "scorecard", number: "07", title: "因子计分卡", titleEn: "Scorecard", description: "多因子评分模型——对增长、通胀、政策、供求等因子分别打分并综合形成市场立场。" },
-  { id: "policy", number: "08", title: "货币政策", titleEn: "Monetary Policy", description: "追踪美联储政策利率路径、市场隐含降息概率及流动性管道。" },
-];
+import LeverageModule from "@/components/modules/leverage/LeverageModule";
 
 export default function Home() {
   return (
@@ -36,35 +28,14 @@ export default function Home() {
       {/* ★ 模块 01：供给与拍卖 */}
       <AuctionModule />
 
-      {/* ★ 模块 02：持仓与资金流 */}
+      {/* 模块 02：持仓与资金流 */}
       <HoldingsModule />
 
-      {/* ★ 模块 03：杠杆率 */}
-      <LeverageModule />
-
-      {/* ★ 模块 04：UST 买卖机构 */}
+      {/* 模块 03：UST 买卖机构 */}
       <USTHoldersModule />
 
-      {/* 占位模块 */}
-      {placeholderModules.map((m) => (
-        <PlaceholderModule key={m.id} {...m} />
-      ))}
-
-      {/* 跨市场、事件与观点 */}
-      <PlaceholderModule
-        id="cross-market"
-        number="09"
-        title="跨市场背景"
-        titleEn="Cross-Market"
-        description="对比全球主要经济体利率走势、风险资产及通胀商品价格，提供宏观交叉验证。"
-      />
-      <PlaceholderModule
-        id="events"
-        number="10"
-        title="事件与观点"
-        titleEn="Events & Views"
-        description="追踪关键经济数据发布日历、央行官员讲话及市场投资观点。"
-      />
+      {/* 模块 04：杠杆率 */}
+      <LeverageModule />
 
       {/* 页脚 */}
       <footer className="py-8 px-4 text-center text-xs text-gray-400 border-t border-gray-200 mt-8">
