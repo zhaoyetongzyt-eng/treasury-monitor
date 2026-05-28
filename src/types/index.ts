@@ -100,13 +100,28 @@ export interface MarginalFlowItem {
   change: number;               // 变动额（十亿美元）
   isBuyer: boolean;             // 增持/减持
   source: string;               // 数据来源标注
+  isResidual?: boolean;         // 是否为残差/未单列部门
+  residualNote?: string;        // 残差项解释
+}
+
+/** 1M 最新边际信号 */
+export interface LatestSignal {
+  label: string;                // 信号名称
+  change: number;               // 变动额（十亿美元）
+  frequency: string;            // 数据频率（月频/周频）
+  dataDate: string;             // 数据截止
+  source: string;               // 数据来源
+  note: string;                 // 解释说明
 }
 
 /** 边际流向 - 单时间维度数据 */
 export interface MarginalFlowData {
   period: string;               // "1M" | "3M" | "12M"
   dataDate: string;             // 数据截止日期
-  flows: MarginalFlowItem[];    // 各主体流向
+  flows: MarginalFlowItem[];    // 各主体流向（3M/12M 使用）
+  signals?: LatestSignal[];     // 最新边际信号（1M 使用）
+  residualItem?: MarginalFlowItem; // 残差项（3M 使用，单独展示）
+  footnote?: string;            // 维度专属脚注
 }
 
 /** 日本视角 - 持仓趋势 */

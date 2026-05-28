@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { MarginalFlowItem } from "@/types";
 
 /**
  * GET /api/ust-holders
@@ -247,49 +248,99 @@ const fedLatest = {
 function buildMarginalFlows() {
   // --- 辅助：Z.1 Q4 2025 vs Q3 2025 季度环比变动 ---
   function calcQoQ(f25q4: number, f25q3: number) {
-    const change = +(f25q4 - f25q3).toFixed(1);
-    return change;
+    return +(f25q4 - f25q3).toFixed(1);
   }
 
-  // --- 1M 数据（最新月度：TIC 2026-03 vs 2026-02 / FRED 近5周） ---
-  const flows1M = [
-    { category: "外国部门 (TIC 月频)", change: -138.4, isBuyer: false, source: "TIC SLT Table 5 · 2026-03 vs 2026-02 · 持仓月变动 · 面值" },
-    { category: "美联储 SOMA (FRED 周频)", change: +37.4, isBuyer: true, source: "FRED TREAST · 2026-04-22→2026-05-20 · 5周累计 · 面值" },
+  // --- 1M：最新边际信号（TIC 月频 + FRED 周频，不同窗口，不做对比） ---
+  const signals1M = [
+    {
+      label: "外国持有变化",
+      change: -138.4,
+      frequency: "TIC 月频",
+      dataDate: "2026-03",
+      source: "TIC SLT Table 5 · 2026-03 vs 2026-02 · 期末持仓月变动 · 面值",
+      note: "TIC 外国持有人月末持仓变化，反映最新月度外资持仓边际方向。",
+    },
+    {
+      label: "美联储 SOMA 变化",
+      change: +37.4,
+      frequency: "FRED 周频，近5周",
+      dataDate: "2026-05-20",
+      source: "FRED TREAST · 2026-04-22→2026-05-20 · 5周累计 · 面值",
+      note: "Fed SOMA 周度持仓变化。已结束 QT，转为滚续到期国债本金并进行储备管理购买。",
+    },
   ];
 
-  // --- 3M 数据（最新季度环比：Z.1 Q4 2025 vs Q3 2025） ---
-  const flows3M = [
-    { category: "外国部门 (Z.1 季频)", change: calcQoQ(Z1_Q4_2025.restOfWorld, Z1_Q3_2025.restOfWorld), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
-    { category: "美联储 (Z.1 季频)", change: calcQoQ(Z1_Q4_2025.monetaryAuthority, Z1_Q3_2025.monetaryAuthority), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+  // --- 3M：Z.1 Q4 2025 vs Q3 2025（纯 Z.1，不混 TIC） ---
+  const flows3M: MarginalFlowItem[] = [
+    { category: "外国部门", change: calcQoQ(Z1_Q4_2025.restOfWorld, Z1_Q3_2025.restOfWorld), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "美联储", change: calcQoQ(Z1_Q4_2025.monetaryAuthority, Z1_Q3_2025.monetaryAuthority), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
     { category: "货币市场基金", change: calcQoQ(Z1_Q4_2025.moneyMarketFunds, Z1_Q3_2025.moneyMarketFunds), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
     { category: "共同基金", change: calcQoQ(Z1_Q4_2025.mutualFunds, Z1_Q3_2025.mutualFunds), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
     { category: "银行机构*", change: calcQoQ(Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions, Z1_Q3_2025.depositoryInstitutions + Z1_Q3_2025.creditUnions), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
     { category: "私人养老金与保险**", change: calcQoQ(Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns, Z1_Q3_2025.privatePension + Z1_Q3_2025.lifeInsurance + Z1_Q3_2025.propertyCasualtyIns), isBuyer: false, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
     { category: "家庭与非营利部门", change: calcQoQ(Z1_Q4_2025.household, Z1_Q3_2025.household), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
-    { category: "其他（残差项）", change: +(Z1_Q4_2025.total - Z1_Q3_2025.total - (calcQoQ(Z1_Q4_2025.restOfWorld, Z1_Q3_2025.restOfWorld) + calcQoQ(Z1_Q4_2025.monetaryAuthority, Z1_Q3_2025.monetaryAuthority) + calcQoQ(Z1_Q4_2025.moneyMarketFunds, Z1_Q3_2025.moneyMarketFunds) + calcQoQ(Z1_Q4_2025.mutualFunds, Z1_Q3_2025.mutualFunds) + calcQoQ(Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions, Z1_Q3_2025.depositoryInstitutions + Z1_Q3_2025.creditUnions) + calcQoQ(Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns, Z1_Q3_2025.privatePension + Z1_Q3_2025.lifeInsurance + Z1_Q3_2025.propertyCasualtyIns) + calcQoQ(Z1_Q4_2025.household, Z1_Q3_2025.household))).toFixed(1), isBuyer: false, source: "Z.1 L.210 · 残差项 · Q4 2025 vs Q3 2025" },
   ];
 
-  // --- 12M 数据（年度同比：Z.1 Q4 2025 vs Q4 2024） ---
-  const flows12M = [
-    { category: "外国部门 (Z.1 年度)", change: +(Z1_Q4_2025.restOfWorld - Z1_Q4_2024.restOfWorld).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
-    { category: "美联储 (Z.1 年度)", change: +(Z1_Q4_2025.monetaryAuthority - Z1_Q4_2024.monetaryAuthority).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
+  // 计算残差：总变动 − 已列部门变动合计
+  const sum3M = flows3M.reduce((s, f) => s + f.change, 0);
+  const totalChange3M = calcQoQ(Z1_Q4_2025.total, Z1_Q3_2025.total);
+  const residual3M = +(totalChange3M - sum3M).toFixed(1);
+
+  const residualItem3M: MarginalFlowItem = {
+    category: "未单列部门与统计差异",
+    change: residual3M,
+    isBuyer: false,
+    source: "Z.1 L.210 · 残差项 · Q4 2025 vs Q3 2025",
+    isResidual: true,
+    residualNote: "包含未展示的 Z.1 部门（ETF、州地方政府、非金融企业、信用合作社、封闭式基金、GSE、经纪商等）及 instrument discrepancy（发行端与持有端之间的累计估值/统计差异）。不代表单一投资者类别，不宜解读为某类投资者主动减持。",
+  };
+
+  // --- 12M：Z.1 Q4 2025 vs Q4 2024（年度同比） ---
+  const flows12M: MarginalFlowItem[] = [
+    { category: "外国部门", change: +(Z1_Q4_2025.restOfWorld - Z1_Q4_2024.restOfWorld).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
+    { category: "美联储", change: +(Z1_Q4_2025.monetaryAuthority - Z1_Q4_2024.monetaryAuthority).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
     { category: "货币市场基金", change: +(Z1_Q4_2025.moneyMarketFunds - Z1_Q4_2024.moneyMarketFunds).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
     { category: "共同基金", change: +(Z1_Q4_2025.mutualFunds - Z1_Q4_2024.mutualFunds).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
     { category: "银行机构*", change: +(Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions - Z1_Q4_2024.depositoryInstitutions - Z1_Q4_2024.creditUnions).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
     { category: "私人养老金与保险**", change: +(Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns - Z1_Q4_2024.privatePension - Z1_Q4_2024.lifeInsurance - Z1_Q4_2024.propertyCasualtyIns).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
     { category: "家庭与非营利部门", change: +(Z1_Q4_2025.household - Z1_Q4_2024.household).toFixed(1), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q4 2024 · 市值" },
-    { category: "其他（残差项）", change: +(Z1_Q4_2025.total - Z1_Q4_2024.total - ((Z1_Q4_2025.restOfWorld - Z1_Q4_2024.restOfWorld) + (Z1_Q4_2025.monetaryAuthority - Z1_Q4_2024.monetaryAuthority) + (Z1_Q4_2025.moneyMarketFunds - Z1_Q4_2024.moneyMarketFunds) + (Z1_Q4_2025.mutualFunds - Z1_Q4_2024.mutualFunds) + (Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions - Z1_Q4_2024.depositoryInstitutions - Z1_Q4_2024.creditUnions) + (Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns - Z1_Q4_2024.privatePension - Z1_Q4_2024.lifeInsurance - Z1_Q4_2024.propertyCasualtyIns) + (Z1_Q4_2025.household - Z1_Q4_2024.household))).toFixed(1), isBuyer: false, source: "Z.1 L.210 · 残差项 · Q4 2025 vs Q4 2024" },
   ];
 
-  // 根据 change 正负修正 isBuyer
-  function fixBuyer(items: typeof flows1M) {
-    return items.map(item => ({ ...item, isBuyer: item.change >= 0 }));
-  }
+  const sum12M = flows12M.reduce((s, f) => s + f.change, 0);
+  const totalChange12M = +(Z1_Q4_2025.total - Z1_Q4_2024.total).toFixed(1);
+  const residual12M = +(totalChange12M - sum12M).toFixed(1);
+
+  const residualItem12M: MarginalFlowItem = {
+    category: "未单列部门与统计差异",
+    change: residual12M,
+    isBuyer: false,
+    source: "Z.1 L.210 · 残差项 · Q4 2025 vs Q4 2024",
+    isResidual: true,
+    residualNote: "包含未展示的 Z.1 部门及 instrument discrepancy。不代表单一投资者类别。",
+  };
 
   return {
-    "1M": { period: "1M", dataDate: "2026-03", flows: fixBuyer(flows1M) },
-    "3M": { period: "3M", dataDate: "2025-Q4", flows: fixBuyer(flows3M) },
-    "12M": { period: "12M", dataDate: "2025-Q4", flows: fixBuyer(flows12M) },
+    "1M": {
+      period: "1M",
+      dataDate: "2026-05-20",
+      signals: signals1M,
+      footnote: "外资与美联储数据频率不同（TIC 月频 vs FRED 周频），分别反映「最新月度外资持仓变化」和「近期 Fed SOMA 持仓变化」，不应视为同一窗口内的净买卖对比。银行/基金/家庭为 Z.1 季频数据，月度维度暂不可用。",
+    },
+    "3M": {
+      period: "3M",
+      dataDate: "2025-Q4",
+      flows: flows3M,
+      residualItem: residualItem3M,
+      footnote: "3个月维度仅使用 Z.1 L.210 季频数据（Q4 2025 vs Q3 2025），口径为可流通美债扣除溢价/折价（市值）。Z.1 的外国部门与 TIC 外国持有口径不完全相同，此处不混用 TIC 数据。",
+    },
+    "12M": {
+      period: "12M",
+      dataDate: "2025-Q4",
+      flows: flows12M,
+      residualItem: residualItem12M,
+      footnote: "12个月维度为 Z.1 L.210 年度同比（Q4 2025 vs Q4 2024）。该口径为期末余额同比变化，不能等同于全年净交易流量。在总存量快速扩张时，多数部门余额可能同步上升。",
+    },
   };
 }
 
