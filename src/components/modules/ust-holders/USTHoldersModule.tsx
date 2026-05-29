@@ -199,9 +199,9 @@ function HolderTable({ holders, z1Date }: { holders: USTHolder[]; z1Date: string
 function Layer2MarginalFlow({ marginalFlows }: { marginalFlows: USTHoldersResponse["marginalFlows"] }) {
   const periods = ["1M", "3M", "12M"] as const;
   const periodLabels: Record<string, string> = {
-    "1M": "近1月 · 最新边际信号",
-    "3M": "近3月 · Z.1 季度环比",
-    "12M": "近12月 · Z.1 年度同比",
+    "1M": "1月",
+    "3M": "3月",
+    "12M": "12月",
   };
 
   return (

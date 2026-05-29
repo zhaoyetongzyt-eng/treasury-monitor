@@ -123,7 +123,7 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
             注：Bills 使用 Investment Rate；Notes/Bonds 使用 High Yield；评级为自定义模型评级，非财政部官方字段。
           </p>
           <a
-            href="https://fiscaldata.treasury.gov/datasets/auctions-query/"
+            href="https://fiscaldata.treasury.gov/datasets/treasury-securities-auctions-data/treasury-securities-auctions-data#api-quick-guide"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-blue-600 hover:text-blue-800 underline underline-offset-2"
@@ -215,7 +215,7 @@ function UpcomingAuctionTable({
           <p className="text-xs text-gray-400 flex justify-between flex-wrap gap-2">
             <span>数据来源：Treasury FiscalData · Auctions Query</span>
             <a
-              href="https://fiscaldata.treasury.gov/datasets/auctions-query/"
+              href="https://fiscaldata.treasury.gov/datasets/treasury-securities-auctions-data/treasury-securities-auctions-data#api-quick-guide"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
@@ -360,7 +360,7 @@ function AuctionIssuanceCard({
           <p className="text-xs text-gray-400 mb-1">数据引用：</p>
           <p className="text-xs">
             <a
-              href="https://fiscaldata.treasury.gov/datasets/auctions-query/"
+              href="https://fiscaldata.treasury.gov/datasets/treasury-securities-auctions-data/treasury-securities-auctions-data#api-quick-guide"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
