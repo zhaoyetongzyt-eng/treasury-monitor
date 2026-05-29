@@ -51,7 +51,7 @@ export default function YieldOverviewCard() {
       label: "2Y 收益率",
       value: formatYield(yields.yield2Y),
       change: yields.change2Y,
-      color: "text-gray-700",
+      color: "text-blue-700",
     },
     {
       label: "10Y 收益率",
