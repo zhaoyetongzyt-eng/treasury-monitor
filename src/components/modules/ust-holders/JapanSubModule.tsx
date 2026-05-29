@@ -325,6 +325,14 @@ function KeyMetricsPanel({
               JGB 10Y ↗
             </a>
             <a
+              href="https://zh.tradingeconomics.com/japan/government-bond-yield"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              JGB 收益率 ↗
+            </a>
+            <a
               href="https://fred.stlouisfed.org/series/DGS10"
               target="_blank"
               rel="noopener noreferrer"
