@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import JapanSubModule from "./JapanSubModule";
+import UKSubModule from "./UKSubModule";
 import type { USTHolder, ForeignHolderDetail, USTFlowSummary, MarginalFlowData, MarginalFlowItem } from "@/types";
 
 // ============================================================
@@ -661,6 +662,11 @@ export default function USTHoldersModule() {
         {/* ★ 日本视角子模块 */}
         {/* ================================================================ */}
         <JapanSubModule />
+
+        {/* ================================================================ */}
+        {/* ★ 英国视角子模块 */}
+        {/* ================================================================ */}
+        <UKSubModule />
 
         {/* ================================================================ */}
         {/* ★ 关键信号 */}

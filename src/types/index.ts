@@ -224,6 +224,68 @@ export interface AuctionsResponse {
   error?: string;
 }
 
+/** UK 视角 - 关键指标项（UI 展示用） */
+export interface UKMetricItem {
+  label: string;
+  value: string;
+  change: number;
+  unit: string;
+  sub: string;
+  trend?: "up" | "down" | "neutral";
+}
+
+/** UK 视角 - 套息计算器数据 */
+export interface UKCarryCalc {
+  gilt5YYield: number;
+  hedgeCost: number;
+  hedgedCarry: number;
+  duration: number;
+  bullCase: {
+    yieldChange: number;
+    priceReturn: number;
+    totalReturn: number;
+  };
+  bearCase: {
+    yieldChange: number;
+    priceReturn: number;
+    totalReturn: number;
+  };
+}
+
+/** UK 视角 - 基本面因子 */
+export interface UKMacroFactor {
+  factor: string;
+  indicator: string;
+  value: string;
+  meaning: string;
+  impact: "正面" | "负面" | "中性";
+}
+
+/** /api/uk-metrics 响应 */
+export interface UKMetricsResponse {
+  success: boolean;
+  dataDate: string;
+  dataSource: string;
+  metrics: UKMetricItem[];
+  bankRate: number;
+  cpi: number;
+  gilt2Y: number;
+  gilt5Y: number;
+  gilt10Y: number;
+  bund10Y: number;
+  ukDeSpread: number;
+  gbpUsd: number;
+  unemployment: number;
+  gdpGrowth: number;
+  carryCalc: UKCarryCalc;
+  macroFactors: UKMacroFactor[];
+  updatedAt: string;
+  freshness: {
+    status: "实时" | "部分实时" | "降级模式";
+    fredStatus: "ok" | "error";
+  };
+}
+
 /** 模块配置 */
 export interface ModuleConfig {
   id: string;
