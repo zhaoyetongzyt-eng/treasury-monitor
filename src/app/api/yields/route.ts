@@ -59,6 +59,7 @@ export async function GET() {
 
     // bp 变化：用原始小数直接算 bp 差值，避免四舍五入丢失精度
     // 例：4.56 - 4.57 = -0.01 → -1bp（不是 0bp）
+    const change2Y = previous ? Math.round((latest.yield2Y - previous.yield2Y) * 100) : null;
     const change10Y = previous ? Math.round((latest.yield10Y - previous.yield10Y) * 100) : null;
     const change30Y = previous ? Math.round((latest.yield30Y - previous.yield30Y) * 100) : null;
     const change2s10s = (previous && !isNaN(latest.yield2Y) && !isNaN(previous.yield2Y))
@@ -68,11 +69,13 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       date: latest.date,
+      yield2Y: latest.yield2Y,
       yield10Y: latest.yield10Y,
       yield30Y: latest.yield30Y,
-      spread2s10s,        // 10Y - 2Y (bp)
-      spread5s30s,        // 30Y - 5Y 近似用 30Y - 10Y (bp)
-      change10Y,          // 整数 bp（基于原始小数差值）
+      spread2s10s,        // 10Y - 2Y (百分点)
+      spread5s30s,        // 30Y - 10Y (百分点)
+      change2Y,           // 整数 bp（基于原始小数差值）
+      change10Y,
       change30Y,
       change2s10s,
       previousDate: previous?.date ?? null,

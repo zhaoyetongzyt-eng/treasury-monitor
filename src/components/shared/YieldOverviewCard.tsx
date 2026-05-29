@@ -48,6 +48,12 @@ export default function YieldOverviewCard() {
 
   const items = [
     {
+      label: "2Y 收益率",
+      value: formatYield(yields.yield2Y),
+      change: yields.change2Y,
+      color: "text-gray-700",
+    },
+    {
       label: "10Y 收益率",
       value: formatYield(yields.yield10Y),
       change: yields.change10Y,

@@ -184,10 +184,12 @@ export interface JapanMetricsResponse {
 /** 收益率曲线摘要 */
 export interface YieldSnapshot {
   date: string;
+  yield2Y: number;               // 2年期国债收益率
   yield10Y: number;
   yield30Y: number;
   spread2s10s: number | null;    // 10Y - 2Y (百分点)
   spread5s30s: number;           // 30Y - 10Y (百分点)
+  change2Y: number | null;       // 日变动（整数bp，基于原始小数差值计算）
   change10Y: number | null;      // 日变动（整数bp，基于原始小数差值计算）
   change30Y: number | null;
   change2s10s: number | null;
