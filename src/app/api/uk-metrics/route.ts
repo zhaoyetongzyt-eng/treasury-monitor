@@ -27,7 +27,17 @@ const FRED_SERIES = {
   cpi: "CPALTT01GBM659N",          // UK CPI (月频, OECD)
   unemployment: "UNRTUKA",         // UK 失业率 (月频, OECD)
   gdp: "GBRGDPQDSNAQ",             // UK GDP 季环比年化 (季频, OECD)
+  ecbRate: "ECBDFR",               // ECB Deposit Facility Rate (日频)
 } as const;
+
+// 需要拉取历史时序的 series（用于折线图）
+const HISTORY_SERIES = [
+  FRED_SERIES.cpi,
+  FRED_SERIES.bankRate,
+  FRED_SERIES.gilt10Y,
+  FRED_SERIES.bund10Y,
+  FRED_SERIES.ecbRate,
+] as const;
 
 const FRED_BASE = "https://api.stlouisfed.org/fred/series/observations";
 
@@ -89,7 +99,7 @@ async function fetchFredLatest(
 }
 
 async function fetchAllFredData(apiKey: string) {
-  const [bankRate, gilt10Y, bund10Y, gbpUsd, cpi, unemployment, gdp] =
+  const [bankRate, gilt10Y, bund10Y, gbpUsd, cpi, unemployment, gdp, ecbRate] =
     await Promise.all([
       fetchFredLatest(FRED_SERIES.bankRate, apiKey),
       fetchFredLatest(FRED_SERIES.gilt10Y, apiKey),
@@ -98,9 +108,42 @@ async function fetchAllFredData(apiKey: string) {
       fetchFredLatest(FRED_SERIES.cpi, apiKey),
       fetchFredLatest(FRED_SERIES.unemployment, apiKey),
       fetchFredLatest(FRED_SERIES.gdp, apiKey),
+      fetchFredLatest(FRED_SERIES.ecbRate, apiKey),
     ]);
 
-  return { bankRate, gilt10Y, bund10Y, gbpUsd, cpi, unemployment, gdp };
+  return { bankRate, gilt10Y, bund10Y, gbpUsd, cpi, unemployment, gdp, ecbRate };
+}
+
+// ============================================================
+// 历史时序拉取（用于折线图，过去 24 个观测值）
+// ============================================================
+
+async function fetchFredHistory(
+  seriesId: string,
+  apiKey: string
+): Promise<{ date: string; value: number }[]> {
+  try {
+    const url = `${FRED_BASE}?series_id=${seriesId}&api_key=${apiKey}&file_type=json&sort_order=desc&limit=24`;
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(8000),
+      headers: { "User-Agent": "treasury-monitor/1.0" },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const observations = json?.observations;
+    if (!observations || observations.length === 0) return [];
+    const result: { date: string; value: number }[] = [];
+    for (const obs of observations) {
+      const val = parseFloat(obs.value);
+      if (!isNaN(val) && obs.value !== ".") {
+        result.push({ date: obs.date, value: val });
+      }
+    }
+    // 反转：最早的在前
+    return result.reverse();
+  } catch {
+    return [];
+  }
 }
 
 // ============================================================
@@ -175,6 +218,7 @@ export async function GET() {
   let fredStatus: "ok" | "error" = "error";
 
   let fredResult: Awaited<ReturnType<typeof fetchAllFredData>> | null = null;
+  let timeSeries: Record<string, { date: string; value: number }[]> = {};
 
   if (apiKey) {
     fredResult = await fetchAllFredData(apiKey);
@@ -182,6 +226,18 @@ export async function GET() {
       fredResult.gilt10Y || fredResult.bankRate || fredResult.bund10Y
         ? "ok"
         : "error";
+
+    // 拉取历史时序
+    const historyResults = await Promise.all(
+      HISTORY_SERIES.map((sid) => fetchFredHistory(sid, apiKey))
+    );
+    timeSeries = {
+      cpi: historyResults[0],
+      bankRate: historyResults[1],
+      gilt10Y: historyResults[2],
+      bund10Y: historyResults[3],
+      ecbRate: historyResults[4],
+    };
   }
 
   // 取值：FRED 实时 > fallback
@@ -192,6 +248,7 @@ export async function GET() {
   const gbpUsd = fredResult?.gbpUsd?.value ?? FALLBACK_DATA.gbpUsd;
   const unemployment = fredResult?.unemployment?.value ?? FALLBACK_DATA.unemployment;
   const gdpGrowth = fredResult?.gdp?.value ?? FALLBACK_DATA.gdpGrowth;
+  const ecbRate = fredResult?.ecbRate?.value ?? 2.0;
 
   const gilt2Y = BENCHMARK_GILT_2Y;
   const gilt5Y = BENCHMARK_GILT_5Y;
@@ -272,11 +329,20 @@ export async function GET() {
   const freshnessStatus: "实时" | "部分实时" | "降级模式" =
     fredStatus === "ok" ? "实时" : "降级模式";
 
+  // Fallback 时序数据（无 FRED 时使用）—— 基于 fallback 值构造简化时序
+  const fallbackTimeSeries = {
+    cpi: generateFallbackHistory(cpi, "2025-06"),
+    bankRate: generateFallbackHistory(bankRate, "2025-06"),
+    gilt10Y: generateFallbackHistory(gilt10Y, "2025-06"),
+    bund10Y: generateFallbackHistory(bund10Y, "2025-06"),
+    ecbRate: generateFallbackHistory(ecbRate, "2025-06"),
+  };
+
   const response = {
     success: true,
     dataDate,
     dataSource: apiKey
-      ? "FRED: BOERUKM, IRLTLT01GBM156N, IRLTLT01DEM156N, DEXUSUK, CPALTT01GBM659N, UNRTUKA, GBRGDPQDSNAQ · 2Y/5Y Gilt 参考 Trading Economics"
+      ? "FRED: BOERUKM, IRLTLT01GBM156N, IRLTLT01DEM156N, DEXUSUK, CPALTT01GBM659N, UNRTUKA, GBRGDPQDSNAQ, ECBDFR · 2Y/5Y Gilt 参考 Trading Economics"
       : "FRED 无 API Key — 使用内置 benchmark 数据 · 2Y/5Y Gilt 参考 Trading Economics",
     metrics,
     bankRate,
@@ -289,8 +355,10 @@ export async function GET() {
     gbpUsd,
     unemployment,
     gdpGrowth,
+    ecbRate,
     carryCalc,
     macroFactors,
+    timeSeries: fredStatus === "ok" ? timeSeries : fallbackTimeSeries,
     updatedAt: new Date().toISOString(),
     freshness: {
       status: freshnessStatus,
@@ -299,4 +367,23 @@ export async function GET() {
   };
 
   return NextResponse.json(response);
+}
+
+// ============================================================
+// Fallback 历史时序生成器（无 FRED API Key 时）
+// ============================================================
+
+function generateFallbackHistory(latest: number, startMonth: string) {
+  const result: { date: string; value: number }[] = [];
+  const [y, m] = startMonth.split("-").map(Number);
+  for (let i = 0; i < 12; i++) {
+    let month = m + i;
+    let year = y;
+    if (month > 12) { month -= 12; year += 1; }
+    const dateStr = `${year}-${String(month).padStart(2, "0")}-01`;
+    // 轻微波动使 fallback 图表不至于完全平整
+    const jitter = (Math.sin(i * 0.8) * 0.15);
+    result.push({ date: dateStr, value: parseFloat((latest + jitter).toFixed(2)) });
+  }
+  return result;
 }

@@ -261,6 +261,12 @@ export interface UKMacroFactor {
   impact: "正面" | "负面" | "中性";
 }
 
+/** UK 视角 - 历史时序数据点 */
+export interface UKTimeSeriesPoint {
+  date: string;
+  value: number;
+}
+
 /** /api/uk-metrics 响应 */
 export interface UKMetricsResponse {
   success: boolean;
@@ -277,8 +283,16 @@ export interface UKMetricsResponse {
   gbpUsd: number;
   unemployment: number;
   gdpGrowth: number;
+  ecbRate: number;
   carryCalc: UKCarryCalc;
   macroFactors: UKMacroFactor[];
+  timeSeries: {
+    cpi: UKTimeSeriesPoint[];
+    bankRate: UKTimeSeriesPoint[];
+    gilt10Y: UKTimeSeriesPoint[];
+    bund10Y: UKTimeSeriesPoint[];
+    ecbRate: UKTimeSeriesPoint[];
+  };
   updatedAt: string;
   freshness: {
     status: "实时" | "部分实时" | "降级模式";
