@@ -78,7 +78,7 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
       <CardHeader className="pb-2">
         <CardTitle className="text-base">已完成拍卖 · 评分表</CardTitle>
         <p className="text-xs text-gray-400 mt-0.5">
-          各期限最新一场已完成拍卖的规模、Bills投资收益率 / Notes与Bonds高收益率、投标倍数与自定义评级
+          各期限最新一场已完成拍卖的规模、Bills投资收益率 / Notes与Bonds高收益率、投标倍数与自定义评级。最新完成拍卖置顶显示。
         </p>
       </CardHeader>
       <CardContent>
@@ -86,6 +86,7 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
           <TableHeader>
             <TableRow>
               <TableHead>品种</TableHead>
+              <TableHead className="text-right">拍卖日期</TableHead>
               <TableHead className="text-right">规模 ($B)</TableHead>
               <TableHead className="text-right">中标收益率</TableHead>
               <TableHead className="text-right">投标倍数</TableHead>
@@ -94,8 +95,21 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
           </TableHeader>
           <TableBody>
             {auctions.map((auction, i) => (
-              <TableRow key={i}>
-                <TableCell className="font-medium">{auction.securityTerm}</TableCell>
+              <TableRow key={i} className={auction.isLatest ? "bg-blue-50/50" : ""}>
+                <TableCell className="font-medium">
+                  {auction.securityTerm}
+                  {auction.isLatest && (
+                    <Badge
+                      variant="outline"
+                      className="ml-2 bg-blue-100 text-blue-700 border-blue-300 text-[10px] px-1.5 py-0"
+                    >
+                      {auction.auctionDate} · 最新
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell className="text-right text-xs text-gray-500">
+                  {auction.auctionDate}
+                </TableCell>
                 <TableCell className="text-right">${auction.offeringAmount}B</TableCell>
                 <TableCell className="text-right font-mono">
                   {auction.highYield.toFixed(3)}%
@@ -122,14 +136,24 @@ function AuctionTable({ auctions, loading }: { auctions: AuctionRecord[]; loadin
           <p className="text-xs text-gray-400">
             注：Bills 使用 Investment Rate；Notes/Bonds 使用 High Yield；评级为自定义模型评级，非财政部官方字段。
           </p>
-          <a
-            href="https://fiscaldata.treasury.gov/datasets/treasury-securities-auctions-data/treasury-securities-auctions-data#api-quick-guide"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-blue-600 hover:text-blue-800 underline underline-offset-2"
-          >
-            FiscalData 原始数据 ↗
-          </a>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            <a
+              href="https://fiscaldata.treasury.gov/datasets/treasury-securities-auctions-data/treasury-securities-auctions-data#api-quick-guide"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              FiscalData API ↗
+            </a>
+            <a
+              href="https://www.treasurydirect.gov/auctions/announcements-data-results/announcement-results-press-releases/auction-results/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              TreasuryDirect 官方拍卖结果 ↗
+            </a>
+          </div>
         </div>
       </CardContent>
     </Card>

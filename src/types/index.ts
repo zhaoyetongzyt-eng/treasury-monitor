@@ -13,6 +13,7 @@ export interface AuctionRecord {
   auctionDate: string;        // 拍卖日期 ISO 字符串
   issueDate: string;          // 发行日
   maturityDate: string;       // 到期日
+  isLatest: boolean;          // 是否为所有品种中最新完成的拍卖
 }
 
 export type AuctionRating = "强劲" | "稳健" | "中性" | "偏软" | "中性偏弱" | "疲弱·尾部";

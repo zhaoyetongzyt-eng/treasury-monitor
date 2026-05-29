@@ -224,21 +224,34 @@ export async function GET() {
         auctionDate: r.auction_date,
         issueDate: r.issue_date,
         maturityDate: r.maturity_date,
+        isLatest: false, // 下面统一标记
       };
     });
 
-    // 按期限从短到长排序
+    // 找出所有已完成拍卖中的最新日期
+    const latestDate = auctions
+      .map((a) => a.auctionDate)
+      .filter(Boolean)
+      .sort()
+      .reverse()[0] || null;
+
+    // 标记最新日期对应的记录（可能有多个品种同一天拍卖）
+    if (latestDate) {
+      for (const a of auctions) {
+        if (a.auctionDate === latestDate) {
+          a.isLatest = true;
+        }
+      }
+    }
+
+    // 排序：最新日期置顶，其余按期限从短到长
     auctions.sort((a, b) => {
+      // 最新日期的排最前
+      if (a.isLatest && !b.isLatest) return -1;
+      if (!a.isLatest && b.isLatest) return 1;
+      // 同为最新或同为非最新时，按期限排序
       return (TERM_ORDER[a.securityTerm] ?? 99) - (TERM_ORDER[b.securityTerm] ?? 99);
     });
-
-    // 发行结构概要
-    // dataFreshness 应取所有已完成拍卖中的最新日期（而非排序后第一条的日期）
-    const auctionDates = auctions.map((a) => a.auctionDate).filter(Boolean);
-    const latestDate =
-      auctionDates.length > 0
-        ? auctionDates.sort().reverse()[0]
-        : null;
 
     const issuance = {
       totalAuctioned: auctions.reduce((s, a) => s + a.offeringAmount, 0),
