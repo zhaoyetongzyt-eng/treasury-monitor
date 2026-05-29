@@ -67,7 +67,7 @@ export default function YieldOverviewCard() {
     },
     {
       label: "2s10s 利差",
-      value: yields.spread2s10s !== null ? `${yields.spread2s10s.toFixed(0)}bp` : "--",
+      value: yields.spread2s10s !== null ? `${(yields.spread2s10s * 100).toFixed(0)}bp` : "--",
       change: yields.change2s10s,
       color:
         yields.spread2s10s !== null && yields.spread2s10s < 0
