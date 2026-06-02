@@ -86,9 +86,34 @@ function DashboardCards({
           ))}
         </div>
         {/* 数据来源 */}
-        <p className="text-[10px] text-gray-400 mt-2 leading-relaxed border-t border-gray-100 pt-2">
-          数据来源：UST — Treasury Daily Par Yield Curve · Gilt — Trading Economics · Bund/BoE/CPI — FRED
-        </p>
+        <div className="text-[10px] text-gray-400 mt-2 leading-relaxed border-t border-gray-100 pt-2 space-y-0.5">
+          <p>
+            数据来源（{dataDate}）：
+          </p>
+          <p>
+            UST —{" "}
+            <a
+              href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?field_tdr_date_value=2026&type=daily_treasury_yield_curve"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              Treasury Daily Par Yield Curve
+            </a>
+          </p>
+          <p>
+            Gilt —{" "}
+            <a
+              href="https://tradingeconomics.com/united-kingdom/government-bond-yield"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              Trading Economics
+            </a>
+          </p>
+          <p>Bund / BoE / CPI — FRED</p>
+        </div>
       </CardContent>
     </Card>
   );
