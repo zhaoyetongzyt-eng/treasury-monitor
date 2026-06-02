@@ -50,31 +50,37 @@ const HISTORY_SERIES = [
 const FRED_BASE = "https://api.stlouisfed.org/fred/series/observations";
 
 // ============================================================
-// Built-in Benchmark（2026-05-29 手动验证）
-// 2Y/5Y Gilt 无法从 FRED 获取，使用 Trading Economics / worldgovernmentbonds.com 参考值
-// UST 2Y/5Y/10Y 同样可能需要 FRED，无 key 时用 fallback
+// Built-in Benchmark（2026-06-01 更新）
+// 2Y/5Y Gilt 使用 Trading Economics 市场 benchmark yield
+// UST 使用 Treasury Daily Treasury Par Yield Curve 官方口径
+// 来源:
+//   https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?field_tdr_date_value=2026&type=daily_treasury_yield_curve
+//   https://tradingeconomics.com/united-kingdom/government-bond-yield
 // ============================================================
-const BENCHMARK_GILT_2Y = 4.31;
-const BENCHMARK_GILT_5Y = 4.41;
+const BENCHMARK_GILT_2Y = 4.33;
+const BENCHMARK_GILT_5Y = 4.44;
 
 // ============================================================
 // Fallback 数据
 // ============================================================
 // 数据验证日期: 2026-06-01
-// - Bank Rate: BoE 4月30日决议维持 3.75%，下次 6月18日
-// - CPI: ONS 5月数据 2.8% (4月 3.3%)
-// - Fed Funds: FRED DFF 5月28日 3.62%
+// - UST: 美国财政部 Daily Treasury Par Yield Curve 2026-06-01 (2Y 4.05%, 5Y 4.18%, 10Y 4.47%)
+// - Gilt: Trading Economics market benchmark 2026-06-01
+// - Bank Rate: BoE 4月30日 3.75%
+// - CPI: ONS 5月 2.8%
+// - Fed Funds: FRED DFF 5月29日 3.62%
+// - Bund 10Y: ~3.01% (市场口径)
 const FALLBACK_DATA = {
   bankRate: 3.75,
   cpi: 2.8,
-  gilt10Y: 4.53,
-  bund10Y: 3.02,
+  gilt10Y: 4.90,
+  bund10Y: 3.01,
   gbpUsd: 1.3375,
   unemployment: 5.2,
   gdpGrowth: 0.6,
-  ust2Y: 3.89,
-  ust5Y: 4.05,
-  ust10Y: 4.40,
+  ust2Y: 4.05,
+  ust5Y: 4.18,
+  ust10Y: 4.47,
   fedFunds: 3.62,
 };
 
@@ -291,7 +297,7 @@ export async function GET() {
       value: fedFunds.toFixed(2),
       change: 0,
       unit: "%",
-      sub: "vs BoE Bank Rate",
+      sub: "Fed Funds / EFFR",
       trend: "neutral" as const,
     },
     {
@@ -299,7 +305,7 @@ export async function GET() {
       value: bankRate.toFixed(2),
       change: 0,
       unit: "%",
-      sub: `Fed-BoE 利差 ${(fedFunds - bankRate).toFixed(2)}pp`,
+      sub: `Fed-BoE ${Math.round((fedFunds - bankRate) * 100)}bp`,
       trend: "neutral" as const,
     },
     {
@@ -307,24 +313,24 @@ export async function GET() {
       value: ust2Y.toFixed(2),
       change: 0,
       unit: "%",
-      sub: `Gilt 2Y ${gilt2Y.toFixed(2)}% · 利差 ${(ust2Y - gilt2Y).toFixed(2)}pp`,
-      trend: "up" as const,
+      sub: `UST-Gilt 2Y ${Math.round((ust2Y - gilt2Y) * 100)}bp`,
+      trend: "down" as const,
     },
     {
       label: "UST 5Y",
       value: ust5Y.toFixed(2),
       change: 0,
       unit: "%",
-      sub: `Gilt 5Y ${gilt5Y.toFixed(2)}% · 利差 ${(ust5Y - gilt5Y).toFixed(2)}pp`,
-      trend: "up" as const,
+      sub: `UST-Gilt 5Y ${Math.round((ust5Y - gilt5Y) * 100)}bp`,
+      trend: "down" as const,
     },
     {
       label: "UST 10Y",
       value: ust10Y.toFixed(2),
       change: 0,
       unit: "%",
-      sub: `Gilt 10Y ${gilt10Y.toFixed(2)}% · 利差 ${(ust10Y - gilt10Y).toFixed(2)}pp`,
-      trend: "up" as const,
+      sub: `UST-Gilt 10Y ${Math.round((ust10Y - gilt10Y) * 100)}bp`,
+      trend: "down" as const,
     },
     {
       label: "UK-DE 10Y Spread",
@@ -347,7 +353,7 @@ export async function GET() {
       value: `+${Math.round((ust5Y - fedFunds) * 100)}`,
       change: 0,
       unit: "bp",
-      sub: `${ust5Y.toFixed(2)}% yield - ${fedFunds.toFixed(2)}% hedge`,
+      sub: `${ust5Y.toFixed(2)}% yield − ${fedFunds.toFixed(2)}% hedge cost`,
       trend: "up" as const,
     },
   ];
@@ -373,8 +379,8 @@ export async function GET() {
     success: true,
     dataDate,
     dataSource: apiKey
-      ? "FRED: BOERUKM, IRLTLT01GBM156N, IRLTLT01DEM156N, DEXUSUK, CPALTT01GBM659N, UNRTUKA, GBRGDPQDSNAQ, ECBDFR, DGS2, DGS5, DGS10, DFF · 2Y/5Y Gilt 参考 Trading Economics"
-      : "FRED 无 API Key — 使用内置 benchmark 数据 · 2Y/5Y Gilt 参考 Trading Economics",
+      ? "UST: Treasury Daily Par Yield Curve · Gilt: Trading Economics · Bund/BoE/CPI: FRED"
+      : "UST: Treasury 2026-06-01 官方曲线 · Gilt: Trading Economics · Bund: ~3.01% 市场口径 (FRED 无 API Key — 降级模式)",
     metrics,
     bankRate,
     cpi,

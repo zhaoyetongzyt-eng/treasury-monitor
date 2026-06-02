@@ -33,10 +33,12 @@ function DashboardCards({
   metrics,
   dataDate,
   freshness,
+  dataSource,
 }: {
   metrics: UKMetricsResponse["metrics"];
   dataDate: string;
   freshness: string;
+  dataSource: string;
 }) {
   return (
     <Card className="border-indigo-200">
@@ -83,6 +85,10 @@ function DashboardCards({
             </div>
           ))}
         </div>
+        {/* 数据来源 */}
+        <p className="text-[10px] text-gray-400 mt-2 leading-relaxed border-t border-gray-100 pt-2">
+          数据来源：UST — Treasury Daily Par Yield Curve · Gilt — Trading Economics · Bund/BoE/CPI — FRED
+        </p>
       </CardContent>
     </Card>
   );
@@ -1161,6 +1167,7 @@ export default function UKSubModule() {
             metrics={data.metrics}
             dataDate={data.dataDate}
             freshness={data.freshness.status}
+            dataSource={data.dataSource}
           />
 
           {/* A 宏观背景 */}
