@@ -32,7 +32,7 @@ export default function Home() {
       {/* 模块 02：持仓与资金流 */}
       <HoldingsModule />
 
-      {/* 模块 03：UST 买卖机构 */}
+      {/* 模块 03：UST 持有人结构 */}
       <USTHoldersModule />
 
       {/* 模块 04：杠杆率 */}

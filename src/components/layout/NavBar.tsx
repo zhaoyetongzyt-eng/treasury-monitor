@@ -14,7 +14,7 @@ const navItems: NavItem[] = [
   { id: "status", number: "", title: "摘要", titleEn: "Summary" },
   { id: "auction", number: "01", title: "供给与拍卖", titleEn: "Supply & Auction" },
   { id: "holdings", number: "02", title: "持仓与资金流", titleEn: "Holdings & Flows" },
-  { id: "ust-holders", number: "03", title: "UST 买卖机构", titleEn: "UST Buyers & Sellers" },
+  { id: "ust-holders", number: "03", title: "UST 持有人结构", titleEn: "UST Holders Structure" },
   { id: "leverage", number: "04", title: "杠杆率", titleEn: "Leverage Ratios" },
   { id: "global-investor", number: "05", title: "全球资金视角", titleEn: "Global Investor Lens" },
 ];
