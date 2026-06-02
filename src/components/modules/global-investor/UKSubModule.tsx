@@ -1086,7 +1086,7 @@ export default function UKSubModule() {
         <div className="h-px flex-1 bg-gray-200" />
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200">
           <span className="w-3 h-3 rounded-full bg-indigo-500" />
-          <span className="text-sm font-semibold text-indigo-700">英国视角</span>
+          <span className="text-sm font-semibold text-indigo-700">B. 英国视角</span>
           <span className="text-xs text-indigo-400">UK Lens: Gilt vs UST</span>
         </div>
         <div className="h-px flex-1 bg-gray-200" />
@@ -1119,35 +1119,40 @@ export default function UKSubModule() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {/* 模块标题 + 定位文案 */}
+          {/* 模块标题 + 小标签 */}
           <div className="mb-2">
-            <h2 className="text-lg font-bold text-gray-800">
-              英国视角：美债的高息竞争者
-            </h2>
+            <div className="flex items-center gap-3 mb-1">
+              <h2 className="text-lg font-bold text-gray-800">
+                英国视角：Gilt 作为 UST 的高息替代资产
+              </h2>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 border border-gray-200 text-[10px] text-gray-500 whitespace-nowrap">
+                Global Investor Lens · Cross-Market Relative Value
+              </span>
+            </div>
             <p className="text-xs text-gray-500 mt-0.5">
-              UK Lens: Gilt as a Relative Competitor to UST
+              UK Lens: Gilt as a High-Yield Alternative to UST
             </p>
           </div>
 
-          {/* 定位文案 */}
-          <div className="p-4 rounded-lg bg-indigo-50 border border-indigo-200">
-            <p className="text-sm text-indigo-800 leading-relaxed">
-              本模块并非独立研究英债市场，而是将英国国债作为美债的主要高息竞争资产进行相对价值比较。
-              对全球固收投资者而言，美债配置并不只取决于美国自身的供给、拍卖和财政状况，
-              也取决于其他发达市场主权债是否提供更有吸引力的收益率、对冲后 carry 和资本利得空间。
+          {/* 定位文案（蓝色说明框） */}
+          <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+            <p className="text-sm text-blue-800 leading-relaxed">
+              本模块并非独立研究英债，而是将 Gilt 作为 UST 的高息替代资产进行相对价值比较。
+              对全球固收资金而言，美债吸引力不仅取决于美国自身的供给、拍卖和财政状况，
+              也取决于英债等其他发达市场主权债是否提供更高的收益率、对冲后 carry 与资本利得空间。
             </p>
           </div>
 
-          {/* 四个核心问题 */}
+          {/* 四个核心信号（白色问题框） */}
           <div className="p-4 rounded-lg bg-white border border-gray-200">
-            <h3 className="text-sm font-bold text-gray-800 mb-2">英国视角回答的四个问题</h3>
+            <h3 className="text-sm font-bold text-gray-800 mb-2">本模块关注的四个信号</h3>
             <ol className="space-y-1.5 text-xs text-gray-700 list-decimal list-inside">
               <li className="font-medium">
-                当 Gilt 收益率也处于高位时，美债的相对收益优势是否仍然存在？
+                相对收益率：当 Gilt 收益率处于高位时，UST 的收益率优势是否仍然存在？
               </li>
-              <li>对欧洲/全球资金而言，UST 与 Gilt 谁的对冲后 carry 更有吸引力？</li>
-              <li>如果英国财政风险溢价压缩，是否会分流部分长端主权债配置需求？</li>
-              <li>如果 Gilt 供给结构变化缓解长端压力，美债长端是否面临相对估值压力？</li>
+              <li>对冲后收益：对欧洲/全球资金而言，UST 与 Gilt 谁的 hedged carry 更有吸引力？</li>
+              <li>风险溢价：若英国财政风险溢价回落，Gilt 是否会分流部分长端主权债配置需求？</li>
+              <li>供给竞争：若 Gilt 长端供给压力缓解，美债长端是否面临相对估值压力？</li>
             </ol>
           </div>
 
