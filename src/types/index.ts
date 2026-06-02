@@ -284,6 +284,10 @@ export interface UKMetricsResponse {
   unemployment: number;
   gdpGrowth: number;
   ecbRate: number;
+  ust2Y: number;
+  ust5Y: number;
+  ust10Y: number;
+  fedFunds: number;
   carryCalc: UKCarryCalc;
   macroFactors: UKMacroFactor[];
   timeSeries: {
@@ -292,6 +296,9 @@ export interface UKMetricsResponse {
     gilt10Y: UKTimeSeriesPoint[];
     bund10Y: UKTimeSeriesPoint[];
     ecbRate: UKTimeSeriesPoint[];
+    ust2Y: UKTimeSeriesPoint[];
+    ust5Y: UKTimeSeriesPoint[];
+    ust10Y: UKTimeSeriesPoint[];
   };
   updatedAt: string;
   freshness: {

@@ -12,15 +12,21 @@ import {
 import type { UKMetricsResponse } from "@/types";
 
 // ============================================================
-// 英国视角：Gilt 高息安全垫与价格重定价机会
+// 英国视角：Gilt 作为 UST 的高息替代资产（美债相对吸引力压力测试）
+//
+// 本模块并非独立研究英债市场，而是将英国国债作为美债的主要高息竞争资产
+// 进行相对价值比较。核心问题：当英债收益率也很高时，美债对全球资金还有
+// 多少吸引力？
+//
 // 数据来源：
 //   - /api/uk-metrics: FRED (BOERUKM, IRLTLT01GBM156N, IRLTLT01DEM156N,
-//     DEXUSUK, CPALTT01GBM659N, UNRTUKA, GBRGDPQDSNAQ)
+//     DEXUSUK, CPALTT01GBM659N, UNRTUKA, GBRGDPQDSNAQ, ECBDFR,
+//     DGS2, DGS5, DGS10, DFF)
 //   2Y/5Y Gilt 参考 Trading Economics / worldgovernmentbonds.com
 // ============================================================
 
 // ============================================================
-// 子组件：Dashboard 指标卡片
+// 子组件：Dashboard — UST vs Gilt 相对收益率快照
 // ============================================================
 
 function DashboardCards({
@@ -33,11 +39,11 @@ function DashboardCards({
   freshness: string;
 }) {
   return (
-    <Card className="border-blue-200">
+    <Card className="border-indigo-200">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-base">UK Gilt Dashboard · 数据快照</CardTitle>
+            <CardTitle className="text-base">01  UST vs Gilt 相对收益率快照</CardTitle>
             <p className="text-xs text-gray-500 mt-1 flex items-center gap-2">
               <span>{dataDate}</span>
               <span className={`px-1.5 py-0.5 rounded text-[10px] border ${
@@ -45,7 +51,7 @@ function DashboardCards({
                   ? "bg-green-50 text-green-700 border-green-200"
                   : "bg-amber-50 text-amber-700 border-amber-200"
               }`}>
-                {freshness === "实时" ? "✅ FRED 实时" : "⚠ 降级模式"}
+                {freshness === "实时" ? "FRED 实时" : "降级模式"}
               </span>
             </p>
           </div>
@@ -53,14 +59,14 @@ function DashboardCards({
       </CardHeader>
       <CardContent>
         {/* 一句话判断 */}
-        <div className="mb-3 p-2.5 rounded-lg bg-blue-50 border border-blue-100">
-          <p className="text-xs text-blue-800 leading-relaxed">
+        <div className="mb-3 p-2.5 rounded-lg bg-indigo-50 border border-indigo-100">
+          <p className="text-xs text-indigo-800 leading-relaxed">
             <span className="font-semibold">当前判断：</span>
-            高息安全垫仍在，但单纯 carry 不足以覆盖利率/汇率反向波动，
-            策略重心应放在中前端 repricing 与跨市场利差交易。
+            Gilt 作为 UST 的主要替代资产，其高收益率结构对全球固收资金形成分流压力。
+            但 UST 在流动性、美元属性和对冲后收益上仍有护城河——关键看利差能否维持。
           </p>
         </div>
-        {/* 8 指标卡片 */}
+        {/* 8 指标对比卡片 */}
         <div className="grid grid-cols-4 gap-2">
           {metrics.map((item) => (
             <div key={item.label} className="text-center p-2 rounded-lg bg-gray-50 border border-gray-100">
@@ -92,6 +98,7 @@ function MacroHeatmap({
   bankRate,
   unemployment,
   gdpGrowth,
+  fedFunds,
   timeSeries,
 }: {
   macroFactors: UKMetricsResponse["macroFactors"];
@@ -99,6 +106,7 @@ function MacroHeatmap({
   bankRate: number;
   unemployment: number;
   gdpGrowth: number;
+  fedFunds: number;
   timeSeries?: UKMetricsResponse["timeSeries"];
 }) {
   const impactColor = (impact: string) =>
@@ -108,7 +116,7 @@ function MacroHeatmap({
 
   // CPI vs Bank Rate 折线图数据
   const cpiChartData = (timeSeries?.cpi ?? []).slice(-12).map((pt) => {
-    const m = pt.date.slice(5, 7); // "2025-06-01" → "06"
+    const m = pt.date.slice(5, 7);
     const bankRatePt = (timeSeries?.bankRate ?? []).find((b) => b.date.slice(0, 7) === pt.date.slice(0, 7));
     return {
       month: `${parseInt(m)}月`,
@@ -121,15 +129,16 @@ function MacroHeatmap({
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 font-mono">01</span>
-          <CardTitle className="text-base">UK 基本面：Higher for Longer 的粘性来源</CardTitle>
+          <span className="text-xs text-gray-400 font-mono">A</span>
+          <CardTitle className="text-base">宏观背景：英国粘性通胀是 Gilt 高收益率的根源</CardTitle>
         </div>
         <p className="text-xs text-gray-500">
-          核心矛盾不是"强增长支持加息"，而是"弱增长不足以触发快速降息，而通胀与工资粘性又迫使 BoE 保持谨慎"
+          英国通胀粘性与 BoE 政策滞后于 Fed 的降息节奏，是 Gilt 持续提供高收益率的宏观经济基础。
+          这构成了 UST 面临的替代竞争压力来源。
         </p>
       </CardHeader>
       <CardContent>
-        {/* 五因子 Heatmap（通胀 / 工资 / 就业 / 增长 / 财政） */}
+        {/* 五因子 Heatmap */}
         <div className="grid grid-cols-5 gap-2 mb-4">
           {[
             { factor: "通胀粘性", indicator: "CPI YoY", value: `${cpi}%`, meaning: cpi > 2.5 ? "高于2%目标" : "趋近目标", impact: cpi > 2.5 ? ("负面" as const) : ("正面" as const) },
@@ -150,7 +159,7 @@ function MacroHeatmap({
         {/* CPI vs Bank Rate 折线图 */}
         {cpiChartData.length > 0 && (
           <div className="mb-4">
-            <h4 className="text-xs font-semibold text-gray-600 mb-2">CPI YoY vs Bank Rate（近 12 个月）</h4>
+            <h4 className="text-xs font-semibold text-gray-600 mb-2">UK CPI YoY vs BoE Bank Rate（近 12 个月）</h4>
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={cpiChartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -168,48 +177,53 @@ function MacroHeatmap({
           </div>
         )}
 
-        {/* 关键数据对比表 */}
+        {/* 关键数据对比表：US vs UK */}
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-1.5 font-medium text-gray-500">指标</th>
+                <th className="text-right py-1.5 font-medium text-gray-500">US</th>
                 <th className="text-right py-1.5 font-medium text-gray-500">UK</th>
-                <th className="text-right py-1.5 font-medium text-gray-500">Euro Area</th>
                 <th className="text-right py-1.5 font-medium text-gray-500">差值</th>
+                <th className="text-right py-1.5 font-medium text-gray-500">对美债含义</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-gray-100">
-                <td className="py-1.5 text-gray-700">CPI YoY</td>
-                <td className="py-1.5 text-right font-medium">{cpi}%</td>
-                <td className="py-1.5 text-right text-gray-500">~2.2%</td>
-                <td className="py-1.5 text-right text-red-600">+{(cpi - 2.2).toFixed(1)}pp</td>
+                <td className="py-1.5 text-gray-700">政策利率</td>
+                <td className="py-1.5 text-right font-medium">{fedFunds.toFixed(2)}%</td>
+                <td className="py-1.5 text-right font-medium">{bankRate.toFixed(2)}%</td>
+                <td className="py-1.5 text-right text-red-600">+{(bankRate - fedFunds).toFixed(2)}pp</td>
+                <td className="py-1.5 text-right text-[10px] text-gray-500">如果 UK 比 US 更有降息空间，长端 Gilt 弹性更大</td>
               </tr>
               <tr className="border-b border-gray-100">
-                <td className="py-1.5 text-gray-700">政策利率</td>
-                <td className="py-1.5 text-right font-medium">{bankRate.toFixed(2)}%</td>
-                <td className="py-1.5 text-right text-gray-500">2.00%</td>
-                <td className="py-1.5 text-right text-red-600">+{(bankRate - 2.0).toFixed(2)}pp</td>
+                <td className="py-1.5 text-gray-700">CPI YoY</td>
+                <td className="py-1.5 text-right text-gray-500">~2.7%</td>
+                <td className="py-1.5 text-right font-medium">{cpi}%</td>
+                <td className="py-1.5 text-right text-red-600">+{(cpi - 2.7).toFixed(1)}pp</td>
+                <td className="py-1.5 text-right text-[10px] text-gray-500">UK 通胀粘性更强 → BoE 降息节奏更慢</td>
               </tr>
               <tr className="border-b border-gray-100">
                 <td className="py-1.5 text-gray-700">失业率</td>
+                <td className="py-1.5 text-right text-gray-500">~4.1%</td>
                 <td className="py-1.5 text-right font-medium">{unemployment}%</td>
-                <td className="py-1.5 text-right text-gray-500">~6.2%</td>
-                <td className="py-1.5 text-right text-green-600">{(unemployment - 6.2).toFixed(1)}pp</td>
+                <td className="py-1.5 text-right text-green-600">{(unemployment - 4.1).toFixed(1)}pp</td>
+                <td className="py-1.5 text-right text-[10px] text-gray-500">UK 劳动力偏松 → 降息条件更充分</td>
               </tr>
               <tr>
                 <td className="py-1.5 text-gray-700">GDP 增长</td>
+                <td className="py-1.5 text-right text-gray-500">~2.0%</td>
                 <td className="py-1.5 text-right font-medium">{gdpGrowth > 0 ? "+" : ""}{gdpGrowth}%</td>
-                <td className="py-1.5 text-right text-gray-500">~0.3%</td>
-                <td className="py-1.5 text-right text-gray-500">{(gdpGrowth - 0.3).toFixed(1)}pp</td>
+                <td className="py-1.5 text-right text-green-600">{(gdpGrowth - 2.0).toFixed(1)}pp</td>
+                <td className="py-1.5 text-right text-[10px] text-gray-500">US 增长明显更强 → UST 长端有基本面支撑</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>来源：ONS CPI · GDP · Labour Market · BoE Bank Rate</span>
+          <span>来源：ONS CPI · GDP · Labour Market · BoE Bank Rate · FRED</span>
           <span className="flex gap-2">
             <a href="https://www.ons.gov.uk/economy/inflationandpriceindices" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">ONS CPI ↗</a>
             <a href="https://www.ons.gov.uk/employmentandlabourmarket" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">ONS Labour ↗</a>
@@ -222,85 +236,210 @@ function MacroHeatmap({
 }
 
 // ============================================================
-// 子模块 2：Carry Cushion Calculator
+// 子模块 2：Carry Cushion — UST vs Gilt 对冲后收益压力测试
 // ============================================================
 
 function CarryCushionCalc({
   carryCalc,
   gilt5Y,
   bankRate,
+  ust5Y,
+  fedFunds,
 }: {
   carryCalc: UKMetricsResponse["carryCalc"];
   gilt5Y: number;
   bankRate: number;
+  ust5Y: number;
+  fedFunds: number;
 }) {
-  const { hedgedCarry, duration, bullCase, bearCase } = carryCalc;
+  const { duration, hedgedCarry } = carryCalc;
 
+  // UST carry（组件侧计算）
+  const ustHedgedCarry = Math.round((ust5Y - fedFunds) * 100);
+  const ustDuration = 4.4;
+
+  // --- Gilt 情景（API 返回值全部是 bp） ---
+  const giltBullPrice = carryCalc.bullCase.priceReturn;   // bp
+  const giltBullTotal = carryCalc.bullCase.totalReturn;   // bp（API 已换算）
+  const giltBearPrice = carryCalc.bearCase.priceReturn;   // bp
+  const giltBearTotal = carryCalc.bearCase.totalReturn;   // bp
+
+  // --- UST 情景 ---
+  const ustBullPrice = parseFloat((-(ustDuration * -0.25) * 100).toFixed(1));
+  const ustBullTotal = parseFloat((ustBullPrice + ustHedgedCarry).toFixed(1));
+  const ustBearPrice = parseFloat((-(ustDuration * 0.20) * 100).toFixed(1));
+  const ustBearTotal = parseFloat((ustBearPrice + ustHedgedCarry).toFixed(1));
+
+  // 条形图数据（UST vs Gilt，统一为 % 小数供 Recharts）
   const chartData = [
-    { name: "静态 Carry", value: hedgedCarry / 100, fill: "#3B82F6", label: `+${hedgedCarry}bp` },
-    { name: "Bull 价格收益", value: bullCase.priceReturn / 100, fill: "#22C55E", label: `+${bullCase.priceReturn.toFixed(1)}%` },
-    { name: "Bull 总回报", value: bullCase.totalReturn / 100, fill: "#166534", label: `+${bullCase.totalReturn.toFixed(1)}%` },
-    { name: "Bear 价格亏损", value: bearCase.priceReturn / 100, fill: "#EF4444", label: `${bearCase.priceReturn.toFixed(1)}%` },
-    { name: "Bear 净回报", value: bearCase.totalReturn / 100, fill: "#991B1B", label: `${bearCase.totalReturn.toFixed(1)}%` },
+    { name: "UST Base Carry", value: ustHedgedCarry / 100, fill: "#2563EB" },
+    { name: "Gilt Base Carry", value: hedgedCarry / 100, fill: "#7C3AED" },
+    { name: "UST Bull Total", value: ustBullTotal / 100, fill: "#059669" },
+    { name: "Gilt Bull Total", value: giltBullTotal / 100, fill: "#A3E635" },
+    { name: "UST Bear Total", value: ustBearTotal / 100, fill: "#DC2626" },
+    { name: "Gilt Bear Total", value: giltBearTotal / 100, fill: "#F87171" },
   ];
+
+  // 核心结论判断
+  const giltBearCanSurvive = Math.abs(giltBearPrice) < hedgedCarry;
 
   return (
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400 font-mono">02</span>
-          <CardTitle className="text-base">Carry Cushion：套息是安全垫，不是主收益来源</CardTitle>
+          <CardTitle className="text-base">UST vs Gilt Carry Cushion：英债是否会分流美债配置需求</CardTitle>
         </div>
-        <p className="text-xs text-red-600 font-medium mt-1">
-          ⚠ 纯粹为了几十 bp 套息配置英债的落地案例并不多。英债配置的核心是判断收益率未来存在下行空间；较高 carry 只是容错垫。若行情不及预期，票息收益可以缓冲短期波动；若收益率如预期下行，则可同时获得利息收益与债券价格上涨收益。
-        </p>
-        <p className="text-xs text-gray-500 mt-1">
-          对冲成本参考：SONIA（Sterling Overnight Index Average，BoE 管理）≈ Bank Rate，反映英镑隔夜资金成本
-        </p>
       </CardHeader>
       <CardContent>
-        {/* 公式 */}
-        <div className="mb-3 p-2.5 rounded-lg bg-gray-50 border border-gray-200 font-mono text-xs text-gray-700">
-          <p>Hedged Carry ≈ Gilt Yield − GBP Hedge Cost</p>
-          <p>Price Return ≈ −Modified Duration × ΔYield</p>
-          <p>Total Return ≈ Hedged Carry + Price Return</p>
+        {/* 核心判断 */}
+        <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
+          <p className="text-sm font-semibold text-amber-900 mb-1">核心判断</p>
+          <p className="text-xs text-amber-800 leading-relaxed">
+            Carry 是容错垫，收益率下行带来的价格收益才是主要弹性。
+            本模块用 5Y Gilt 作为示例，观察高起始收益率能否抵御利率反向波动。
+          </p>
+          <p className="text-xs text-amber-700 mt-1.5 leading-relaxed">
+            对全球固收资金而言，Gilt 的意义不是单纯套息，而是作为 UST 的高息替代资产：
+            若 Gilt 的 carry cushion 与收益率下行弹性优于 UST，可能边际分流美债久期需求。
+          </p>
         </div>
 
-        {/* 三情景卡片 */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-center">
-            <p className="text-[11px] font-semibold text-blue-700 mb-1">Base Carry</p>
-            <p className="text-xl font-bold text-blue-600">+{hedgedCarry}bp</p>
-            <p className="text-[10px] text-blue-500 mt-0.5">
-              {gilt5Y.toFixed(2)}% − {bankRate.toFixed(2)}%
-            </p>
-          </div>
-          <div className="p-3 rounded-lg bg-green-50 border border-green-200 text-center">
-            <p className="text-[11px] font-semibold text-green-700 mb-1">Bull Case ↓25bp</p>
-            <p className="text-xl font-bold text-green-600">+{bullCase.priceReturn.toFixed(1)}%</p>
-            <p className="text-[10px] text-green-500 mt-0.5">
-              总计约 +{bullCase.totalReturn.toFixed(1)}%
-            </p>
-          </div>
-          <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-center">
-            <p className="text-[11px] font-semibold text-red-700 mb-1">Bear Case ↑20bp</p>
-            <p className="text-xl font-bold text-red-600">{bearCase.priceReturn.toFixed(1)}%</p>
-            <p className="text-[10px] text-red-500 mt-0.5">
-              净值约 {bearCase.totalReturn.toFixed(1)}%
-            </p>
+        {/* 简化公式 */}
+        <div className="mb-4 p-2.5 rounded-lg bg-gray-50 border border-gray-200">
+          <p className="text-[11px] font-semibold text-gray-600 mb-1">简化公式</p>
+          <div className="font-mono text-[11px] text-gray-700 space-y-0.5">
+            <p>Hedged Carry ≈ Bond Yield − GBP Hedge Cost Proxy</p>
+            <p>Price Return ≈ −Modified Duration × ΔYield</p>
+            <p>Total Return ≈ Hedged Carry + Price Return</p>
           </div>
         </div>
 
-        {/* 条形图 */}
-        <div className="h-[180px]">
+        {/* 数据假设 + 计算结果：双栏 */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          {/* 左：数据假设 */}
+          <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-100">
+            <p className="text-[11px] font-semibold text-indigo-700 mb-2">数据假设</p>
+            <div className="text-[11px] text-indigo-800 space-y-1">
+              <p>5Y Gilt Yield: <span className="font-bold">{gilt5Y.toFixed(2)}%</span></p>
+              <p>GBP Hedge Cost Proxy: <span className="font-bold">{bankRate.toFixed(2)}%</span> (≈ Bank Rate)</p>
+              <p>Modified Duration: <span className="font-bold">{duration}Y</span></p>
+            </div>
+          </div>
+
+          {/* 右：三档计算结果 */}
+          <div className="space-y-1.5">
+            {/* Base Carry */}
+            <div className="p-2 rounded bg-blue-50 border border-blue-100 text-center">
+              <p className="text-[10px] text-blue-600">Base Carry</p>
+              <p className="text-lg font-bold text-blue-700">+{hedgedCarry}bp</p>
+            </div>
+            {/* Bull Case */}
+            <div className="p-2 rounded bg-green-50 border border-green-100">
+              <p className="text-[10px] text-green-600 mb-0.5">Bull Case: Yield −25bp</p>
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-green-700">价格收益</span>
+                <span className="font-semibold text-green-700">+{giltBullPrice.toFixed(1)}bp</span>
+              </div>
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-green-700">总回报</span>
+                <span className="font-bold text-green-700">+{giltBullTotal.toFixed(1)}bp</span>
+              </div>
+            </div>
+            {/* Bear Case */}
+            <div className={`p-2 rounded border text-center ${giltBearCanSurvive ? "bg-red-50 border-red-100" : "bg-red-100 border-red-300"}`}>
+              <p className="text-[10px] text-red-600 mb-0.5">Bear Case: Yield +20bp</p>
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-red-600">价格损失</span>
+                <span className="font-semibold text-red-600">{giltBearPrice.toFixed(0)}bp</span>
+              </div>
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-red-600">净回报</span>
+                <span className={`font-bold ${giltBearTotal >= 0 ? "text-green-600" : "text-red-700"}`}>
+                  {giltBearTotal >= 0 ? "+" : ""}{giltBearTotal.toFixed(0)}bp
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 结论 */}
+        <div className="mb-4 p-2.5 rounded-lg bg-gray-50 border border-gray-200">
+          <p className="text-[11px] font-semibold text-gray-600 mb-1">结论</p>
+          <p className="text-[11px] text-gray-700 leading-relaxed">
+            以 5Y Gilt（{gilt5Y.toFixed(2)}%）为例，当前对冲后 carry 为 +{hedgedCarry}bp；
+            若利率下行 25bp，总回报可达 +{giltBullTotal.toFixed(0)}bp（carry + 价格弹性）；
+            若利率上行 20bp，{giltBearCanSurvive ? `carry 仍能覆盖价格损失，净回报 ${giltBearTotal.toFixed(0)}bp` : `净回报 ${giltBearTotal.toFixed(0)}bp，carry 安全垫不足`}。
+            <span className="text-red-600 font-medium">但英债套息不是无风险套利，汇率和利率反向波动可能抹平全年 carry。</span>
+          </p>
+        </div>
+
+        {/* UST vs Gilt 三列对比表 */}
+        <div className="overflow-x-auto mb-4">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="text-left py-1.5 font-semibold text-gray-600">项目</th>
+                <th className="text-right py-1.5 font-semibold text-blue-700">5Y UST</th>
+                <th className="text-right py-1.5 font-semibold text-purple-700">5Y Gilt</th>
+                <th className="text-right py-1.5 font-semibold text-gray-600">解读</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-100">
+                <td className="py-1.5 text-gray-700">本币收益率</td>
+                <td className="py-1.5 text-right font-medium text-blue-700">{ust5Y.toFixed(2)}%</td>
+                <td className="py-1.5 text-right font-medium text-purple-700">{gilt5Y.toFixed(2)}%</td>
+                <td className="py-1.5 text-right text-[10px] text-gray-500">
+                  {gilt5Y > ust5Y ? "Gilt 起始收益率更高" : "UST 起始收益率更高"}
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-1.5 text-gray-700">对冲后 Base Carry</td>
+                <td className="py-1.5 text-right font-bold text-blue-700">+{ustHedgedCarry}bp</td>
+                <td className="py-1.5 text-right font-bold text-purple-700">+{hedgedCarry}bp</td>
+                <td className="py-1.5 text-right text-[10px] text-gray-500">
+                  {hedgedCarry > ustHedgedCarry ? "Gilt carry 更厚 → 分流压力" : "UST 对冲后收益更优 → 维持核心配置"}
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-1.5 text-gray-700">修正久期</td>
+                <td className="py-1.5 text-right text-gray-600">{ustDuration}年</td>
+                <td className="py-1.5 text-right text-gray-600">{duration}年</td>
+                <td className="py-1.5 text-right text-[10px] text-gray-500">久期越高 → 利率上行时越脆弱</td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-1.5 text-gray-700">Bull：Yield −25bp</td>
+                <td className="py-1.5 text-right text-green-700">+{ustBullTotal.toFixed(1)}bp</td>
+                <td className="py-1.5 text-right text-green-700">+{giltBullTotal.toFixed(1)}bp</td>
+                <td className="py-1.5 text-right text-[10px] text-gray-500">
+                  谁的资本利得弹性更高 —— {giltBullTotal > ustBullTotal ? "Gilt" : "UST"} 弹性更大
+                </td>
+              </tr>
+              <tr>
+                <td className="py-1.5 text-gray-700">Bear：Yield +20bp</td>
+                <td className="py-1.5 text-right text-red-700">{ustBearTotal.toFixed(1)}bp</td>
+                <td className="py-1.5 text-right text-red-700">{giltBearTotal.toFixed(1)}bp</td>
+                <td className="py-1.5 text-right text-[10px] text-gray-500">
+                  {Math.abs(ustBearTotal) > ustHedgedCarry ? "UST carry 扛不住" : "UST carry 可覆盖"}
+                  {" · "}
+                  {Math.abs(giltBearPrice) > hedgedCarry ? "Gilt carry 扛不住" : "Gilt carry 可覆盖"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* 条形图：UST vs Gilt 六组 Total Return */}
+        <div className="h-[200px] mb-1">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 40, left: 80, bottom: 0 }}>
+            <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 40, left: 90, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" tickFormatter={(v) => `${(v * 100).toFixed(1)}%`} fontSize={11} />
-              <YAxis type="category" dataKey="name" fontSize={11} width={80} />
-              <Tooltip formatter={(value) => `${(Number(value) * 100).toFixed(1)}%`} />
+              <XAxis type="number" tickFormatter={(v) => `${(v * 100).toFixed(0)}bp`} fontSize={10} />
+              <YAxis type="category" dataKey="name" fontSize={10} width={90} />
+              <Tooltip formatter={(value) => `${(Number(value) * 100).toFixed(0)}bp`} />
               <ReferenceLine x={0} stroke="#9CA3AF" />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+              <Bar dataKey="value" radius={[0, 3, 3, 0]}>
                 {chartData.map((entry, i) => (
                   <Cell key={i} fill={entry.fill} />
                 ))}
@@ -309,16 +448,19 @@ function CarryCushionCalc({
           </ResponsiveContainer>
         </div>
 
-        <p className="mt-1 text-[10px] text-gray-400 italic">
-          以 5Y Gilt 为例，久期约 {duration} 年。若收益率下行 25bp → 价格收益约 +{bullCase.priceReturn.toFixed(1)}%；
-          若上行 20bp → 价格损失约 {Math.abs(bearCase.priceReturn).toFixed(1)}%，基本抹平全年 carry。
+        {/* SONIA / Bank Rate 仅作 proxy 说明 */}
+        <p className="mt-0 text-[10px] text-gray-400 italic leading-relaxed">
+          GBP Hedge Cost Proxy ≈ Bank Rate（{bankRate.toFixed(2)}%）≈ SONIA。
+          此处的「对冲后 carry」仅为本地投资者简化估算，并非完整的跨币种对冲后收益率计算——
+          完整计算需考虑 FX forward points、cross-currency basis swap 和资金成本差异。
         </p>
 
         <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>来源：FRED (BOERUKM) · SONIA (BoE) · 5Y Gilt 参考 Trading Economics</span>
+          <span>来源：FRED (BOERUKM · DGS5 · DFF) · SONIA (BoE) · 5Y Gilt 参考 Trading Economics</span>
           <span className="flex gap-2">
             <a href="https://zh.tradingeconomics.com/united-kingdom/government-bond-yield" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">Gilt Yields ↗</a>
             <a href="https://fred.stlouisfed.org/series/BOERUKM" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">Bank Rate ↗</a>
+            <a href="https://fred.stlouisfed.org/series/DGS5" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">UST 5Y ↗</a>
             <a href="https://www.bankofengland.co.uk/markets/sonia-benchmark" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">SONIA ↗</a>
           </span>
         </p>
@@ -328,35 +470,117 @@ function CarryCushionCalc({
 }
 
 // ============================================================
-// 子模块 3：Tenor Playbook（期限分层策略）
+// 子模块 3：Tenor RV — UST vs Gilt 哪个期限更有吸引力
 // ============================================================
 
-function TenorPlaybook() {
+function TenorPlaybook({
+  ust2Y,
+  ust5Y,
+  ust10Y,
+  gilt2Y,
+  gilt5Y,
+  gilt10Y,
+  bankRate,
+  fedFunds,
+}: {
+  ust2Y: number;
+  ust5Y: number;
+  ust10Y: number;
+  gilt2Y: number;
+  gilt5Y: number;
+  gilt10Y: number;
+  bankRate: number;
+  fedFunds: number;
+}) {
   return (
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400 font-mono">03</span>
-          <CardTitle className="text-base">Tenor Playbook：中前端赚重定价，长端赚风险溢价压缩</CardTitle>
+          <CardTitle className="text-base">期限相对价值：美债与英债谁更适合承担久期？</CardTitle>
         </div>
         <p className="text-xs text-gray-500">
-          中前端英债的关键词是 BoE repricing；长端英债的关键词是 fiscal credibility 和 term premium
+          比较不同期限上 UST 与 Gilt 的相对吸引力，识别全球资金在中段配置竞争最激烈的区域
         </p>
       </CardHeader>
       <CardContent>
+        {/* 期限对比表 */}
+        <div className="overflow-x-auto mb-4">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="text-left py-1.5 font-semibold text-gray-600">期限</th>
+                <th className="text-left py-1.5 font-semibold text-blue-700">美债逻辑</th>
+                <th className="text-left py-1.5 font-semibold text-purple-700">英债逻辑</th>
+                <th className="text-left py-1.5 font-semibold text-gray-600">对美债含义</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-100">
+                <td className="py-2 text-gray-700 font-medium">
+                  <div>2Y</div>
+                  <div className="text-[10px] text-gray-400">
+                    UST {ust2Y.toFixed(2)}% / Gilt {gilt2Y.toFixed(2)}%
+                  </div>
+                </td>
+                <td className="py-2 text-blue-700">Fed 路径定价，短端锚定降息预期</td>
+                <td className="py-2 text-purple-700">BoE 路径定价，政策利率下调空间更大</td>
+                <td className="py-2 text-gray-600 text-[10px]">
+                  比较短端政策预期谁更有下行空间——
+                  {bankRate > fedFunds ? " BoE 降息空间更大 → Gilt 短端弹性更强" : " Fed 降息更领先 → UST 短端先受益"}
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-2 text-gray-700 font-medium">
+                  <div>5Y</div>
+                  <div className="text-[10px] text-gray-400">
+                    UST {ust5Y.toFixed(2)}% / Gilt {gilt5Y.toFixed(2)}%
+                  </div>
+                </td>
+                <td className="py-2 text-blue-700">降息路径 + term premium，中期配置主力</td>
+                <td className="py-2 text-purple-700">carry + roll-down + BoE repricing，全球资金竞争最激烈</td>
+                <td className="py-2 text-gray-600 text-[10px]">
+                  中段是竞争核心区——谁的对冲后 carry 更优，谁就能吸引全球固收配置
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-2 text-gray-700 font-medium">
+                  <div>10Y</div>
+                  <div className="text-[10px] text-gray-400">
+                    UST {ust10Y.toFixed(2)}% / Gilt {gilt10Y.toFixed(2)}%
+                  </div>
+                </td>
+                <td className="py-2 text-blue-700">财政赤字 + term premium，全球定价锚</td>
+                <td className="py-2 text-purple-700">财政可信度 + Gilt 供给/QT，风险溢价压缩空间</td>
+                <td className="py-2 text-gray-600 text-[10px]">
+                  比较长端财政风险溢价——US 财政赤字规模更大，但美元安全资产地位更强
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2 text-gray-700 font-medium">
+                  <div>30Y</div>
+                  <div className="text-[10px] text-gray-400">超长端参考</div>
+                </td>
+                <td className="py-2 text-blue-700">美国债务可持续性，全球久期标杆</td>
+                <td className="py-2 text-purple-700">英国养老金/LDI、长债供给结构</td>
+                <td className="py-2 text-gray-600 text-[10px]">
+                  长端供需结构对比——UK 压降长端 Gilt 占比有利于 UK 期限溢价压缩
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* 双栏策略说明 */}
         <div className="grid grid-cols-2 gap-4">
-          {/* 左栏：2-5Y */}
           <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-            <h4 className="text-sm font-bold text-blue-800 mb-2">2–5Y Gilt</h4>
-            <p className="text-xs text-blue-600 mb-3 font-medium">
-              适合 carry + roll-down + BoE repricing
-            </p>
+            <h4 className="text-sm font-bold text-blue-800 mb-2">2–5Y：降息重定价博弈</h4>
             <ul className="space-y-1.5">
               {[
-                "短端受 Bank Rate 和 SONIA 锚定",
-                "2–5Y 对未来降息路径最敏感",
-                "久期不高，carry cushion 更有意义",
-                "若 BoE 降息预期重定价，5Y 价格弹性明显",
+                "短端受政策利率锚定，Fed vs BoE 路径分化决定相对价值",
+                "2–5Y 对未来降息路径最敏感，中美 UK 三方比较核心区间",
+                "久期不高，carry cushion 对冲更有意义",
+                "若 BoE 降息预期重定价，5Y Gilt 可能提供比 UST 更好的弹性",
               ].map((item, i) => (
                 <li key={i} className="text-xs text-gray-700 flex items-start gap-1.5">
                   <span className="text-blue-500 mt-0.5">●</span>
@@ -365,22 +589,18 @@ function TenorPlaybook() {
               ))}
             </ul>
             <div className="mt-3 text-[10px] text-blue-500 font-mono">
-              数据源：BoE Daily Yield Curve · SONIA · ONS CPI/Wage
+              数据源：BoE Yield Curve · FRED DGS2/DGS5 · SONIA
             </div>
           </div>
 
-          {/* 右栏：10Y+ */}
           <div className="p-4 rounded-lg bg-purple-50 border border-purple-200">
-            <h4 className="text-sm font-bold text-purple-800 mb-2">10Y+ Gilt</h4>
-            <p className="text-xs text-purple-600 mb-3 font-medium">
-              更像财政风险溢价压缩交易
-            </p>
+            <h4 className="text-sm font-bold text-purple-800 mb-2">10Y+：财政风险溢价比较</h4>
             <ul className="space-y-1.5">
               {[
                 "10Y 以上久期较高，价格波动可迅速吞掉 carry",
-                "财政可信度、Gilt 供给、QT 影响更大",
-                "适合表达「市场对 UK 财政风险过度悲观」的观点",
-                "政治不确定性对长端影响显著高于中前端",
+                "财政可信度、供给结构、QT 影响占主导",
+                "US 财政赤字/GDP 更高但美元安全资产属性更强",
+                "UK 若财政风险溢价压缩，可能分流部分长端配置需求",
               ].map((item, i) => (
                 <li key={i} className="text-xs text-gray-700 flex items-start gap-1.5">
                   <span className="text-purple-500 mt-0.5">●</span>
@@ -389,13 +609,13 @@ function TenorPlaybook() {
               ))}
             </ul>
             <div className="mt-3 text-[10px] text-purple-500 font-mono">
-              数据源：DMO Gilt Supply · BoE APF/QT · OBR Fiscal Outlook
+              数据源：DMO Gilt Supply · BoE APF/QT · FRED DGS10 · OBR
             </div>
           </div>
         </div>
 
         <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>来源：BoE Yield Curve · DMO Gilt Operations · OBR</span>
+          <span>来源：BoE Yield Curve · FRED (DGS2/DGS5/DGS10) · DMO · OBR</span>
           <span className="flex gap-2">
             <a href="https://www.bankofengland.co.uk/statistics/yield-curves" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">BoE 收益率曲线 ↗</a>
             <a href="https://www.dmo.gov.uk/data/gilt-market/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">DMO ↗</a>
@@ -416,6 +636,8 @@ function RelativeValue({
   ukDeSpread,
   bankRate,
   ecbRate,
+  ust10Y,
+  fedFunds,
   timeSeries,
 }: {
   gilt10Y: number;
@@ -423,6 +645,8 @@ function RelativeValue({
   ukDeSpread: number;
   bankRate: number;
   ecbRate: number;
+  ust10Y: number;
+  fedFunds: number;
   timeSeries?: UKMetricsResponse["timeSeries"];
 }) {
   // Gilt vs Bund 折线图数据
@@ -459,11 +683,11 @@ function RelativeValue({
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 font-mono">04</span>
-          <CardTitle className="text-base">Relative Value：Long Gilt vs Short Bund / OAT</CardTitle>
+          <span className="text-xs text-gray-400 font-mono">B</span>
+          <CardTitle className="text-base">跨市场利差：Gilt vs Bund / UST 的三方比较</CardTitle>
         </div>
         <p className="text-xs text-gray-500">
-          英债相对欧债的机会，不是简单买高收益率资产，而是判断英国相对欧元区的通胀粘性、政策路径、财政风险溢价是否被过度定价
+          英债相对欧债/美债的利差，帮助判断全球固收资金在三大市场间的相对吸引力
         </p>
       </CardHeader>
       <CardContent>
@@ -526,31 +750,38 @@ function RelativeValue({
           </div>
         )}
 
-        {/* 对比表 */}
+        {/* US / UK / DE 三方对比表 */}
         <div className="overflow-x-auto mb-3">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-1.5 font-medium text-gray-500">指标</th>
-                <th className="text-right py-1.5 font-medium text-gray-500">UK</th>
-                <th className="text-right py-1.5 font-medium text-gray-500">Euro Area / Germany</th>
+                <th className="text-right py-1.5 font-medium text-blue-700">US</th>
+                <th className="text-right py-1.5 font-medium text-purple-700">UK</th>
+                <th className="text-right py-1.5 font-medium text-amber-700">DE / Euro Area</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-gray-100">
                 <td className="py-1.5 text-gray-700">政策利率</td>
-                <td className="py-1.5 text-right font-bold text-blue-700">{bankRate.toFixed(2)}%</td>
-                <td className="py-1.5 text-right text-gray-600">ECB {ecbRate.toFixed(2)}%</td>
+                <td className="py-1.5 text-right text-blue-700">Fed {fedFunds.toFixed(2)}%</td>
+                <td className="py-1.5 text-right font-bold text-purple-700">{bankRate.toFixed(2)}%</td>
+                <td className="py-1.5 text-right text-amber-700">ECB {ecbRate.toFixed(2)}%</td>
               </tr>
               <tr className="border-b border-gray-100">
                 <td className="py-1.5 text-gray-700">10Y 国债收益率</td>
-                <td className="py-1.5 text-right font-bold text-blue-700">{gilt10Y.toFixed(2)}%</td>
-                <td className="py-1.5 text-right text-gray-600">{bund10Y.toFixed(2)}%</td>
+                <td className="py-1.5 text-right text-blue-700">UST {ust10Y.toFixed(2)}%</td>
+                <td className="py-1.5 text-right font-bold text-purple-700">{gilt10Y.toFixed(2)}%</td>
+                <td className="py-1.5 text-right text-amber-700">{bund10Y.toFixed(2)}%</td>
               </tr>
               <tr>
-                <td className="py-1.5 text-gray-700">10Y 利差 (UK−DE)</td>
-                <td className="py-1.5 text-right font-bold text-purple-700" colSpan={2}>
-                  +{ukDeSpread}bp
+                <td className="py-1.5 text-gray-700">对 UST 利差</td>
+                <td className="py-1.5 text-right text-gray-600">—</td>
+                <td className="py-1.5 text-right font-bold text-purple-700">
+                  {gilt10Y > ust10Y ? "+" : ""}{(gilt10Y - ust10Y).toFixed(2)}pp
+                </td>
+                <td className="py-1.5 text-right font-bold text-amber-700">
+                  {bund10Y > ust10Y ? "+" : ""}{(bund10Y - ust10Y).toFixed(2)}pp
                 </td>
               </tr>
             </tbody>
@@ -558,16 +789,16 @@ function RelativeValue({
         </div>
 
         <p className="text-xs text-gray-500 font-medium mb-1">
-          若英国风险溢价回落，Long Gilt / Short Bund 的相对价值交易可以降低一部分全球利率方向风险。
+          若英国风险溢价回落，Long Gilt / Short Bund 的相对价值交易可以降低全球利率方向风险——
+          但前提是 Gilt 相对 UST 的利差也能提供足够的风险补偿。
         </p>
 
         <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>来源：FRED (IRLTLT01GBM156N · IRLTLT01DEM156N · BOERUKM · ECBDFR)</span>
+          <span>来源：FRED (IRLTLT01GBM156N · IRLTLT01DEM156N · BOERUKM · ECBDFR · DGS10)</span>
           <span className="flex gap-2">
             <a href="https://fred.stlouisfed.org/series/IRLTLT01GBM156N" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">UK 10Y ↗</a>
             <a href="https://fred.stlouisfed.org/series/IRLTLT01DEM156N" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">DE 10Y ↗</a>
-            <a href="https://zh.tradingeconomics.com/united-kingdom/government-bond-yield" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">Gilt Yields ↗</a>
-            <a href="https://zh.tradingeconomics.com/germany/government-bond-yield" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">Bund Yields ↗</a>
+            <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">UST 10Y ↗</a>
           </span>
         </p>
       </CardContent>
@@ -576,30 +807,88 @@ function RelativeValue({
 }
 
 // ============================================================
-// 子模块 5：供给与拍卖
+// 子模块 5：供给竞争 — 美国 Treasury 供给 vs 英国 Gilt 供给
 // ============================================================
 
 function SupplyAndAuction() {
-  // 示例拍卖结果（实际数据需从 DMO 拉取，当前为示意结构）
-  const exampleAuctions = [
-    { date: "2026-05-28", name: "4¼% Treasury Gilt 2031", tenor: "5Y", amount: "£4.0bn", yield: "4.41%", btc: "2.3x" },
-    { date: "2026-05-21", name: "4⅛% Treasury Gilt 2036", tenor: "10Y", amount: "£3.5bn", yield: "4.58%", btc: "2.1x" },
-    { date: "2026-05-14", name: "1½% Index-linked Gilt 2053", tenor: "27Y IL", amount: "£0.9bn", yield: "1.12%", btc: "2.5x" },
-    { date: "2026-05-07", name: "4½% Treasury Gilt 2033", tenor: "7Y", amount: "£4.2bn", yield: "4.47%", btc: "2.0x" },
-  ];
-
   return (
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 font-mono">05</span>
-          <CardTitle className="text-base">Supply & Auction：Gilt 供给结构与拍卖需求</CardTitle>
+          <span className="text-xs text-gray-400 font-mono">04</span>
+          <CardTitle className="text-base">供给竞争：UST 与 Gilt 谁更需要市场吸收？</CardTitle>
         </div>
         <p className="text-xs text-gray-500">
-          发行结构变化（短中端增发、长端减量）正在改变 Gilt 曲线供需格局
+          全球主权债供给竞争——谁的发行压力更大，谁对 term premium 的推升更强？
+          DMO 官方提供 Gilt auction results、syndication results 等数据；
+          美国这边可参考 Treasury auction 与 FiscalData。
         </p>
       </CardHeader>
       <CardContent>
+        {/* 供给对比表 */}
+        <div className="overflow-x-auto mb-4">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="text-left py-1.5 font-semibold text-gray-600">维度</th>
+                <th className="text-left py-1.5 font-semibold text-blue-700">UST（美国）</th>
+                <th className="text-left py-1.5 font-semibold text-purple-700">Gilt（英国）</th>
+                <th className="text-left py-1.5 font-semibold text-gray-600">对全球资金的影响</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-100">
+                <td className="py-2 text-gray-700 font-medium">发行规模</td>
+                <td className="py-2 text-blue-700 text-[10px]">
+                  美国财政部拍卖，FY2025 可流通债净发行约 $1.8T+
+                </td>
+                <td className="py-2 text-purple-700 text-[10px]">
+                  DMO Gilt issuance，FY2025/26 约 £300bn
+                </td>
+                <td className="py-2 text-gray-600 text-[10px]">
+                  US 供给绝对规模远超 UK，但 UK 相对 GDP 比例不低
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-2 text-gray-700 font-medium">长端供给</td>
+                <td className="py-2 text-blue-700 text-[10px]">
+                  20Y/30Y UST 持续增发，长端供给压力未减
+                </td>
+                <td className="py-2 text-purple-700 text-[10px]">
+                  Long Gilt / Linker 占比正在下降（2026/27 预计低位）
+                </td>
+                <td className="py-2 text-gray-600 text-[10px]">
+                  UK 减量有利于 Gilt 长端期限溢价压缩 → 分流压力减弱
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-2 text-gray-700 font-medium">拍卖需求</td>
+                <td className="py-2 text-blue-700 text-[10px]">
+                  Bid-to-cover 普遍 2.2-2.8x，部分长端出现 tail
+                </td>
+                <td className="py-2 text-purple-700 text-[10px]">
+                  Cover ratio 2.0-2.5x，近期需求稳定
+                </td>
+                <td className="py-2 text-gray-600 text-[10px]">
+                  美英拍卖需求均尚可，但美债期限溢价已反映部分供给担忧
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2 text-gray-700 font-medium">央行 QT</td>
+                <td className="py-2 text-blue-700 text-[10px]">
+                  Fed QT 继续，每月缩减 ~$25B 国债持仓
+                </td>
+                <td className="py-2 text-purple-700 text-[10px]">
+                  BoE 主动卖出 + 到期不续，APF 规模持续缩减
+                </td>
+                <td className="py-2 text-gray-600 text-[10px]">
+                  两边央行均在缩表 → 私人部门需吸收更多久期供给
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         {/* 供给结构概览 */}
         <div className="grid grid-cols-3 gap-3 mb-4">
           {[
@@ -615,9 +904,9 @@ function SupplyAndAuction() {
           ))}
         </div>
 
-        {/* 已完成拍卖表格 */}
+        {/* DMO 已完成拍卖表格（示例） */}
         <div className="mb-4">
-          <h4 className="text-xs font-semibold text-gray-600 mb-2">已完成拍卖（示例 — DMO Auction Results）</h4>
+          <h4 className="text-xs font-semibold text-gray-600 mb-2">DMO Gilt 已完成拍卖（示例）</h4>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
@@ -631,32 +920,37 @@ function SupplyAndAuction() {
                 </tr>
               </thead>
               <tbody>
-                {exampleAuctions.map((a, i) => (
+                {[
+                  { date: "2026-05-28", name: "4.25% Treasury Gilt 2031", tenor: "5Y", amount: "£4.0bn", yield: "4.41%", btc: "2.3x" },
+                  { date: "2026-05-21", name: "4.125% Treasury Gilt 2036", tenor: "10Y", amount: "£3.5bn", yield: "4.58%", btc: "2.1x" },
+                  { date: "2026-05-14", name: "1.5% Index-linked Gilt 2053", tenor: "27Y IL", amount: "£0.9bn", yield: "1.12%", btc: "2.5x" },
+                  { date: "2026-05-07", name: "4.5% Treasury Gilt 2033", tenor: "7Y", amount: "£4.2bn", yield: "4.47%", btc: "2.0x" },
+                ].map((a, i) => (
                   <tr key={i} className="border-b border-gray-100">
                     <td className="py-1.5 text-gray-700">{a.date}</td>
                     <td className="py-1.5 text-gray-700">{a.name}</td>
                     <td className="py-1.5 text-right text-gray-600">{a.tenor}</td>
                     <td className="py-1.5 text-right font-medium">{a.amount}</td>
-                    <td className="py-1.5 text-right font-medium text-blue-700">{a.yield}</td>
+                    <td className="py-1.5 text-right font-medium text-purple-700">{a.yield}</td>
                     <td className="py-1.5 text-right font-medium text-gray-700">{a.btc}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="text-[10px] text-gray-400 mt-1 italic">注：拍卖数据为示例格式，实时数据请访问 DMO 官网获取。</p>
+          <p className="text-[10px] text-gray-400 mt-1 italic">注：拍卖数据为示例格式，实时数据请访问 DMO 官网获取。UST 拍卖数据见本站「供给与拍卖」模块。</p>
         </div>
 
         {/* 即将发行 + 供给压力评分 */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="p-3 rounded-lg border border-blue-200 bg-blue-50">
-            <h4 className="text-xs font-semibold text-blue-800 mb-2">即将发行（最近 2 周）</h4>
+          <div className="p-3 rounded-lg border border-purple-200 bg-purple-50">
+            <h4 className="text-xs font-semibold text-purple-800 mb-2">Gilt 即将发行（最近 2 周）</h4>
             <div className="space-y-1.5">
               {[
-                { date: "2026-06-04", name: "4⅛% Treasury 2038", tenor: "12Y", amount: "£3.8bn" },
-                { date: "2026-06-11", name: "0⅛% IL Gilt 2048", tenor: "22Y IL", amount: "£1.1bn" },
+                { date: "2026-06-04", name: "4.125% Treasury 2038", tenor: "12Y", amount: "£3.8bn" },
+                { date: "2026-06-11", name: "0.125% IL Gilt 2048", tenor: "22Y IL", amount: "£1.1bn" },
               ].map((item, i) => (
-                <div key={i} className="text-xs text-blue-700 flex justify-between">
+                <div key={i} className="text-xs text-purple-700 flex justify-between">
                   <span>{item.date} · {item.name}</span>
                   <span className="font-medium">{item.amount}</span>
                 </div>
@@ -664,7 +958,7 @@ function SupplyAndAuction() {
             </div>
           </div>
           <div className="p-3 rounded-lg border border-amber-200 bg-amber-50">
-            <h4 className="text-xs font-semibold text-amber-800 mb-2">供给压力评分</h4>
+            <h4 className="text-xs font-semibold text-amber-800 mb-2">Gilt 供给压力评分</h4>
             <div className="text-center">
               <p className="text-2xl font-bold text-amber-600">中等</p>
               <p className="text-[10px] text-amber-700 mt-1">未来 1 个月发行规模 vs 历史均值</p>
@@ -676,13 +970,13 @@ function SupplyAndAuction() {
           </div>
         </div>
 
-        {/* 关键变化解读 */}
+        {/* 供给变革策略 */}
         <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 mb-3">
-          <h4 className="text-xs font-semibold text-amber-800 mb-1">供给变革策略</h4>
+          <h4 className="text-xs font-semibold text-amber-800 mb-1">供给策略对美债的含义</h4>
           <p className="text-xs text-amber-700 leading-relaxed">
-            英国政府提升 T-bills 和短端发行、压降长端 Gilt 占比（2026/27 长端占比预计降至多年低位），
-            本质上会改变曲线供需结构——中前端供给增加但消化压力可控，长端供给减少有利于期限溢价压缩。
-            对照 IL Gilts（通胀挂钩），常规 Gilt 供给结构变化也是跨市场利差交易的重要输入。
+            英国提升 T-bills 和短端发行、压降长端 Gilt 占比（2026/27 长端预计降至多年低位），
+            本质上会缓解 Gilt 长端供给压力，有利于 UK 期限溢价压缩——这可能使 Gilt 长端相对 UST 长端更有吸引力。
+            对照之下，UST 长端供给持续增加，term premium 压力未消。
           </p>
         </div>
 
@@ -692,29 +986,29 @@ function SupplyAndAuction() {
             href="https://www.dmo.gov.uk/publications/gilt-operations-calendar/"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors group"
+            className="p-3 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors group"
           >
-            <p className="text-sm font-semibold text-blue-700 group-hover:text-blue-800">Gilt 发行日历 ↗</p>
+            <p className="text-sm font-semibold text-purple-700 group-hover:text-purple-800">Gilt 发行日历 ↗</p>
             <p className="text-[11px] text-gray-500 mt-0.5">DMO Gilt Operations Calendar</p>
           </a>
           <a
             href="https://www.dmo.gov.uk/data/gilt-market/auction-results/"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors group"
+            className="p-3 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors group"
           >
-            <p className="text-sm font-semibold text-blue-700 group-hover:text-blue-800">拍卖结果 ↗</p>
+            <p className="text-sm font-semibold text-purple-700 group-hover:text-purple-800">拍卖结果 ↗</p>
             <p className="text-[11px] text-gray-500 mt-0.5">DMO Gilt Auction Results</p>
           </a>
         </div>
 
         <p className="text-[10px] text-gray-400 italic">
           DMO 在财政年度开始前发布发行日历，每季度细化具体拍卖债券，拍卖前一周加入规模信息。
-          详细拍卖数据（品种、期限、规模、收益率、bid-to-cover）可直接访问 DMO 官网获取。
+          详细拍卖数据可直接访问 DMO 官网获取。
         </p>
 
         <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>来源：DMO Gilt Operations · Reuters · OBR</span>
+          <span>来源：DMO Gilt Operations · US Treasury FiscalData · OBR</span>
           <span className="flex gap-2">
             <a href="https://www.dmo.gov.uk/data/gilt-market/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">DMO 数据 ↗</a>
             <a href="https://www.dmo.gov.uk/publications/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2">DMO 公告 ↗</a>
@@ -793,7 +1087,7 @@ export default function UKSubModule() {
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200">
           <span className="w-3 h-3 rounded-full bg-indigo-500" />
           <span className="text-sm font-semibold text-indigo-700">英国视角</span>
-          <span className="text-xs text-indigo-400">UK Gilt Lens</span>
+          <span className="text-xs text-indigo-400">UK Lens: Gilt vs UST</span>
         </div>
         <div className="h-px flex-1 bg-gray-200" />
       </div>
@@ -816,7 +1110,7 @@ export default function UKSubModule() {
       ) : error || !data ? (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">英国视角：Gilt 高息安全垫与价格重定价机会</CardTitle>
+            <CardTitle className="text-base">英国视角：Gilt 作为 UST 的高息替代资产</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-red-500 mb-2">数据加载失败{error ? `: ${error}` : ""}</p>
@@ -825,54 +1119,90 @@ export default function UKSubModule() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {/* 模块标题 + 一句话 */}
+          {/* 模块标题 + 定位文案 */}
           <div className="mb-2">
             <h2 className="text-lg font-bold text-gray-800">
-              英国视角：Gilt 高息安全垫与价格重定价机会
+              英国视角：美债的高息竞争者
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              UK Gilt Lens: Carry Cushion + Repricing Trade
-            </p>
-            <p className="text-xs text-gray-600 mt-1 leading-relaxed max-w-3xl">
-              英债配置的核心并非单纯博取几十 bp 套息，而是在高起始收益率下获得 carry cushion，
-              并叠加 BoE 降息重定价、曲线 roll-down、跨市场利差收敛与长端期限溢价压缩的潜在资本利得。
+              UK Lens: Gilt as a Relative Competitor to UST
             </p>
           </div>
 
-          {/* Dashboard 指标卡片 */}
+          {/* 定位文案 */}
+          <div className="p-4 rounded-lg bg-indigo-50 border border-indigo-200">
+            <p className="text-sm text-indigo-800 leading-relaxed">
+              本模块并非独立研究英债市场，而是将英国国债作为美债的主要高息竞争资产进行相对价值比较。
+              对全球固收投资者而言，美债配置并不只取决于美国自身的供给、拍卖和财政状况，
+              也取决于其他发达市场主权债是否提供更有吸引力的收益率、对冲后 carry 和资本利得空间。
+            </p>
+          </div>
+
+          {/* 四个核心问题 */}
+          <div className="p-4 rounded-lg bg-white border border-gray-200">
+            <h3 className="text-sm font-bold text-gray-800 mb-2">英国视角回答的四个问题</h3>
+            <ol className="space-y-1.5 text-xs text-gray-700 list-decimal list-inside">
+              <li className="font-medium">
+                当 Gilt 收益率也处于高位时，美债的相对收益优势是否仍然存在？
+              </li>
+              <li>对欧洲/全球资金而言，UST 与 Gilt 谁的对冲后 carry 更有吸引力？</li>
+              <li>如果英国财政风险溢价压缩，是否会分流部分长端主权债配置需求？</li>
+              <li>如果 Gilt 供给结构变化缓解长端压力，美债长端是否面临相对估值压力？</li>
+            </ol>
+          </div>
+
+          {/* 01 Dashboard 指标对比卡片 */}
           <DashboardCards
             metrics={data.metrics}
             dataDate={data.dataDate}
             freshness={data.freshness.status}
           />
 
-          {/* 子模块 1-5 */}
+          {/* A 宏观背景 */}
           <MacroHeatmap
             macroFactors={data.macroFactors}
             cpi={data.cpi}
             bankRate={data.bankRate}
             unemployment={data.unemployment}
             gdpGrowth={data.gdpGrowth}
+            fedFunds={data.fedFunds}
             timeSeries={data.timeSeries}
           />
 
+          {/* 02 Carry Cushion */}
           <CarryCushionCalc
             carryCalc={data.carryCalc}
             gilt5Y={data.gilt5Y}
             bankRate={data.bankRate}
+            ust5Y={data.ust5Y}
+            fedFunds={data.fedFunds}
           />
 
-          <TenorPlaybook />
+          {/* 03 Tenor RV */}
+          <TenorPlaybook
+            ust2Y={data.ust2Y}
+            ust5Y={data.ust5Y}
+            ust10Y={data.ust10Y}
+            gilt2Y={data.gilt2Y}
+            gilt5Y={data.gilt5Y}
+            gilt10Y={data.gilt10Y}
+            bankRate={data.bankRate}
+            fedFunds={data.fedFunds}
+          />
 
+          {/* B 跨市场利差 */}
           <RelativeValue
             gilt10Y={data.gilt10Y}
             bund10Y={data.bund10Y}
             ukDeSpread={data.ukDeSpread}
             bankRate={data.bankRate}
             ecbRate={data.ecbRate}
+            ust10Y={data.ust10Y}
+            fedFunds={data.fedFunds}
             timeSeries={data.timeSeries}
           />
 
+          {/* 04 Supply Competition */}
           <SupplyAndAuction />
         </div>
       )}
@@ -881,7 +1211,7 @@ export default function UKSubModule() {
       <div className="mt-4 pt-3 border-t border-indigo-100">
         <p className="text-xs text-gray-400 flex justify-between flex-wrap gap-2">
           <span>
-            数据来源：FRED (BOERUKM · IRLTLT01GBM156N · IRLTLT01DEM156N · DEXUSUK · CPALTT01GBM659N · UNRTUKA · GBRGDPQDSNAQ)
+            数据来源：FRED (BOERUKM · IRLTLT01GBM156N · IRLTLT01DEM156N · DEXUSUK · CPALTT01GBM659N · UNRTUKA · GBRGDPQDSNAQ · ECBDFR · DGS2/DGS5/DGS10/DFF)
             · BoE Yield Curve · DMO · ONS · Trading Economics
             {data && data.freshness.status !== "实时" && (
               <span className="ml-1 text-amber-500">（{data.freshness.status}，部分数据来自内置 benchmark）</span>

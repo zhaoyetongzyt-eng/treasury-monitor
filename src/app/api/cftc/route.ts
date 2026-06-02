@@ -65,7 +65,7 @@ interface CFTCApiResponse {
 }
 
 // ===== 内置最新数据（fallback，每周手动更新）=====
-// 数据日期: 2026-05-19 (CFTC 周报, Positions as of 2026-05-19)
+// 数据日期: 2026-05-26 (CFTC 周报, Positions as of 2026-05-26)
 // 来源：CFTC FinFutWk.txt Futures Only 段，净头寸 = Long - Short，不含 Spreading
 // 长端 = 10Y Note + Ultra 10Y + UST Bond + Ultra UST Bond 合计
 // 前端 = 2Y Note + 5Y Note 合计
@@ -73,78 +73,88 @@ const FALLBACK_RAW_CONTRACTS = [
   {
     name: "UST 2Y NOTE",
     tenor: "2Y",
-    oi: 4938650,
-    // AM Long=2,796,776  Short=656,100  → Net +2,140,676
-    amNet: 2140676,
-    // LF Long=417,004  Short=2,295,636  → Net -1,878,632
-    lfNet: -1878632,
-    // Dealer Long=136,019  Short=560,193  → Net -424,174
-    dealerNet: -424174,
-    // Other Long=478,514  Short=225,327  → Net +253,187
-    otherNet: 253187,
+    oi: 4960871,
+    // AM Long=2,616,897  Short=625,592  → Net +1,991,305
+    amNet: 1991305,
+    // LF Long=365,442  Short=2,137,999  → Net -1,772,557
+    lfNet: -1772557,
+    // Dealer Long=146,868  Short=526,285  → Net -379,417
+    dealerNet: -379417,
+    // Other Long=312,399  Short=206,303  → Net +106,096
+    otherNet: 106096,
   },
   {
     name: "UST 5Y NOTE",
     tenor: "5Y",
-    oi: 6977994,
-    // AM Long=3,988,576  Short=1,116,124  → Net +2,872,452
-    amNet: 2872452,
-    // LF Long=546,941  Short=2,853,388  → Net -2,306,447
-    lfNet: -2306447,
-    dealerNet: -567066,
-    otherNet: 377007,
+    oi: 6847723,
+    // AM Long=3,831,544  Short=1,123,717  → Net +2,707,827
+    amNet: 2707827,
+    // LF Long=454,592  Short=2,525,945  → Net -2,071,353
+    lfNet: -2071353,
+    // Dealer Long=81,991  Short=778,447  → Net -696,456
+    dealerNet: -696456,
+    // Other Long=204,237  Short=208,537  → Net -4,300
+    otherNet: -4300,
   },
   {
     name: "UST 10Y NOTE",
     tenor: "10Y",
-    oi: 5833268,
-    // AM Long=3,191,475  Short=924,224  → Net +2,267,251
-    amNet: 2267251,
-    // LF Long=413,821  Short=2,366,558  → Net -1,952,737
-    lfNet: -1952737,
-    dealerNet: -489043,
-    otherNet: 328071,
+    oi: 6254472,
+    // AM Long=2,960,165  Short=889,822  → Net +2,070,343
+    amNet: 2070343,
+    // LF Long=405,403  Short=2,411,383  → Net -2,005,980
+    lfNet: -2005980,
+    // Dealer Long=181,479  Short=640,445  → Net -458,966
+    dealerNet: -458966,
+    // Other Long=283,168  Short=180,334  → Net +102,834
+    otherNet: 102834,
   },
   {
     name: "ULTRA UST 10Y",
     tenor: "Ultra 10Y",
-    oi: 2615042,
-    // AM Long=1,257,556  Short=655,076  → Net +602,480
-    amNet: 602480,
-    // LF Long=182,813  Short=458,963  → Net -276,150
-    lfNet: -276150,
-    dealerNet: -232233,
-    otherNet: -46672,
+    oi: 2733278,
+    // AM Long=1,218,366  Short=622,270  → Net +596,096
+    amNet: 596096,
+    // LF Long=154,813  Short=394,539  → Net -239,726
+    lfNet: -239726,
+    // Dealer Long=59,141  Short=317,237  → Net -258,096
+    dealerNet: -258096,
+    // Other Long=143,579  Short=123,020  → Net +20,559
+    otherNet: 20559,
   },
   {
     name: "UST BOND",
     tenor: "Bond",
-    oi: 1879052,
-    // AM Long=1,079,268  Short=584,170  → Net +495,098
-    amNet: 495098,
-    // LF Long=122,422  Short=448,805  → Net -326,383
-    lfNet: -326383,
-    dealerNet: -225702,
-    otherNet: -56256,
+    oi: 2004616,
+    // AM Long=1,065,732  Short=595,133  → Net +470,599
+    amNet: 470599,
+    // LF Long=124,095  Short=444,841  → Net -320,746
+    lfNet: -320746,
+    // Dealer Long=19,782  Short=240,995  → Net -221,213
+    dealerNet: -221213,
+    // Other Long=93,675  Short=105,667  → Net -11,992
+    otherNet: -11992,
   },
   {
     name: "ULTRA UST BOND",
     tenor: "Ultra Bond",
-    oi: 2534806,
-    // AM Long=1,602,662  Short=523,293  → Net +1,079,369
-    amNet: 1079369,
-    // LF Long=75,517  Short=961,580  → Net -886,063
-    lfNet: -886063,
-    dealerNet: -196692,
-    otherNet: 73524,
+    oi: 2533780,
+    // AM Long=1,597,085  Short=530,827  → Net +1,066,258
+    amNet: 1066258,
+    // LF Long=83,709  Short=954,722  → Net -871,013
+    lfNet: -871013,
+    // Dealer Long=26,747  Short=218,757  → Net -192,010
+    dealerNet: -192010,
+    // Other Long=45,129  Short=36,252  → Net +8,877
+    otherNet: 8877,
   },
 ];
 
 // 汇总验证（注释保留用于下次更新验证）：
-// AM 长端 = 2,267,251 + 602,480 + 495,098 + 1,079,369 = +4,444,198 ✓
-// AM 前端 = 2,140,676 + 2,872,452 = +5,013,128 ✓
-// LF 长端 = -1,952,737 + -276,150 + -326,383 + -886,063 = -3,441,333 ✓
-// LF 前端 = -1,878,632 + -2,306,447 = -4,185,079 ✓
+// AM 长端 = 2,070,343 + 596,096 + 470,599 + 1,066,258 = +4,203,296 ✓
+// AM 前端 = 1,991,305 + 2,707,827 = +4,699,132 ✓
+// LF 长端 = -2,005,980 + -239,726 + -320,746 + -871,013 = -3,437,465 ✓
+// LF 前端 = -1,772,557 + -2,071,353 = -3,843,910 ✓
 
 // Treasury contract identification patterns（仅匹配 CBT 国债期货）
 const TREASURY_PATTERNS = [
@@ -367,6 +377,6 @@ export async function GET() {
   } catch (err) {
     console.warn("[CFTC] Live fetch failed, using fallback:", (err as Error).message);
 
-    return NextResponse.json(buildResponse(FALLBACK_RAW_CONTRACTS, "2026-05-19", "内置数据(CFTC 2026-05-19)"));
+    return NextResponse.json(buildResponse(FALLBACK_RAW_CONTRACTS, "2026-05-26", "内置数据(CFTC 2026-05-26)"));
   }
 }

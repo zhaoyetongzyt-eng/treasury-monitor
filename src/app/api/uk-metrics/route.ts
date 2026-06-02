@@ -4,12 +4,13 @@ export const revalidate = 3600; // 每小时检查 FRED 最新数据
 
 // ============================================================
 // GET /api/uk-metrics
-// 英国视角：Gilt 高息安全垫与价格重定价机会
+// 英国视角：Gilt 作为 UST 的高息替代资产（美债相对吸引力压力测试）
 //
 // 数据源：
-//   - FRED API: BoE Bank Rate (BOERUKM), UK 10Y Gilt (IRLTLT01GBM156N),
+//   - FRED API (UK): BoE Bank Rate (BOERUKM), UK 10Y Gilt (IRLTLT01GBM156N),
 //     Germany 10Y Bund (IRLTLT01DEM156N), USD/GBP (DEXUSUK),
 //     UK CPI (CPALTT01GBM659N), UK Unemployment (UNRTUKA), UK GDP (GBRGDPQDSNAQ)
+//   - FRED API (US): 2Y UST (DGS2), 5Y UST (DGS5), 10Y UST (DGS10), Fed Funds (DFF)
 //
 // 策略：实时拉取 FRED，失败时降级为内置 fallback 数据。
 //      FRED API Key 需在 .env.local 中配置 FRED_API_KEY。
@@ -28,6 +29,10 @@ const FRED_SERIES = {
   unemployment: "UNRTUKA",         // UK 失业率 (月频, OECD)
   gdp: "GBRGDPQDSNAQ",             // UK GDP 季环比年化 (季频, OECD)
   ecbRate: "ECBDFR",               // ECB Deposit Facility Rate (日频)
+  ust2Y: "DGS2",                   // UST 2Y Constant Maturity (日频)
+  ust5Y: "DGS5",                   // UST 5Y Constant Maturity (日频)
+  ust10Y: "DGS10",                 // UST 10Y Constant Maturity (日频)
+  fedFunds: "DFF",                 // Federal Funds Effective Rate (日频)
 } as const;
 
 // 需要拉取历史时序的 series（用于折线图）
@@ -37,6 +42,9 @@ const HISTORY_SERIES = [
   FRED_SERIES.gilt10Y,
   FRED_SERIES.bund10Y,
   FRED_SERIES.ecbRate,
+  FRED_SERIES.ust2Y,
+  FRED_SERIES.ust5Y,
+  FRED_SERIES.ust10Y,
 ] as const;
 
 const FRED_BASE = "https://api.stlouisfed.org/fred/series/observations";
@@ -44,6 +52,7 @@ const FRED_BASE = "https://api.stlouisfed.org/fred/series/observations";
 // ============================================================
 // Built-in Benchmark（2026-05-29 手动验证）
 // 2Y/5Y Gilt 无法从 FRED 获取，使用 Trading Economics / worldgovernmentbonds.com 参考值
+// UST 2Y/5Y/10Y 同样可能需要 FRED，无 key 时用 fallback
 // ============================================================
 const BENCHMARK_GILT_2Y = 4.31;
 const BENCHMARK_GILT_5Y = 4.41;
@@ -51,14 +60,22 @@ const BENCHMARK_GILT_5Y = 4.41;
 // ============================================================
 // Fallback 数据
 // ============================================================
+// 数据验证日期: 2026-06-01
+// - Bank Rate: BoE 4月30日决议维持 3.75%，下次 6月18日
+// - CPI: ONS 5月数据 2.8% (4月 3.3%)
+// - Fed Funds: FRED DFF 5月28日 3.62%
 const FALLBACK_DATA = {
   bankRate: 3.75,
-  cpi: 3.2,
+  cpi: 2.8,
   gilt10Y: 4.53,
   bund10Y: 3.02,
   gbpUsd: 1.3375,
   unemployment: 5.2,
   gdpGrowth: 0.6,
+  ust2Y: 3.89,
+  ust5Y: 4.05,
+  ust10Y: 4.40,
+  fedFunds: 3.62,
 };
 
 // ============================================================
@@ -99,7 +116,7 @@ async function fetchFredLatest(
 }
 
 async function fetchAllFredData(apiKey: string) {
-  const [bankRate, gilt10Y, bund10Y, gbpUsd, cpi, unemployment, gdp, ecbRate] =
+  const [bankRate, gilt10Y, bund10Y, gbpUsd, cpi, unemployment, gdp, ecbRate, ust2Y, ust5Y, ust10Y, fedFunds] =
     await Promise.all([
       fetchFredLatest(FRED_SERIES.bankRate, apiKey),
       fetchFredLatest(FRED_SERIES.gilt10Y, apiKey),
@@ -109,9 +126,13 @@ async function fetchAllFredData(apiKey: string) {
       fetchFredLatest(FRED_SERIES.unemployment, apiKey),
       fetchFredLatest(FRED_SERIES.gdp, apiKey),
       fetchFredLatest(FRED_SERIES.ecbRate, apiKey),
+      fetchFredLatest(FRED_SERIES.ust2Y, apiKey),
+      fetchFredLatest(FRED_SERIES.ust5Y, apiKey),
+      fetchFredLatest(FRED_SERIES.ust10Y, apiKey),
+      fetchFredLatest(FRED_SERIES.fedFunds, apiKey),
     ]);
 
-  return { bankRate, gilt10Y, bund10Y, gbpUsd, cpi, unemployment, gdp, ecbRate };
+  return { bankRate, gilt10Y, bund10Y, gbpUsd, cpi, unemployment, gdp, ecbRate, ust2Y, ust5Y, ust10Y, fedFunds };
 }
 
 // ============================================================
@@ -237,6 +258,9 @@ export async function GET() {
       gilt10Y: historyResults[2],
       bund10Y: historyResults[3],
       ecbRate: historyResults[4],
+      ust2Y: historyResults[5],
+      ust5Y: historyResults[6],
+      ust10Y: historyResults[7],
     };
   }
 
@@ -249,6 +273,10 @@ export async function GET() {
   const unemployment = fredResult?.unemployment?.value ?? FALLBACK_DATA.unemployment;
   const gdpGrowth = fredResult?.gdp?.value ?? FALLBACK_DATA.gdpGrowth;
   const ecbRate = fredResult?.ecbRate?.value ?? 2.0;
+  const ust2Y = fredResult?.ust2Y?.value ?? FALLBACK_DATA.ust2Y;
+  const ust5Y = fredResult?.ust5Y?.value ?? FALLBACK_DATA.ust5Y;
+  const ust10Y = fredResult?.ust10Y?.value ?? FALLBACK_DATA.ust10Y;
+  const fedFunds = fredResult?.fedFunds?.value ?? FALLBACK_DATA.fedFunds;
 
   const gilt2Y = BENCHMARK_GILT_2Y;
   const gilt5Y = BENCHMARK_GILT_5Y;
@@ -259,43 +287,43 @@ export async function GET() {
 
   const metrics = [
     {
+      label: "Fed Funds",
+      value: fedFunds.toFixed(2),
+      change: 0,
+      unit: "%",
+      sub: "vs BoE Bank Rate",
+      trend: "neutral" as const,
+    },
+    {
       label: "BoE Bank Rate",
       value: bankRate.toFixed(2),
       change: 0,
       unit: "%",
-      sub: "下次会议：2026年6月18日（预估）",
+      sub: `Fed-BoE 利差 ${(fedFunds - bankRate).toFixed(2)}pp`,
       trend: "neutral" as const,
     },
     {
-      label: "UK CPI YoY",
-      value: cpi.toFixed(1),
+      label: "UST 2Y",
+      value: ust2Y.toFixed(2),
       change: 0,
       unit: "%",
-      sub: cpi > 2.5 ? "高于2%目标，降息空间受限" : "通胀趋于受控",
-      trend: cpi > 2.5 ? ("up" as const) : ("neutral" as const),
-    },
-    {
-      label: "2Y Gilt",
-      value: gilt2Y.toFixed(2),
-      change: 0,
-      unit: "%",
-      sub: `政策利率敏感，BoE定价锚`,
+      sub: `Gilt 2Y ${gilt2Y.toFixed(2)}% · 利差 ${(ust2Y - gilt2Y).toFixed(2)}pp`,
       trend: "up" as const,
     },
     {
-      label: "5Y Gilt",
-      value: gilt5Y.toFixed(2),
+      label: "UST 5Y",
+      value: ust5Y.toFixed(2),
       change: 0,
       unit: "%",
-      sub: `核心 carry + repricing 期限`,
+      sub: `Gilt 5Y ${gilt5Y.toFixed(2)}% · 利差 ${(ust5Y - gilt5Y).toFixed(2)}pp`,
       trend: "up" as const,
     },
     {
-      label: "10Y Gilt",
-      value: gilt10Y.toFixed(2),
+      label: "UST 10Y",
+      value: ust10Y.toFixed(2),
       change: 0,
       unit: "%",
-      sub: `长端 fiscal & term premium`,
+      sub: `Gilt 10Y ${gilt10Y.toFixed(2)}% · 利差 ${(ust10Y - gilt10Y).toFixed(2)}pp`,
       trend: "up" as const,
     },
     {
@@ -315,11 +343,11 @@ export async function GET() {
       trend: "neutral" as const,
     },
     {
-      label: "Hedged Carry (5Y)",
-      value: `+${carryCalc.hedgedCarry}`,
+      label: "UST Hedged Carry (5Y)",
+      value: `+${Math.round((ust5Y - fedFunds) * 100)}`,
       change: 0,
       unit: "bp",
-      sub: `${gilt5Y.toFixed(2)}% yield - ${bankRate.toFixed(2)}% hedge ≈ ${carryCalc.hedgedCarry}bp`,
+      sub: `${ust5Y.toFixed(2)}% yield - ${fedFunds.toFixed(2)}% hedge`,
       trend: "up" as const,
     },
   ];
@@ -336,13 +364,16 @@ export async function GET() {
     gilt10Y: generateFallbackHistory(gilt10Y, "2025-06"),
     bund10Y: generateFallbackHistory(bund10Y, "2025-06"),
     ecbRate: generateFallbackHistory(ecbRate, "2025-06"),
+    ust2Y: generateFallbackHistory(ust2Y, "2025-06"),
+    ust5Y: generateFallbackHistory(ust5Y, "2025-06"),
+    ust10Y: generateFallbackHistory(ust10Y, "2025-06"),
   };
 
   const response = {
     success: true,
     dataDate,
     dataSource: apiKey
-      ? "FRED: BOERUKM, IRLTLT01GBM156N, IRLTLT01DEM156N, DEXUSUK, CPALTT01GBM659N, UNRTUKA, GBRGDPQDSNAQ, ECBDFR · 2Y/5Y Gilt 参考 Trading Economics"
+      ? "FRED: BOERUKM, IRLTLT01GBM156N, IRLTLT01DEM156N, DEXUSUK, CPALTT01GBM659N, UNRTUKA, GBRGDPQDSNAQ, ECBDFR, DGS2, DGS5, DGS10, DFF · 2Y/5Y Gilt 参考 Trading Economics"
       : "FRED 无 API Key — 使用内置 benchmark 数据 · 2Y/5Y Gilt 参考 Trading Economics",
     metrics,
     bankRate,
@@ -356,6 +387,10 @@ export async function GET() {
     unemployment,
     gdpGrowth,
     ecbRate,
+    ust2Y,
+    ust5Y,
+    ust10Y,
+    fedFunds,
     carryCalc,
     macroFactors,
     timeSeries: fredStatus === "ok" ? timeSeries : fallbackTimeSeries,
