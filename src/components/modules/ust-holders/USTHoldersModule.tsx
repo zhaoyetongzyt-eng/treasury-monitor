@@ -13,8 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import JapanSubModule from "./JapanSubModule";
-import UKSubModule from "./UKSubModule";
 import type { USTHolder, ForeignHolderDetail, USTFlowSummary, MarginalFlowData, MarginalFlowItem } from "@/types";
 
 // ============================================================
@@ -657,16 +655,6 @@ export default function USTHoldersModule() {
         <SectionDivider color="purple" label="第三层：年度结构变化" labelEn="Annual Structure Change" />
 
         <Layer3AnnualChange holders={data.holders} z1Date={data.z1Date} z1PublicationDate={data.z1PublicationDate} />
-
-        {/* ================================================================ */}
-        {/* ★ 日本视角子模块 */}
-        {/* ================================================================ */}
-        <JapanSubModule />
-
-        {/* ================================================================ */}
-        {/* ★ 英国视角子模块 */}
-        {/* ================================================================ */}
-        <UKSubModule />
 
         {/* ================================================================ */}
         {/* ★ 关键信号 */}
