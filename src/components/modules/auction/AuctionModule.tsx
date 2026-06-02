@@ -455,29 +455,26 @@ export default function AuctionModule() {
         </div>
       )}
 
-      {/* 拍卖表格 × 2 + 图表/发行卡片 */}
+      {/* 第一行：Bills + Notes/Bonds 横向并列 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 左侧：拍卖表格（Bills 在上，Notes/Bonds 在下） */}
-        <div className="space-y-6">
-          <AuctionTable
-            auctions={billAuctions}
-            loading={loadingAuctions}
-            title="短期国库券（Bills）· 拍卖评分"
-            subtitle="4周 ~ 52周国库券，使用 Investment Rate 计价。最新完成拍卖置顶显示。"
-          />
-          <AuctionTable
-            auctions={noteBondAuctions}
-            loading={loadingAuctions}
-            title="中长期国债（Notes & Bonds）· 拍卖评分"
-            subtitle="2年期及以上国债，含再开放品种，使用 High Yield 计价。最新完成拍卖置顶显示。"
-          />
-        </div>
+        <AuctionTable
+          auctions={billAuctions}
+          loading={loadingAuctions}
+          title="短期国库券（Bills）· 拍卖评分"
+          subtitle="4周 ~ 52周国库券，使用 Investment Rate 计价。最新完成拍卖置顶显示。"
+        />
+        <AuctionTable
+          auctions={noteBondAuctions}
+          loading={loadingAuctions}
+          title="中长期国债（Notes & Bonds）· 拍卖评分"
+          subtitle="2年期及以上国债，含再开放品种，使用 High Yield 计价。最新完成拍卖置顶显示。"
+        />
+      </div>
 
-        {/* 右侧：图表 + 发行结构卡片 */}
-        <div className="space-y-6">
-          <AuctionChart auctions={auctions} />
-          <AuctionIssuanceCard issuance={issuance} loading={loadingAuctions} />
-        </div>
+      {/* 第二行：投标倍数图表 + 发行结构 横向并列 */}
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <AuctionChart auctions={auctions} />
+        <AuctionIssuanceCard issuance={issuance} loading={loadingAuctions} />
       </div>
 
       {/* 即将拍卖公告 */}
