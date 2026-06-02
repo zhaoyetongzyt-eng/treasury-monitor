@@ -228,30 +228,43 @@ export async function GET() {
       };
     });
 
-    // 找出所有已完成拍卖中的最新日期
-    const latestDate = auctions
-      .map((a) => a.auctionDate)
-      .filter(Boolean)
-      .sort()
-      .reverse()[0] || null;
+    // 按品种分组，各自标记最新日期（Bills 和 Notes/Bonds 独立判断）
+    const bills = auctions.filter((a) => a.securityType === "Bill");
+    const notesBonds = auctions.filter((a) => a.securityType === "Note" || a.securityType === "Bond");
 
-    // 标记最新日期对应的记录（可能有多个品种同一天拍卖）
-    if (latestDate) {
-      for (const a of auctions) {
-        if (a.auctionDate === latestDate) {
-          a.isLatest = true;
+    const markLatest = (group: typeof auctions) => {
+      const latestDate = group
+        .map((a) => a.auctionDate)
+        .filter(Boolean)
+        .sort()
+        .reverse()[0] || null;
+      if (latestDate) {
+        for (const a of group) {
+          if (a.auctionDate === latestDate) {
+            a.isLatest = true;
+          }
         }
       }
-    }
+    };
 
-    // 排序：最新日期置顶，其余按期限从短到长
-    auctions.sort((a, b) => {
-      // 最新日期的排最前
-      if (a.isLatest && !b.isLatest) return -1;
-      if (!a.isLatest && b.isLatest) return 1;
-      // 同为最新或同为非最新时，按期限排序
-      return (TERM_ORDER[a.securityTerm] ?? 99) - (TERM_ORDER[b.securityTerm] ?? 99);
-    });
+    markLatest(bills);
+    markLatest(notesBonds);
+
+    // 排序（每组内）：最新日期置顶，其余按期限从短到长
+    const sortGroup = (group: typeof auctions) => {
+      group.sort((a, b) => {
+        if (a.isLatest && !b.isLatest) return -1;
+        if (!a.isLatest && b.isLatest) return 1;
+        return (TERM_ORDER[a.securityTerm] ?? 99) - (TERM_ORDER[b.securityTerm] ?? 99);
+      });
+    };
+
+    sortGroup(bills);
+    sortGroup(notesBonds);
+
+    // 合并回原数组（Bills 在前，Notes/Bonds 在后）
+    auctions.length = 0;
+    auctions.push(...bills, ...notesBonds);
 
     const issuance = {
       totalAuctioned: auctions.reduce((s, a) => s + a.offeringAmount, 0),
@@ -260,7 +273,11 @@ export async function GET() {
         auctions.length > 0
           ? Math.round((auctions.reduce((s, a) => s + a.bidToCover, 0) / auctions.length) * 100) / 100
           : 0,
-      dataFreshness: latestDate,
+      dataFreshness: auctions
+        .map((a) => a.auctionDate)
+        .filter(Boolean)
+        .sort()
+        .reverse()[0] || null,
     };
 
     // ============================================================
