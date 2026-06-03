@@ -26,7 +26,7 @@ const GOLD_DATA = {
     },
     {
       label: "WGC Central Bank Gold Reserves",
-      url: "https://www.gold.org/goldhub/data/central-bank-statistics",
+      url: "https://www.gold.org/goldhub/data/gold-reserves-by-country",
     },
     {
       label: "IMF COFER",
