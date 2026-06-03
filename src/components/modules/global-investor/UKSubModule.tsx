@@ -1014,7 +1014,7 @@ function SupplyAndAuction() {
         {/* DMO 链接 */}
         <div className="grid grid-cols-2 gap-3 mb-2">
           <a
-            href="https://www.dmo.gov.uk/publications/gilt-operations-calendar/"
+            href="https://www.dmo.gov.uk/calendars/"
             target="_blank"
             rel="noopener noreferrer"
             className="p-3 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors group"
@@ -1023,7 +1023,7 @@ function SupplyAndAuction() {
             <p className="text-[11px] text-gray-500 mt-0.5">DMO Gilt Operations Calendar</p>
           </a>
           <a
-            href="https://www.dmo.gov.uk/data/gilt-market/auction-results/"
+            href="https://www.dmo.gov.uk/data/gilt-market/results-of-gilt-operations/"
             target="_blank"
             rel="noopener noreferrer"
             className="p-3 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors group"
