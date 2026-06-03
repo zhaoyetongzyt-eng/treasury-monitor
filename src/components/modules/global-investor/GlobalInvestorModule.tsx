@@ -22,7 +22,7 @@ const GOLD_DATA = {
   sources: [
     {
       label: "ECB International Role of the Euro",
-      url: "https://www.ecb.europa.eu/press/publications/eurofxref/html/index.en.html",
+      url: "https://www.ecb.europa.eu/press/other-publications/ire/html/ecb.ire202606.en.html",
     },
     {
       label: "WGC Central Bank Gold Reserves",
@@ -65,12 +65,23 @@ export default function GlobalInvestorModule() {
         </div>
 
         {/* 横向提示卡 */}
-        <div className="mb-4 p-4 rounded-lg bg-amber-50 border border-amber-200">
+        <div className="mb-2 p-4 rounded-lg bg-amber-50 border border-amber-200">
           <p className="text-sm text-amber-800 leading-relaxed">
             <span className="font-semibold">关键信号：</span>
-            ECB 最新报告显示，按市场价值计算，黄金已超过美国国债，成为全球官方储备中的最大单一资产类别。
-            该变化并不意味着美元储备地位被黄金取代，而是反映全球央行储备配置正在从单一美元债券资产向黄金等非信用资产分散。
+            欧央行报告显示，按市场价值计算，截至 2025 年底，黄金占全球官方储备的比例升至 27%，超过美国国债的 22%，成为全球官方储备中最大的单一资产类别。
           </p>
+        </div>
+
+        {/* ECB 报告引用链接 */}
+        <div className="mb-4 text-right">
+          <a
+            href="https://www.ecb.europa.eu/press/other-publications/ire/html/ecb.ire202606.en.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] text-blue-500 hover:underline"
+          >
+            ECB · The International Role of the Euro, June 2026 ↗
+          </a>
         </div>
 
         {/* 4 个数据卡片 */}
