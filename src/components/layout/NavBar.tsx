@@ -16,7 +16,7 @@ const navItems: NavItem[] = [
   { id: "holdings", number: "02", title: "持仓与资金流", titleEn: "Holdings & Flows" },
   { id: "ust-holders", number: "03", title: "UST 持有人结构", titleEn: "UST Holders Structure" },
   { id: "leverage", number: "04", title: "杠杆率", titleEn: "Leverage Ratios" },
-  { id: "global-investor", number: "05", title: "全球资金视角", titleEn: "Global Investor Lens" },
+  { id: "global-investor", number: "05", title: "全球资金与储备配置", titleEn: "Global Reserves & Investor Lens" },
 ];
 
 export default function NavBar() {
