@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import ModuleHeader from "@/components/layout/ModuleHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
 import {
   Table,
   TableBody,
@@ -196,6 +196,9 @@ function HolderTable({ holders, z1Date }: { holders: USTHolder[]; z1Date: string
 
 /** 第二层：边际流向 — 拆为两张独立卡片 */
 function Layer2MarginalFlow({ marginalFlows }: { marginalFlows: USTHoldersResponse["marginalFlows"] }) {
+  const buyers3M = marginalFlows["3M"].flows?.filter(f => f.isBuyer && !f.isResidual) ?? [];
+  const sellers3M = marginalFlows["3M"].flows?.filter(f => !f.isBuyer && !f.isResidual) ?? [];
+
   return (
     <div className="space-y-4">
       {/* ===== 卡片 1：短期代理指标（1M）===== */}
@@ -214,12 +217,12 @@ function Layer2MarginalFlow({ marginalFlows }: { marginalFlows: USTHoldersRespon
                   key={signal.label}
                   className={`p-3 rounded-lg border ${
                     signal.change >= 0
-                      ? "bg-red-50 border-red-100"
-                      : "bg-green-50 border-green-100"
+                      ? "bg-blue-50 border-blue-100"
+                      : "bg-orange-50 border-orange-100"
                   }`}
                 >
                   <p className="text-xs text-gray-500 mb-1">{signal.label}</p>
-                  <p className={`text-lg font-bold font-mono ${signal.change >= 0 ? "text-red-600" : "text-green-600"}`}>
+                  <p className={`text-lg font-bold font-mono ${signal.change >= 0 ? "text-blue-700" : "text-orange-600"}`}>
                     {signal.change >= 0 ? "+" : ""}{signal.change.toFixed(0)}B
                   </p>
                   <div className="mt-2 space-y-0.5 text-[10px] text-gray-400">
@@ -248,149 +251,76 @@ function Layer2MarginalFlow({ marginalFlows }: { marginalFlows: USTHoldersRespon
         </CardContent>
       </Card>
 
-      {/* ===== 卡片 2：Z.1 持有人结构变化（3M / 12M Tab）===== */}
+      {/* ===== 卡片 2：Z.1 季度边际持仓变化（仅 3M）===== */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Z.1 持有人结构变化：谁在吸收美债余额？</CardTitle>
+          <CardTitle className="text-base">Z.1 季度边际持仓变化</CardTitle>
           <p className="text-xs text-gray-400">
-            基于 Fed Z.1 L.210，比较 3个月与 12个月期末余额变化；该口径为余额变化，不等同于净交易流量。
+            Z.1 L.210：2025Q4 vs 2025Q3，各部门期末持仓余额变化，非净交易流量。
           </p>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="3M">
-            <TabsList>
-              <TabsTrigger value="3M">3个月</TabsTrigger>
-              <TabsTrigger value="12M">12个月</TabsTrigger>
-            </TabsList>
-
-            {/* ====== 3M：Z.1 Q4 2025 vs Q3 2025 季度环比 ====== */}
-            <TabsContent value="3M" className="mt-3">
-              <p className="text-xs text-gray-500 mb-3">
-                Z.1 季度持仓变化：2025Q4 vs 2025Q3 · 仅使用 Z.1 L.210 季频数据（市值口径，不混用 TIC）
-              </p>
-
-              {marginalFlows["3M"].flows && marginalFlows["3M"].flows.length > 0 ? (
-                <div>
-                  {/* 持仓余额增加部门 */}
-                  {marginalFlows["3M"].flows.filter(f => f.isBuyer && !f.isResidual).length > 0 && (
-                    <div className="p-3 rounded-lg bg-red-50 border border-red-100 mb-3">
-                      <p className="text-xs text-gray-500 mb-2">
-                        持仓余额增加部门（{marginalFlows["3M"].flows.filter(f => f.isBuyer && !f.isResidual).length} 类）
-                      </p>
-                      <div className="space-y-1">
-                        {marginalFlows["3M"].flows.filter(f => f.isBuyer && !f.isResidual).map((f) => (
-                          <div key={f.category} className="flex justify-between text-xs" title={f.source}>
-                            <span className="text-gray-600">{f.category}</span>
-                            <span className="font-mono text-red-600">+{f.change.toFixed(0)}B</span>
-                          </div>
-                        ))}
+          {marginalFlows["3M"].flows && marginalFlows["3M"].flows.length > 0 ? (
+            <div>
+              {/* 左右两栏：增持 / 减持 */}
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                {/* 左栏：增持部门 */}
+                <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                  <p className="text-xs text-gray-500 mb-2">
+                    增持部门（{buyers3M.length} 类）
+                  </p>
+                  <div className="space-y-1">
+                    {buyers3M.map((f) => (
+                      <div key={f.category} className="flex justify-between text-xs" title={f.source}>
+                        <span className="text-gray-600">{f.category}</span>
+                        <span className="font-mono text-blue-700">+{f.change.toFixed(0)}B</span>
                       </div>
-                    </div>
-                  )}
-
-                  {/* 持仓余额下降部门 */}
-                  {marginalFlows["3M"].flows.filter(f => !f.isBuyer && !f.isResidual).length > 0 && (
-                    <div className="p-3 rounded-lg bg-green-50 border border-green-100 mb-3">
-                      <p className="text-xs text-gray-500 mb-2">
-                        持仓余额下降部门（{marginalFlows["3M"].flows.filter(f => !f.isBuyer && !f.isResidual).length} 类）
-                      </p>
-                      <div className="space-y-1">
-                        {marginalFlows["3M"].flows.filter(f => !f.isBuyer && !f.isResidual).map((f) => (
-                          <div key={f.category} className="flex justify-between text-xs" title={f.source}>
-                            <span className="text-gray-600">{f.category}</span>
-                            <span className="font-mono text-green-600">{f.change.toFixed(0)}B</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 未单列部门与统计差异（残差项） */}
-                  {marginalFlows["3M"].residualItem && (
-                    <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
-                      <p className="text-xs text-gray-500 mb-1">未单列部门与统计差异</p>
-                      <p className={`text-lg font-bold font-mono ${marginalFlows["3M"].residualItem.change >= 0 ? "text-red-600" : "text-green-600"}`}>
-                        {marginalFlows["3M"].residualItem.change >= 0 ? "+" : ""}{marginalFlows["3M"].residualItem.change.toFixed(0)}B
-                      </p>
-                      <p className="mt-1 text-[10px] text-gray-500 leading-relaxed">
-                        {marginalFlows["3M"].residualItem.residualNote}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-400 text-center py-4">暂无数据</p>
-              )}
-
-              {marginalFlows["3M"].footnote && (
-                <p className="mt-3 text-[10px] text-gray-400">{marginalFlows["3M"].footnote}</p>
-              )}
-            </TabsContent>
-
-            {/* ====== 12M：Z.1 Q4 2025 vs Q4 2024 年度同比 ====== */}
-            <TabsContent value="12M" className="mt-3">
-              <p className="text-xs text-gray-500 mb-3">
-                Z.1 年度持仓变化：2025Q4 vs 2024Q4 · 该口径为期末余额同比变化，不能等同于全年净交易流量
-              </p>
-
-              {marginalFlows["12M"].flows && marginalFlows["12M"].flows.length > 0 ? (
-                <div>
-                  {/* 持仓余额增加部门 */}
-                  <div className="p-3 rounded-lg bg-red-50 border border-red-100 mb-3">
-                    <p className="text-xs text-gray-500 mb-2">
-                      持仓余额增加部门（{marginalFlows["12M"].flows.filter(f => f.isBuyer && !f.isResidual).length} 类）
-                    </p>
-                    <div className="space-y-1">
-                      {marginalFlows["12M"].flows.filter(f => f.isBuyer && !f.isResidual).map((f) => (
-                        <div key={f.category} className="flex justify-between text-xs" title={f.source}>
-                          <span className="text-gray-600">{f.category}</span>
-                          <span className="font-mono text-red-600">+{f.change.toFixed(0)}B</span>
-                        </div>
-                      ))}
-                    </div>
+                    ))}
+                    {buyers3M.length === 0 && (
+                      <p className="text-xs text-gray-400">暂无增持部门</p>
+                    )}
                   </div>
-
-                  {/* 同比余额下降部门 */}
-                  {marginalFlows["12M"].flows.filter(f => !f.isBuyer && !f.isResidual).length > 0 ? (
-                    <div className="p-3 rounded-lg bg-green-50 border border-green-100 mb-3">
-                      <p className="text-xs text-gray-500 mb-2">
-                        同比余额下降部门（{marginalFlows["12M"].flows.filter(f => !f.isBuyer && !f.isResidual).length} 类）
-                      </p>
-                      <div className="space-y-1">
-                        {marginalFlows["12M"].flows.filter(f => !f.isBuyer && !f.isResidual).map((f) => (
-                          <div key={f.category} className="flex justify-between text-xs" title={f.source}>
-                            <span className="text-gray-600">{f.category}</span>
-                            <span className="font-mono text-green-600">{f.change.toFixed(0)}B</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-gray-400 mb-3">同比余额下降部门：暂无主要聚合部门</p>
-                  )}
-
-                  {/* 残差项 */}
-                  {marginalFlows["12M"].residualItem && (
-                    <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
-                      <p className="text-xs text-gray-500 mb-1">未单列部门与统计差异</p>
-                      <p className={`text-lg font-bold font-mono ${marginalFlows["12M"].residualItem.change >= 0 ? "text-red-600" : "text-green-600"}`}>
-                        {marginalFlows["12M"].residualItem.change >= 0 ? "+" : ""}{marginalFlows["12M"].residualItem.change.toFixed(0)}B
-                      </p>
-                      <p className="mt-1 text-[10px] text-gray-500 leading-relaxed">
-                        {marginalFlows["12M"].residualItem.residualNote}
-                      </p>
-                    </div>
-                  )}
                 </div>
-              ) : (
-                <p className="text-sm text-gray-400 text-center py-4">暂无数据</p>
-              )}
 
-              {marginalFlows["12M"].footnote && (
-                <p className="mt-3 text-[10px] text-gray-400">{marginalFlows["12M"].footnote}</p>
+                {/* 右栏：减持部门 */}
+                <div className="p-3 rounded-lg bg-orange-50 border border-orange-100">
+                  <p className="text-xs text-gray-500 mb-2">
+                    减持部门（{sellers3M.length} 类）
+                  </p>
+                  <div className="space-y-1">
+                    {sellers3M.map((f) => (
+                      <div key={f.category} className="flex justify-between text-xs" title={f.source}>
+                        <span className="text-gray-600">{f.category}</span>
+                        <span className="font-mono text-orange-600">{f.change.toFixed(0)}B</span>
+                      </div>
+                    ))}
+                    {sellers3M.length === 0 && (
+                      <p className="text-xs text-gray-400">暂无减持部门</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 底部灰框：未单列部门与统计差异 */}
+              {marginalFlows["3M"].residualItem && (
+                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <p className="text-xs text-gray-500 mb-1">未单列部门与统计差异</p>
+                  <p className="text-base font-bold font-mono text-gray-600">
+                    {marginalFlows["3M"].residualItem.change >= 0 ? "+" : ""}{marginalFlows["3M"].residualItem.change.toFixed(0)}B
+                  </p>
+                  <p className="mt-1 text-[10px] text-gray-500 leading-relaxed">
+                    {marginalFlows["3M"].residualItem.residualNote}
+                  </p>
+                </div>
               )}
-            </TabsContent>
-          </Tabs>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 text-center py-4">暂无数据</p>
+          )}
+
+          {marginalFlows["3M"].footnote && (
+            <p className="mt-3 text-[10px] text-gray-400">{marginalFlows["3M"].footnote}</p>
+          )}
 
           <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-3">
             <a href="https://www.federalreserve.gov/releases/z1/" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:text-blue-800 underline underline-offset-2">Z.1 L.210 ↗</a>
@@ -408,74 +338,104 @@ function Layer3AnnualChange({ holders, z1Date, z1PublicationDate }: { holders: U
     h.category === "家庭部门" ? { ...h, category: "家庭与非营利部门（含残差）" } : h
   );
 
-  const buyers = renamedHolders.filter((h) => h.trend === "增持");
-  const sellers = renamedHolders.filter((h) => h.trend === "减持");
+  // 只展示主要可列示部门（排除"其他"残差项），Z.1 "其他"行单独展示
+  const mainHolders = renamedHolders.filter((h) => h.category !== "其他");
+  const residualHolder = renamedHolders.find((h) => h.category === "其他");
 
+  const buyers = mainHolders.filter((h) => h.trend === "增持");
   const totalBuyerChange = buyers.reduce((sum, h) => sum + h.change, 0);
-  const totalSellerChange = sellers.reduce((sum, h) => sum + h.change, 0);
+
+  // 年度结构解读：找出前3大增持部门
+  const top3Buyers = [...buyers].sort((a, b) => b.change - a.change).slice(0, 3);
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">年度持仓结构变化：谁吸收了新增供给？</CardTitle>
+        <CardTitle className="text-base">年度结构变化｜新增美债余额由谁吸收？</CardTitle>
         <p className="text-xs text-gray-400">
-          Z.1 {z1Date} vs Q4 2024 · 各部门美债持仓余额变化，非交易流量 · {z1PublicationDate} 发布
+          Z.1 L.210：{z1Date} vs Q4 2024，各部门期末持仓余额变化，反映年度结构变化，非全年净交易流量。{z1PublicationDate} 发布
         </p>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-4">
-          {/* 持仓余额增加部门 */}
-          <div className="p-3 rounded-lg bg-red-50 border border-red-100">
-            <p className="text-xs text-gray-500 mb-2">持仓余额增加部门（{buyers.length} 类）</p>
-            <p className="text-lg font-bold font-mono text-red-600">
+        <div className="grid grid-cols-2 gap-4 mb-3">
+          {/* 左栏：主要增持部门 */}
+          <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-xs text-gray-500">主要增持部门（{buyers.length} 类）</p>
+              <span className="text-[9px] bg-blue-100 text-blue-600 border border-blue-200 rounded px-1.5 py-0.5 leading-tight whitespace-nowrap">
+                列示部门余额增加合计
+              </span>
+            </div>
+            <p className="text-lg font-bold font-mono text-blue-700 mb-2">
               +${totalBuyerChange.toFixed(0)}B
             </p>
-            <div className="mt-2 space-y-1">
+            <div className="space-y-1">
               {buyers.map((b) => (
                 <div key={b.category} className="flex justify-between text-xs">
                   <span className="text-gray-600">{b.category}</span>
-                  <span className="font-mono text-red-600">+{b.change.toFixed(0)}B</span>
+                  <span className="font-mono text-blue-700">+{b.change.toFixed(0)}B</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* 持仓余额减少部门 */}
-          <div className="p-3 rounded-lg bg-green-50 border border-green-100">
-            <p className="text-xs text-gray-500 mb-2">持仓余额减少部门（{sellers.length} 类）</p>
-            <p className="text-lg font-bold font-mono text-green-600">
-              {totalSellerChange.toFixed(0)}B
-            </p>
-            <div className="mt-2 space-y-1">
-              {sellers.map((s) => (
-                <div key={s.category} className="flex justify-between text-xs">
-                  <span className="text-gray-600">{s.category}</span>
-                  <span className="font-mono text-green-600">{s.change.toFixed(0)}B</span>
+          {/* 右栏：年度结构解读 */}
+          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+            <p className="text-xs text-gray-500 mb-2">年度结构解读</p>
+            <div className="space-y-2">
+              <div>
+                <p className="text-[10px] text-gray-400 mb-1">贡献排名（列示部门）</p>
+                <div className="space-y-1">
+                  {top3Buyers.map((b, i) => (
+                    <div key={b.category} className="flex items-center gap-1.5 text-xs">
+                      <span className="text-[10px] font-bold text-blue-500 w-3">#{i + 1}</span>
+                      <span className="text-gray-600 flex-1 truncate">{b.category}</span>
+                      <span className="font-mono text-blue-700 text-[10px]">+{b.change.toFixed(0)}B</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+              <div className="border-t border-slate-200 pt-2">
+                <p className="text-[10px] text-gray-500 leading-relaxed">
+                  货币市场基金、外国部门与家庭/共同基金为主要增持力量；美联储 Z.1 市值口径下小幅变动，2026 年已转为滚续与储备管理配置。
+                </p>
+              </div>
+              <div className="border-t border-slate-200 pt-2">
+                <p className="text-[9px] text-gray-400 leading-relaxed">
+                  ⚠️ 上述合计不等于全年美债净发行，也不等于全年净买入。该数字为列示部门持仓余额增加项之和，口径为 Z.1 L.210 期末市值差分。
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 结论 */}
-        <div className="mt-3 p-3 rounded-lg bg-blue-50 text-left space-y-1">
-          <p className="text-xs font-medium text-blue-800">2025年美债供给吸收结构</p>
-          <p className="text-xs text-blue-700 leading-relaxed">
-            货币市场基金（+${holders.find(h => h.category === "货币市场基金")?.change.toFixed(0)}B）、
-            家庭与非营利部门（+${holders.find(h => h.category === "家庭部门")?.change.toFixed(0)}B）、
-            外国部门（+${holders.find(h => h.category === "外国部门 / Rest of world")?.change.toFixed(0)}B）与
-            共同基金（+${holders.find(h => h.category === "共同基金")?.change.toFixed(0)}B）
-            为全年主要持仓增加部门；美联储 Z.1 市值口径下持仓小幅变动（+${holders.find(h => h.category === "美联储 / Monetary authority")?.change.toFixed(0)}B），
-            2026年5月边际上已转为滚续与储备管理购买。
-          </p>
-          <p className="text-[10px] text-blue-500 mt-1">
-            注：以上变动 = Q4 2025 持仓水平 − Q4 2024 持仓水平（Z.1 L.210 期末余额、非季调、可流通美债扣除溢价/折价）。此为各部门美债持仓余额的结构性变化，反映的是持仓存量的跨期增减，而非当期交易流量。外资 TIC 月频数据与 Z.1 季频数据口径不同（TIC 为面值，Z.1 为市值），不可直接混用。所有部门持仓变动之和与总存量变动存在统计误差（"其他"为残差项）。
+        {/* 底部灰框：未单列部门与统计差异 */}
+        <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+          <p className="text-xs text-gray-500 mb-1">未单列部门与统计差异</p>
+          {residualHolder ? (
+            <>
+              <p className="text-base font-bold font-mono text-gray-600">
+                {residualHolder.change >= 0 ? "+" : ""}{residualHolder.change.toFixed(0)}B
+              </p>
+              <p className="mt-1 text-[10px] text-gray-500 leading-relaxed">
+                包含未展示 Z.1 部门及 instrument discrepancy，不代表单一投资者类别。
+              </p>
+            </>
+          ) : (
+            <p className="text-[10px] text-gray-400">包含未展示 Z.1 部门及 instrument discrepancy，不代表单一投资者类别。</p>
+          )}
+        </div>
+
+        {/* 方法论说明 */}
+        <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-100">
+          <p className="text-[10px] text-blue-600 leading-relaxed">
+            注：变动 = {z1Date} 持仓水平 − Q4 2024 持仓水平（Z.1 L.210 期末余额、非季调、可流通美债扣除溢价/折价）。此为各部门美债持仓余额的结构性变化，反映持仓存量的跨期增减，而非当期交易流量。外资 TIC 月频数据与 Z.1 季频数据口径不同（TIC 为面值，Z.1 为市值），不可直接混用。
           </p>
         </div>
+
         <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-2">
           <a href="https://www.federalreserve.gov/releases/z1/" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:text-blue-800 underline underline-offset-2">Z.1 L.210 Q4 2025 ↗</a>
           <a href="https://www.federalreserve.gov/releases/z1/20250313/html/l210.htm" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:text-blue-800 underline underline-offset-2">Z.1 L.210 Q4 2024 ↗</a>
-          <a href="https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:text-blue-800 underline underline-offset-2">TIC Table 5 ↗</a>
         </div>
       </CardContent>
     </Card>
