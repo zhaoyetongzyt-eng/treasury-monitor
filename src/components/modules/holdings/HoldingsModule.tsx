@@ -183,37 +183,105 @@ function TICTable({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-      {/* 图表 */}
+      {/* 图表 — 自定义水平条形图，精准对齐 */}
       <Card className="lg:col-span-2">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">前12持仓国/地区</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="h-[280px] bg-gray-100 rounded-lg animate-pulse" />
+            <div className="space-y-2.5">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-2.5">
+                  <div className="w-5 h-3 bg-gray-200 rounded animate-pulse" />
+                  <div className="w-16 h-3 bg-gray-200 rounded animate-pulse" />
+                  <div className="flex-1 h-5 bg-gray-100 rounded animate-pulse" />
+                  <div className="w-14 h-3 bg-gray-200 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
           ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={chartData} layout="vertical" margin={{ left: 70, right: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" tickFormatter={(v) => `$${v}B`} fontSize={11} />
-                <YAxis type="category" dataKey="name" fontSize={11} width={70} />
-                <Tooltip
-                  contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                  formatter={(v, n) => {
-                    const val = Number(v);
-                    return [`$${val}B`, String(n) === "amount" ? "持仓规模" : "月变动"];
-                  }}
-                />
-                <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
-                  {chartData.map((entry, i) => (
-                    <Cell
-                      key={i}
-                      fill={entry.change > 0 ? "#ef4444" : entry.change < 0 ? "#10b981" : "#94a3b8"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="space-y-1.5">
+              {chartData.map((item, idx) => {
+                const maxAmount = chartData[0]?.amount ?? 1;
+                const widthPct = Math.max((item.amount / maxAmount) * 100, 3);
+                const isUp = item.change > 0;
+                const isDown = item.change < 0;
+                const isTop3 = idx < 3;
+
+                return (
+                  <div
+                    key={item.name}
+                    className="flex items-center gap-2.5 group py-1 px-1 -mx-1 rounded-md hover:bg-slate-50/60 transition-colors"
+                  >
+                    {/* 排名序号 */}
+                    <span
+                      className={`w-5 shrink-0 text-center text-[11px] tabular-nums font-medium ${
+                        isTop3 ? "text-slate-800" : "text-slate-400"
+                      }`}
+                    >
+                      {idx + 1}
+                    </span>
+
+                    {/* 国家/地区名 */}
+                    <span className="w-[72px] shrink-0 text-xs text-slate-700 truncate">
+                      {item.name}
+                    </span>
+
+                    {/* 条形容器 */}
+                    <div className="flex-1 relative h-[22px]">
+                      {/* 底层轨道 */}
+                      <div className="absolute inset-0 rounded-r-[3px] bg-slate-100" />
+                      {/* 填色条 */}
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-r-[3px] transition-all duration-500 ease-out"
+                        style={{
+                          width: `${widthPct}%`,
+                          background: isUp
+                            ? "linear-gradient(90deg, rgba(239,68,68,0.12), rgba(239,68,68,0.22))"
+                            : isDown
+                            ? "linear-gradient(90deg, rgba(16,185,129,0.12), rgba(16,185,129,0.22))"
+                            : "linear-gradient(90deg, rgba(148,163,184,0.12), rgba(148,163,184,0.22))",
+                          borderLeft: isUp
+                            ? "2px solid rgba(239,68,68,0.35)"
+                            : isDown
+                            ? "2px solid rgba(16,185,129,0.35)"
+                            : "2px solid rgba(148,163,184,0.25)",
+                        }}
+                      />
+                      {/* 金额标签（填色区内） */}
+                      {widthPct > 22 && (
+                        <span className="absolute inset-y-0 left-[6px] flex items-center text-[10.5px] font-mono font-medium text-slate-600">
+                          ${item.amount}B
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 金额（填色区外时显示） */}
+                    {widthPct <= 22 && (
+                      <span className="w-[62px] shrink-0 text-right text-[10.5px] font-mono font-medium text-slate-500">
+                        ${item.amount}B
+                      </span>
+                    )}
+
+                    {/* 变动指示器 */}
+                    <span
+                      className={`w-[60px] shrink-0 text-right text-[10.5px] font-mono font-medium ${
+                        isUp
+                          ? "text-red-500"
+                          : isDown
+                          ? "text-emerald-500"
+                          : "text-slate-400"
+                      }`}
+                    >
+                      {isUp ? "▲" : isDown ? "▼" : "─"}{" "}
+                      {isUp ? "+" : ""}
+                      {item.change}B
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
