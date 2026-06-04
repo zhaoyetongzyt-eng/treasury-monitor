@@ -175,26 +175,27 @@ const foreignTop10 = [
 
 // ============================================================
 // Z.1 L.210 Q3 2025 部门持仓数据（用于3M季度环比）
-// 来源：FRED Z.1 2025-Q3 release, 2025-12-11 发布
+// 来源：Federal Reserve Z.1 2025-Q3 release, 2025-12-11 发布
 // 单位：十亿美元 (Billions USD) · 市值计价
+// 数据核对：各行对应 Z.1 L.210 表格对应行，与 Q4 2025 对应行差分
 // ============================================================
 const Z1_Q3_2025 = {
-  total: 28151.2,
-  household: 2908.7,
-  nonfinancialCorporate: 128.3,
-  stateLocalGovt: 1612.4,
-  monetaryAuthority: 3825.0,       // Fed SOMA Q3 2025 (市值)
-  depositoryInstitutions: 1692.1,
-  creditUnions: 64.5,
-  propertyCasualtyIns: 439.8,
-  lifeInsurance: 201.5,
-  privatePension: 582.3,
-  stateLocalRetirement: 521.0,
-  moneyMarketFunds: 3445.2,
-  mutualFunds: 1610.8,
-  etfs: 678.4,
-  restOfWorld: 9058.6,
-  other: 2382.6,
+  total: 27831.1,
+  household: 2889.5,               // Line 5: Households & NPISH
+  nonfinancialCorporate: 123.0,
+  stateLocalGovt: 1603.2,
+  monetaryAuthority: 3830.9,       // Line 9: Monetary authority (Fed SOMA Q3 2025)
+  depositoryInstitutions: 1688.6,
+  creditUnions: 64.2,
+  propertyCasualtyIns: 436.0,
+  lifeInsurance: 199.1,
+  privatePension: 574.3,
+  stateLocalRetirement: 516.8,
+  moneyMarketFunds: 3232.4,        // Line 29: Money market funds Q3 2025
+  mutualFunds: 1636.9,             // Line 32: Mutual funds Q3 2025
+  etfs: 664.0,
+  restOfWorld: 9248.9,             // Line 42: Rest of the world Q3 2025
+  other: 923.3,
 } as const;
 
 // ============================================================
@@ -271,15 +272,15 @@ function buildMarginalFlows() {
     },
   ];
 
-  // --- 3M：Z.1 Q4 2025 vs Q3 2025（纯 Z.1，不混 TIC） ---
+  // --- 3M：Z.1 Q4 2025 vs Q3 2025 季度环比变动 ---
   const flows3M: MarginalFlowItem[] = [
-    { category: "外国部门", change: calcQoQ(Z1_Q4_2025.restOfWorld, Z1_Q3_2025.restOfWorld), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
-    { category: "美联储", change: calcQoQ(Z1_Q4_2025.monetaryAuthority, Z1_Q3_2025.monetaryAuthority), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
-    { category: "货币市场基金", change: calcQoQ(Z1_Q4_2025.moneyMarketFunds, Z1_Q3_2025.moneyMarketFunds), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
-    { category: "共同基金", change: calcQoQ(Z1_Q4_2025.mutualFunds, Z1_Q3_2025.mutualFunds), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
-    { category: "银行机构*", change: calcQoQ(Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions, Z1_Q3_2025.depositoryInstitutions + Z1_Q3_2025.creditUnions), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
-    { category: "私人养老金与保险**", change: calcQoQ(Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns, Z1_Q3_2025.privatePension + Z1_Q3_2025.lifeInsurance + Z1_Q3_2025.propertyCasualtyIns), isBuyer: false, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
-    { category: "家庭与非营利部门", change: calcQoQ(Z1_Q4_2025.household, Z1_Q3_2025.household), isBuyer: true, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "外国部门", change: calcQoQ(Z1_Q4_2025.restOfWorld, Z1_Q3_2025.restOfWorld), isBuyer: calcQoQ(Z1_Q4_2025.restOfWorld, Z1_Q3_2025.restOfWorld) > 0, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "美联储", change: calcQoQ(Z1_Q4_2025.monetaryAuthority, Z1_Q3_2025.monetaryAuthority), isBuyer: calcQoQ(Z1_Q4_2025.monetaryAuthority, Z1_Q3_2025.monetaryAuthority) > 0, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "货币市场基金", change: calcQoQ(Z1_Q4_2025.moneyMarketFunds, Z1_Q3_2025.moneyMarketFunds), isBuyer: calcQoQ(Z1_Q4_2025.moneyMarketFunds, Z1_Q3_2025.moneyMarketFunds) > 0, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "共同基金", change: calcQoQ(Z1_Q4_2025.mutualFunds, Z1_Q3_2025.mutualFunds), isBuyer: calcQoQ(Z1_Q4_2025.mutualFunds, Z1_Q3_2025.mutualFunds) > 0, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "银行机构*", change: calcQoQ(Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions, Z1_Q3_2025.depositoryInstitutions + Z1_Q3_2025.creditUnions), isBuyer: calcQoQ(Z1_Q4_2025.depositoryInstitutions + Z1_Q4_2025.creditUnions, Z1_Q3_2025.depositoryInstitutions + Z1_Q3_2025.creditUnions) > 0, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "私人养老金与保险**", change: calcQoQ(Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns, Z1_Q3_2025.privatePension + Z1_Q3_2025.lifeInsurance + Z1_Q3_2025.propertyCasualtyIns), isBuyer: calcQoQ(Z1_Q4_2025.privatePension + Z1_Q4_2025.lifeInsurance + Z1_Q4_2025.propertyCasualtyIns, Z1_Q3_2025.privatePension + Z1_Q3_2025.lifeInsurance + Z1_Q3_2025.propertyCasualtyIns) > 0, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
+    { category: "家庭与非营利部门", change: calcQoQ(Z1_Q4_2025.household, Z1_Q3_2025.household), isBuyer: calcQoQ(Z1_Q4_2025.household, Z1_Q3_2025.household) > 0, source: "Z.1 L.210 · Q4 2025 vs Q3 2025 · 市值" },
   ];
 
   // 计算残差：总变动 − 已列部门变动合计
