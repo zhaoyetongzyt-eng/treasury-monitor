@@ -175,182 +175,129 @@ function TICTable({
   dataSource: string;
 }) {
   const displayData = data.slice(0, 12);
-  const chartData = displayData.map((d) => ({
-    name: d.country,
-    amount: d.amount,
-    change: d.change,
-  })).sort((a, b) => b.amount - a.amount);
+  const sortedData = [...displayData].sort((a, b) => b.amount - a.amount);
+  const maxAmount = sortedData[0]?.amount ?? 1;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-      {/* 图表 — 自定义水平条形图，精准对齐 */}
-      <Card className="lg:col-span-2">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">前12持仓国/地区</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="space-y-2.5">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-2.5">
-                  <div className="w-5 h-3 bg-gray-200 rounded animate-pulse" />
-                  <div className="w-16 h-3 bg-gray-200 rounded animate-pulse" />
-                  <div className="flex-1 h-5 bg-gray-100 rounded animate-pulse" />
-                  <div className="w-14 h-3 bg-gray-200 rounded animate-pulse" />
-                </div>
-              ))}
+    <Card>
+      {/* 标题行 */}
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base">海外持仓 TIC · 前12持仓国/地区（月频）</CardTitle>
+          {!isLoading && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-400">来源：Treasury TIC SLT Table 5 · {dataDate}</span>
+              <a
+                href="https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-500 hover:text-blue-700 underline underline-offset-2"
+              >
+                原始数据 ↗
+              </a>
             </div>
-          ) : (
-            <div className="space-y-1.5">
-              {chartData.map((item, idx) => {
-                const maxAmount = chartData[0]?.amount ?? 1;
-                const widthPct = Math.max((item.amount / maxAmount) * 100, 3);
-                const isUp = item.change > 0;
-                const isDown = item.change < 0;
-                const isTop3 = idx < 3;
+          )}
+        </div>
+      </CardHeader>
 
-                return (
-                  <div
-                    key={item.name}
-                    className="flex items-center gap-2.5 group py-1 px-1 -mx-1 rounded-md hover:bg-slate-50/60 transition-colors"
+      <CardContent>
+        {/* 列头 */}
+        <div className="flex items-center gap-2.5 px-1 mb-1 border-b border-slate-100 pb-1.5">
+          <span className="w-5 shrink-0" />
+          <span className="w-[130px] shrink-0 text-[11px] text-slate-400 font-medium">国家/地区</span>
+          <span className="flex-1 text-[11px] text-slate-400 font-medium">持仓规模</span>
+          <span className="w-[72px] shrink-0 text-right text-[11px] text-slate-400 font-medium">月变动</span>
+          <span className="w-[40px] shrink-0 text-right text-[11px] text-slate-400 font-medium">趋势</span>
+        </div>
+
+        {/* 行列表 */}
+        {isLoading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-2.5 py-1 px-1">
+                <div className="w-5 h-3 bg-gray-200 rounded animate-pulse shrink-0" />
+                <div className="w-[130px] h-3 bg-gray-200 rounded animate-pulse shrink-0" />
+                <div className="flex-1 h-5 bg-gray-100 rounded animate-pulse" />
+                <div className="w-[72px] h-3 bg-gray-200 rounded animate-pulse shrink-0" />
+                <div className="w-[40px] h-3 bg-gray-200 rounded animate-pulse shrink-0" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-0.5">
+            {sortedData.map((row, idx) => {
+              const widthPct = Math.max((row.amount / maxAmount) * 100, 2);
+              const isUp = row.change > 0;
+              const isDown = row.change < 0;
+              const isTop3 = idx < 3;
+
+              return (
+                <div
+                  key={row.country}
+                  className="flex items-center gap-2.5 py-[5px] px-1 -mx-1 rounded-md hover:bg-slate-50/70 transition-colors group"
+                >
+                  {/* 排名 */}
+                  <span
+                    className={`w-5 shrink-0 text-center text-[11px] tabular-nums font-medium ${
+                      isTop3 ? "text-slate-700" : "text-slate-400"
+                    }`}
                   >
-                    {/* 排名序号 */}
-                    <span
-                      className={`w-5 shrink-0 text-center text-[11px] tabular-nums font-medium ${
-                        isTop3 ? "text-slate-800" : "text-slate-400"
-                      }`}
-                    >
-                      {idx + 1}
-                    </span>
+                    {idx + 1}
+                  </span>
 
-                    {/* 国家/地区名 */}
-                    <span className="w-[72px] shrink-0 text-xs text-slate-700 truncate">
-                      {item.name}
-                    </span>
-
-                    {/* 条形容器 */}
-                    <div className="flex-1 relative h-[22px]">
-                      {/* 底层轨道 */}
-                      <div className="absolute inset-0 rounded-r-[3px] bg-slate-100" />
-                      {/* 填色条 */}
-                      <div
-                        className="absolute inset-y-0 left-0 rounded-r-[3px] transition-all duration-500 ease-out"
-                        style={{
-                          width: `${widthPct}%`,
-                          background: isUp
-                            ? "linear-gradient(90deg, rgba(239,68,68,0.12), rgba(239,68,68,0.22))"
-                            : isDown
-                            ? "linear-gradient(90deg, rgba(16,185,129,0.12), rgba(16,185,129,0.22))"
-                            : "linear-gradient(90deg, rgba(148,163,184,0.12), rgba(148,163,184,0.22))",
-                          borderLeft: isUp
-                            ? "2px solid rgba(239,68,68,0.35)"
-                            : isDown
-                            ? "2px solid rgba(16,185,129,0.35)"
-                            : "2px solid rgba(148,163,184,0.25)",
-                        }}
-                      />
-                      {/* 金额标签（填色区内） */}
-                      {widthPct > 22 && (
-                        <span className="absolute inset-y-0 left-[6px] flex items-center text-[10.5px] font-mono font-medium text-slate-600">
-                          ${item.amount}B
-                        </span>
-                      )}
-                    </div>
-
-                    {/* 金额（填色区外时显示） */}
-                    {widthPct <= 22 && (
-                      <span className="w-[62px] shrink-0 text-right text-[10.5px] font-mono font-medium text-slate-500">
-                        ${item.amount}B
-                      </span>
+                  {/* 国名 + isMajor 蓝点 */}
+                  <span className="w-[130px] shrink-0 flex items-center gap-1 text-xs text-slate-700 truncate">
+                    {row.country}
+                    {row.isMajor && (
+                      <span className="text-blue-400 text-[9px]" title="主要持有国">●</span>
                     )}
+                  </span>
 
-                    {/* 变动指示器 */}
-                    <span
-                      className={`w-[60px] shrink-0 text-right text-[10.5px] font-mono font-medium ${
-                        isUp
-                          ? "text-red-500"
+                  {/* 条形 + 金额标签 */}
+                  <div className="flex-1 relative h-[20px]">
+                    <div className="absolute inset-0 rounded-sm bg-slate-100" />
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-sm transition-all duration-500 ease-out"
+                      style={{
+                        width: `${widthPct}%`,
+                        background: isUp
+                          ? "linear-gradient(90deg, rgba(239,68,68,0.10), rgba(239,68,68,0.20))"
                           : isDown
-                          ? "text-emerald-500"
-                          : "text-slate-400"
-                      }`}
-                    >
-                      {isUp ? "▲" : isDown ? "▼" : "─"}{" "}
-                      {isUp ? "+" : ""}
-                      {item.change}B
+                          ? "linear-gradient(90deg, rgba(16,185,129,0.10), rgba(16,185,129,0.20))"
+                          : "linear-gradient(90deg, rgba(148,163,184,0.10), rgba(148,163,184,0.20))",
+                        borderLeft: isUp
+                          ? "2px solid rgba(239,68,68,0.30)"
+                          : isDown
+                          ? "2px solid rgba(16,185,129,0.30)"
+                          : "2px solid rgba(148,163,184,0.20)",
+                      }}
+                    />
+                    <span className={`absolute inset-y-0 flex items-center text-[10.5px] font-mono font-medium text-slate-500 ${widthPct > 18 ? "left-[7px]" : "left-[calc(100%+6px)]"}`}>
+                      ${row.amount}B
                     </span>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* 表格 */}
-      <Card className="lg:col-span-3">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">海外持仓 TIC（月频）</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>国家/地区</TableHead>
-                <TableHead className="text-right">持仓规模</TableHead>
-                <TableHead className="text-right">月变动</TableHead>
-                <TableHead className="text-right">趋势</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading
-                ? Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
-                : displayData.map((row, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="font-medium">
-                        {row.country}
-                        {row.isMajor && (
-                          <span className="ml-1 text-xs text-blue-500" title="主要持有国">
-                            ●
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-mono">${row.amount}B</TableCell>
-                      <TableCell
-                        className={`text-right font-mono ${
-                          row.change > 0 ? "text-red-600" : row.change < 0 ? "text-emerald-600" : "text-gray-500"
-                        }`}
-                      >
-                        {row.change > 0 ? "+" : ""}
-                        {row.change}B
-                      </TableCell>
-                      <TableCell className={`text-right ${trendColor(row.trend)}`}>
-                        {row.trend}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-            </TableBody>
-          </Table>
-          {!isLoading && (
-            <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
-              <p className="text-xs text-gray-400">
-                来源：Treasury TIC SLT Table 5 · 月频 · {dataDate}
-              </p>
-              <div className="flex items-center gap-3">
-                {dataSource && <p className="text-xs text-gray-300">{dataSource}</p>}
-                <a
-                  href="https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-blue-600 hover:text-blue-800 underline underline-offset-2"
-                >
-                  原始数据 ↗
-                </a>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                  {/* 月变动 */}
+                  <span
+                    className={`w-[72px] shrink-0 text-right text-[10.5px] font-mono font-medium ${
+                      isUp ? "text-red-500" : isDown ? "text-emerald-500" : "text-slate-400"
+                    }`}
+                  >
+                    {isUp ? "▲ +" : isDown ? "▼ " : "─ "}
+                    {row.change}B
+                  </span>
+
+                  {/* 趋势文字 */}
+                  <span className={`w-[40px] shrink-0 text-right text-xs ${trendColor(row.trend)}`}>
+                    {row.trend}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
