@@ -49,9 +49,10 @@ export default function YieldOverviewCard() {
     label: string;
     summary: string;        // 数值摘要 e.g. "2Y +6bp, 10Y -3bp, 2s10s -9bp"
     interpretation: string;  // 驱动解释
-    bg: string;
-    text: string;
-    border: string;
+    bg: string;             // 底色（半透明）
+    text: string;           // 强调色文字
+    border: string;         // 边框
+    accent: string;         // 左侧竖条强调色
   };
 
   function bpStr(v: number): string {
@@ -72,115 +73,109 @@ export default function YieldOverviewCard() {
     const dSpread = (c10Y - c2Y);           // >0 steepening, <0 flattening
     const spreadBp = cSpread !== null ? `${bpStr(cSpread)}` : "--";
 
+    // ── 信号工厂：统一生成带色彩的信号 ───────────────────────
+    const s = (opts: Omit<CurveSignal, "summary"> & { accent: string }): CurveSignal => ({
+      ...opts,
+      summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+    });
+
     // ── 1. 同向上行 + 10Y 更多 → Bear Steepening ──
     if (twoUp && tenUp && dSpread > THR) {
-      return {
+      return s({
         label: "Bear Steepening",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "全曲线利率上行，长端受通胀预期/供给/期限溢价推动涨幅更大，曲线陡峭化。",
-        bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200",
-      };
+        bg: "bg-orange-50/50", text: "text-orange-700", border: "border-orange-200/50", accent: "bg-orange-400",
+      });
     }
     // ── 2. 同向上行 + 2Y 更多 → Bear Flattening ──
     if (twoUp && tenUp && dSpread < -THR) {
-      return {
+      return s({
         label: "Bear Flattening",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "全曲线利率上行，短端受鹰派政策预期/加息冲击更大，曲线平坦化。",
-        bg: "bg-red-50", text: "text-red-700", border: "border-red-200",
-      };
+        bg: "bg-red-50/50", text: "text-red-700", border: "border-red-200/50", accent: "bg-red-400",
+      });
     }
     // ── 3. 同向上行 + 幅度接近 → Bear Parallel ──
     if (twoUp && tenUp) {
-      return {
+      return s({
         label: "Bear Shift ↑",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "曲线整体平行上移，形态基本不变，反映全面利率上行压力。",
-        bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200",
-      };
+        bg: "bg-slate-50/50", text: "text-slate-700", border: "border-slate-200/50", accent: "bg-slate-400",
+      });
     }
 
     // ── 4. 同向下行 + 2Y 更多 → Bull Steepening ──
     if (twoDown && tenDown && dSpread > THR) {
-      return {
+      return s({
         label: "Bull Steepening",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "全曲线利率下行，短端降息预期升温推动短端下行更快，曲线陡峭化。",
-        bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200",
-      };
+        bg: "bg-emerald-50/50", text: "text-emerald-700", border: "border-emerald-200/50", accent: "bg-emerald-400",
+      });
     }
     // ── 5. 同向下行 + 10Y 更多 → Bull Flattening ──
     if (twoDown && tenDown && dSpread < -THR) {
-      return {
+      return s({
         label: "Bull Flattening",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "全曲线利率下行，长端受避险买盘/期限溢价回落推动下行更快，曲线平坦化。",
-        bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200",
-      };
+        bg: "bg-blue-50/50", text: "text-blue-700", border: "border-blue-200/50", accent: "bg-blue-400",
+      });
     }
     // ── 6. 同向下行 + 幅度接近 → Bull Parallel ──
     if (twoDown && tenDown) {
-      return {
+      return s({
         label: "Bull Shift ↓",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "曲线整体平行下移，形态基本不变，反映全面利率下行。",
-        bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200",
-      };
+        bg: "bg-slate-50/50", text: "text-slate-700", border: "border-slate-200/50", accent: "bg-slate-400",
+      });
     }
 
     // ── 7. 反向：2Y↑ + 10Y↓ → Twist Flattening ──
     if (twoUp && tenDown) {
-      return {
+      return s({
         label: "Twist Flattening",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "短端受鹰派政策/Fed路径重定价推动上行，长端交易增长放缓或避险买盘，曲线扭曲式走平。",
-        bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200",
-      };
+        bg: "bg-purple-50/50", text: "text-purple-700", border: "border-purple-200/50", accent: "bg-purple-400",
+      });
     }
     // ── 8. 反向：2Y↓ + 10Y↑ → Twist Steepening ──
     if (twoDown && tenUp) {
-      return {
+      return s({
         label: "Twist Steepening",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "短端反映降息预期升温，长端受通胀、供给或期限溢价上升推动，曲线扭曲式变陡。",
-        bg: "bg-violet-50", text: "text-violet-700", border: "border-violet-200",
-      };
+        bg: "bg-violet-50/50", text: "text-violet-700", border: "border-violet-200/50", accent: "bg-violet-400",
+      });
     }
 
     // ── 9. 仅短端变动 ──
     if (twoUp && tenFlat) {
-      return {
+      return s({
         label: "Short-end Bear Flattening",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "主要由短端政策预期冲击推动上行，长端基本稳定，曲线由短端主导走平。",
-        bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200",
-      };
+        bg: "bg-rose-50/50", text: "text-rose-700", border: "border-rose-200/50", accent: "bg-rose-400",
+      });
     }
     if (twoDown && tenFlat) {
-      return {
+      return s({
         label: "Short-end Bull Steepening",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "主要由降息预期推动短端下行，长端基本稳定，曲线由短端主导变陡。",
-        bg: "bg-teal-50", text: "text-teal-700", border: "border-teal-200",
-      };
+        bg: "bg-teal-50/50", text: "text-teal-700", border: "border-teal-200/50", accent: "bg-teal-400",
+      });
     }
 
     // ── 10. 仅长端变动 ──
     if (tenUp && twoFlat) {
-      return {
+      return s({
         label: "Long-end Bear Steepening",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "主要由长端期限溢价或供给压力推动上行，短端基本锚定，曲线由长端主导变陡。",
-        bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200",
-      };
+        bg: "bg-amber-50/50", text: "text-amber-700", border: "border-amber-200/50", accent: "bg-amber-400",
+      });
     }
     if (tenDown && twoFlat) {
-      return {
+      return s({
         label: "Long-end Bull Flattening",
-        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
         interpretation: "主要由长端避险买盘或期限溢价下行推动，短端基本锚定，曲线由长端主导走平。",
-        bg: "bg-cyan-50", text: "text-cyan-700", border: "border-cyan-200",
-      };
+        bg: "bg-cyan-50/50", text: "text-cyan-700", border: "border-cyan-200/50", accent: "bg-cyan-400",
+      });
     }
 
     return null; // 两端均基本不变
@@ -230,7 +225,7 @@ export default function YieldOverviewCard() {
                 <span
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold tracking-wide ${signal.bg} ${signal.text} ${signal.border}`}
                 >
-                  <span className="text-[9px]">▶</span>
+                  <span className={`w-[6px] h-[6px] rounded-full ${signal.accent}`} />
                   {signal.label}
                 </span>
               )}
@@ -260,12 +255,20 @@ export default function YieldOverviewCard() {
               ))}
             </div>
           </div>
-          {/* 信号解读行 */}
+          {/* 信号解读行 — 白色玻璃质感底 + 左色条强调 */}
           {signal && (
-            <div className={`mt-2.5 px-3 py-2 rounded-md border text-xs leading-relaxed ${signal.bg} ${signal.text} ${signal.border}`}>
-              <span className="font-mono font-semibold">{signal.summary}</span>
-              <span className="mx-2 text-slate-300">|</span>
-              <span className="opacity-85">{signal.interpretation}</span>
+            <div className="mt-2.5 flex items-start gap-2.5 rounded-lg bg-white/60 backdrop-blur-sm border border-white/80 shadow-sm px-3.5 py-2.5">
+              {/* 左色条 */}
+              <div className={`w-[3px] shrink-0 self-stretch rounded-full mt-0.5 ${signal.accent}`} />
+              <div className="min-w-0 text-[12px] leading-[1.65]">
+                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <span className={`text-[11px] font-bold uppercase tracking-wider ${signal.text}`}>
+                    {signal.label}
+                  </span>
+                  <span className="text-[10.5px] text-slate-400 font-mono">{signal.summary}</span>
+                </div>
+                <div className="text-slate-600">{signal.interpretation}</div>
+              </div>
             </div>
           )}
           <div className="mt-3 pt-2 border-t border-blue-100">
