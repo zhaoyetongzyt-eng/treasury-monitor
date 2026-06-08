@@ -1,13 +1,36 @@
 import { NextResponse } from "next/server";
 
 // ============================================================
-// 国债收益率 API
-// 数据源：Treasury.gov 每日收益率曲线 CSV
-// 返回：10Y / 30Y / 2s10s 利差 + 日变动
+// 国债收益率 + TIPS 实际利率 & 通胀预期 API
+// 数据源：
+//   - Treasury.gov 每日收益率曲线 CSV（名义利率）
+//   - FRED API（TIPS 实际利率 & 盈亏平衡通胀）
+// 返回：10Y/30Y/2s10s + 实际利率/通胀预期 + 日变动
 // ============================================================
 
 const CSV_URL =
   "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2026/all?type=daily_treasury_yield_curve";
+
+/**
+ * 从 FRED API 获取一个 series 的最近两条 observations
+ */
+async function fetchFredSeries(seriesId: string, apiKey: string) {
+  const url = `https://api.stlouisfed.org/fred/series/observations` +
+    `?series_id=${seriesId}&api_key=${apiKey}&file_type=json` +
+    `&sort_order=desc&limit=2`;
+  const res = await fetch(url, {
+    next: { revalidate: 3600 },
+    headers: { "User-Agent": "TreasuryMonitor/1.0" },
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  const obs = json?.observations;
+  if (!obs || obs.length < 2) return null;
+  const latest = parseFloat(obs[0].value);
+  const previous = parseFloat(obs[1].value);
+  if (isNaN(latest) || isNaN(previous)) return null;
+  return { latest, previous, date: obs[0].date };
+}
 
 export async function GET() {
   try {
@@ -66,6 +89,36 @@ export async function GET() {
       ? Math.round(((latest.yield10Y - latest.yield2Y) - (previous.yield10Y - previous.yield2Y)) * 100)
       : null;
 
+    // ── FRED TIPS 实际利率 & 盈亏平衡通胀 ──────────────────
+    const fredApiKey = process.env.FRED_API_KEY || null;
+    let realYield10Y: number | null = null;
+    let breakeven10Y: number | null = null;
+    let breakeven5Y: number | null = null;
+    let changeReal10Y: number | null = null;
+    let changeBE10Y: number | null = null;
+    let changeBE5Y: number | null = null;
+
+    if (fredApiKey) {
+      // 并行获取 FRED series
+      const [dfii10, t5yifr] = await Promise.all([
+        fetchFredSeries("DFII10", fredApiKey),
+        fetchFredSeries("T5YIFR", fredApiKey),
+      ]);
+
+      if (dfii10) {
+        realYield10Y = dfii10.latest;
+        changeReal10Y = Math.round((dfii10.latest - dfii10.previous) * 100);
+        // 10Y Breakeven = Nominal - TIPS（保持与 Treasury.gov 数据同源一致）
+        breakeven10Y = Math.round((latest.yield10Y - dfii10.latest) * 100) / 100;
+        changeBE10Y = change10Y !== null ? change10Y - changeReal10Y : null;
+      }
+
+      if (t5yifr) {
+        breakeven5Y = t5yifr.latest;
+        changeBE5Y = Math.round((t5yifr.latest - t5yifr.previous) * 100);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       date: latest.date,
@@ -79,6 +132,13 @@ export async function GET() {
       change30Y,
       change2s10s,
       previousDate: previous?.date ?? null,
+      // Real Yield & Breakeven
+      realYield10Y,
+      breakeven10Y,
+      breakeven5Y,
+      changeReal10Y,
+      changeBE10Y,
+      changeBE5Y,
       updatedAt: new Date().toISOString(),
     });
   } catch (error) {

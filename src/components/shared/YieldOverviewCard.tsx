@@ -271,6 +271,87 @@ export default function YieldOverviewCard() {
               </div>
             </div>
           )}
+          {/* Real Yield & Breakeven — 实际利率与通胀预期 */}
+          {yields.realYield10Y !== null && (
+            <>
+              <div className="mt-3 pt-2.5 border-t border-blue-100">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Real Yield & Breakeven <span className="font-normal normal-case tracking-normal text-slate-400">· 实际利率与通胀预期</span>
+                  </span>
+                  {/* 驱动归因 */}
+                  {(() => {
+                    const cN = yields.change10Y;
+                    const cR = yields.changeReal10Y;
+                    const cB = yields.changeBE10Y;
+                    if (cN === null || cR === null || cB === null) return null;
+                    const THR = 1; // bp
+                    const nomUp = cN > THR;
+                    const nomDown = cN < -THR;
+                    const realMoves = Math.abs(cR) >= THR;
+                    const beMoves = Math.abs(cB) >= THR;
+                    let driver = "";
+                    if (nomUp && realMoves && !beMoves) driver = "主驱动：实际利率 ↑ — 金融条件收紧";
+                    else if (nomUp && beMoves && !realMoves) driver = "主驱动：通胀预期 ↑";
+                    else if (nomDown && realMoves && !beMoves) driver = "主驱动：实际利率 ↓ — 降息/增长放缓交易";
+                    else if (nomDown && beMoves && !realMoves) driver = "主驱动：通胀预期 ↓";
+                    else if (realMoves && beMoves) driver = "实际利率与通胀预期同向变动";
+                    if (!driver) return null;
+                    // 判断颜色：实际利率驱动用蓝，通胀驱动用橙/金
+                    const isRealDriver = driver.includes("实际利率");
+                    return (
+                      <span className={`text-[11px] font-semibold ${isRealDriver ? "text-blue-600" : "text-amber-600"}`}>
+                        {driver}
+                      </span>
+                    );
+                  })()}
+                </div>
+                <div className="flex items-center gap-6 flex-wrap">
+                  {[
+                    {
+                      label: "10Y Real Yield",
+                      value: `${yields.realYield10Y!.toFixed(2)}%`,
+                      change: yields.changeReal10Y,
+                      color: "text-blue-700",
+                    },
+                    {
+                      label: "10Y Breakeven",
+                      value: `${yields.breakeven10Y!.toFixed(2)}%`,
+                      change: yields.changeBE10Y,
+                      color: "text-amber-700",
+                    },
+                    {
+                      label: "5Y Breakeven",
+                      value: `${yields.breakeven5Y!.toFixed(2)}%`,
+                      change: yields.changeBE5Y,
+                      color: "text-orange-600",
+                    },
+                  ].map((item) => (
+                    <div key={item.label} className="text-center">
+                      <div className="text-[11px] text-slate-400 mb-0.5">{item.label}</div>
+                      <div className={`text-base font-bold font-mono ${item.color}`}>
+                        {item.value}
+                      </div>
+                      {item.change !== null && (
+                        <div
+                          className={`text-[11px] font-mono ${
+                            item.change > 0
+                              ? "text-red-500"
+                              : item.change < 0
+                                ? "text-green-500"
+                                : "text-gray-400"
+                          }`}
+                        >
+                          {item.change > 0 ? "↑" : item.change < 0 ? "↓" : "→"}{" "}
+                          {Math.abs(item.change)}bp
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
           <div className="mt-3 pt-2 border-t border-blue-100">
             <a
               href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve"

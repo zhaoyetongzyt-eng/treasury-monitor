@@ -194,6 +194,13 @@ export interface YieldSnapshot {
   change30Y: number | null;
   change2s10s: number | null;
   previousDate: string | null;
+  // ── Real Yield & Breakeven（来自 FRED TIPS / breakeven）────
+  realYield10Y: number | null;       // 10Y TIPS 实际利率 (DFII10)
+  breakeven10Y: number | null;       // 10Y 盈亏平衡通胀 (DGS10 - DFII10)
+  breakeven5Y: number | null;        // 5Y 盈亏平衡通胀 (T5YIFR)
+  changeReal10Y: number | null;      // bp
+  changeBE10Y: number | null;        // bp
+  changeBE5Y: number | null;         // bp
 }
 
 /** 即将拍卖公告（已公布但尚未完成拍卖） */
