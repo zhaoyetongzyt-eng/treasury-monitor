@@ -39,12 +39,82 @@ export default function YieldOverviewCard() {
 
   if (!yields) return null;
 
-  const formatBp = (v: number | null) => {
-    if (v === null) return "--";
-    return `${v > 0 ? "+" : ""}${v.toFixed(0)}bp`;
+  const formatYield = (v: number) => `${v.toFixed(2)}%`;
+
+  // ── 收益率曲线形态信号判断 ──────────────────────────────────
+  // change2Y / change10Y 均为 bp（单日变动）
+  type CurveSignal = {
+    label: string;
+    desc: string;
+    bg: string;
+    text: string;
+    border: string;
   };
 
-  const formatYield = (v: number) => `${v.toFixed(2)}%`;
+  function getCurveSignal(c2Y: number | null, c10Y: number | null): CurveSignal | null {
+    if (c2Y === null || c10Y === null) return null;
+    const THRESHOLD = 0.5; // bp，小于此值视为"基本不变"
+
+    const twoUp = c2Y > THRESHOLD;
+    const twoDown = c2Y < -THRESHOLD;
+    const tenUp = c10Y > THRESHOLD;
+    const tenDown = c10Y < -THRESHOLD;
+
+    // Bear Steepening：长端涨幅 > 短端涨幅，曲线变陡，整体熊市
+    if (tenUp && c10Y > c2Y + THRESHOLD) {
+      return {
+        label: "Bear Steepening",
+        desc: "长端主导上行，曲线变陡",
+        bg: "bg-orange-50",
+        text: "text-orange-700",
+        border: "border-orange-200",
+      };
+    }
+    // Bear Flattening：短端涨幅 > 长端涨幅，曲线变平，整体熊市
+    if (twoUp && c2Y > c10Y + THRESHOLD) {
+      return {
+        label: "Bear Flattening",
+        desc: "短端主导上行，曲线变平",
+        bg: "bg-red-50",
+        text: "text-red-700",
+        border: "border-red-200",
+      };
+    }
+    // Bull Flattening：长端跌幅 > 短端跌幅，曲线变平，整体牛市
+    if (tenDown && c10Y < c2Y - THRESHOLD) {
+      return {
+        label: "Bull Flattening",
+        desc: "长端主导下行，曲线变平",
+        bg: "bg-blue-50",
+        text: "text-blue-700",
+        border: "border-blue-200",
+      };
+    }
+    // Bull Steepening：短端跌幅 > 长端跌幅，曲线变陡，整体牛市
+    if (twoDown && c2Y < c10Y - THRESHOLD) {
+      return {
+        label: "Bull Steepening",
+        desc: "短端主导下行，曲线变陡",
+        bg: "bg-emerald-50",
+        text: "text-emerald-700",
+        border: "border-emerald-200",
+      };
+    }
+    // 并行移动（parallel shift）
+    if ((twoUp && tenUp) || (twoDown && tenDown)) {
+      const dir = twoUp ? "上行" : "下行";
+      return {
+        label: "Parallel Shift",
+        desc: `曲线整体${dir}，形态基本不变`,
+        bg: "bg-slate-50",
+        text: "text-slate-600",
+        border: "border-slate-200",
+      };
+    }
+    return null;
+  }
+
+  const signal = getCurveSignal(yields.change2Y, yields.change10Y);
 
   const items = [
     {
@@ -81,8 +151,18 @@ export default function YieldOverviewCard() {
       <Card className="bg-gradient-to-r from-slate-50 to-blue-50 border-blue-100">
         <CardContent className="py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="text-xs text-gray-400">
-              收益率快照 · {yields.date}
+            {/* 左侧：日期 + 曲线形态信号 */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="text-xs text-gray-400">收益率快照 · {yields.date}</span>
+              {signal && (
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold tracking-wide ${signal.bg} ${signal.text} ${signal.border}`}
+                >
+                  <span className="text-[9px]">▶</span>
+                  {signal.label}
+                  <span className="font-normal opacity-70 hidden sm:inline">· {signal.desc}</span>
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-6 flex-wrap">
               {items.map((item) => (
