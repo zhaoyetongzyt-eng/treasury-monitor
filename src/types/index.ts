@@ -203,6 +203,27 @@ export interface YieldSnapshot {
   changeBE5Y: number | null;         // bp
 }
 
+/** 资金面压力快照（Funding Stress） */
+export interface FundingStressSnapshot {
+  date: string | null;
+  sofr: number | null;           // Secured Overnight Financing Rate (%)
+  tgcr: number | null;           // Tri-Party General Collateral Rate (%)
+  effr: number | null;           // Effective Federal Funds Rate (%)
+  onRrpAmount: number | null;    // ON RRP Usage ($ Billions)
+  iorbRate: number | null;       // Interest on Reserve Balances (%)
+  sofrMinusEffr: number | null;  // bp
+  sofrMinusIorb: number | null;  // bp
+  changeSofr: number | null;     // bp
+  changeTgcr: number | null;     // bp
+  changeOnRrp: number | null;    // $ Billions (1 decimal)
+  signal: "funding_stable" | "mild_pressure" | "funding_stress" | "liquidity_declining";
+  signalLabel: string;
+  signalColor: "emerald" | "amber" | "red";
+  onRrpWarning: string | null;
+  sofriorbWarning: string | null;
+  dataSource: string;
+}
+
 /** 即将拍卖公告（已公布但尚未完成拍卖） */
 export interface UpcomingAuction {
   securityType: string;       // 品种：Bill / Note / Bond

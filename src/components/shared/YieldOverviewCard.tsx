@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import type { YieldSnapshot } from "@/types";
+import type { YieldSnapshot, FundingStressSnapshot } from "@/types";
 
 // ============================================================
 // 收益率概览卡片 — 独立组件，展示在所有模块之前
@@ -10,17 +10,17 @@ import type { YieldSnapshot } from "@/types";
 
 export default function YieldOverviewCard() {
   const [yields, setYields] = useState<YieldSnapshot | null>(null);
+  const [funding, setFunding] = useState<FundingStressSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/yields")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success) {
-          setYields(data);
-        }
-      })
-      .finally(() => setLoading(false));
+    Promise.all([
+      fetch("/api/yields").then((r) => r.json()),
+      fetch("/api/funding-stress").then((r) => r.json()),
+    ]).then(([yData, fData]) => {
+      if (yData.success) setYields(yData);
+      if (fData.success) setFunding(fData);
+    }).finally(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -345,6 +345,87 @@ export default function YieldOverviewCard() {
                   >
                     TIPS数据：Treasury.gov · Daily Treasury Real Yield Curve ↗
                   </a>
+                </div>
+              </div>
+            </>
+          )}
+          {/* Funding Stress — 资金面压力 */}
+          {funding && funding.sofr !== null && (
+            <>
+              <div className="mt-3 pt-2.5 border-t border-blue-100">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Funding Stress <span className="font-normal normal-case tracking-normal text-slate-400">· 资金面压力</span>
+                  </span>
+                  {/* 信号标签 */}
+                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                    funding.signal === "funding_stable"
+                      ? "bg-emerald-50 text-emerald-700"
+                      : funding.signal === "mild_pressure"
+                        ? "bg-amber-50 text-amber-700"
+                        : "bg-red-50 text-red-700"
+                  }`}>
+                    {funding.signalLabel}
+                  </span>
+                </div>
+                <div className="flex items-center gap-6 flex-wrap">
+                  {
+                    [
+                      { label: "SOFR", value: funding.sofr, change: funding.changeSofr, unit: "%", color: "text-slate-800" } as const,
+                      { label: "TGCR", value: funding.tgcr, change: funding.changeTgcr, unit: "%", color: "text-slate-700" } as const,
+                      { label: "ON RRP", value: funding.onRrpAmount, change: funding.changeOnRrp, unit: "bn", color: "text-purple-700" } as const,
+                      { label: "SOFR−EFFR", value: funding.sofrMinusEffr, unit: "bp", color: funding.sofrMinusEffr !== null && funding.sofrMinusEffr > 5 ? "text-red-600" : "text-slate-600" } as const,
+                      { label: "SOFR−IORB", value: funding.sofrMinusIorb, unit: "bp", color: funding.sofrMinusIorb !== null && funding.sofrMinusIorb > 5 ? "text-red-600" : "text-slate-500" } as const,
+                    ]
+                    .filter((item) => item.value !== null)
+                    .map((item) => (
+                      <div key={item.label} className="text-center">
+                        <div className="text-[11px] text-slate-400 mb-0.5">{item.label}</div>
+                        <div className={`text-base font-bold font-mono ${item.color}`}>
+                          {item.unit === "bn"
+                            ? `$${item.value!.toFixed(0)}bn`
+                            : item.unit === "bp"
+                              ? `${item.value! > 0 ? "+" : ""}${item.value!}${item.unit}`
+                              : `${item.value!.toFixed(2)}%`}
+                        </div>
+                        {"change" in item && item.change !== null && item.change !== undefined && (
+                          <div
+                            className={`text-[11px] font-mono ${
+                              item.change > 0
+                                ? "text-red-500"
+                                : item.change < 0
+                                  ? "text-green-500"
+                                  : "text-gray-400"
+                            }`}
+                          >
+                            {item.change > 0 ? "↑" : item.change < 0 ? "↓" : "→"}{" "}
+                            {item.unit === "bn"
+                              ? `${item.change.toFixed(1)}bn`
+                              : `${Math.abs(item.change)}bp`}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+                {/* 预警信息 */}
+                {(funding.onRrpWarning || funding.sofriorbWarning) && (
+                  <div className="mt-2 flex items-center gap-3 flex-wrap">
+                    {funding.onRrpWarning && (
+                      <span className="text-[11px] text-amber-600 bg-amber-50/50 px-2 py-0.5 rounded">
+                        ⚠ {funding.onRrpWarning}
+                      </span>
+                    )}
+                    {funding.sofriorbWarning && (
+                      <span className="text-[11px] text-red-600 bg-red-50/50 px-2 py-0.5 rounded">
+                        ⚠ {funding.sofriorbWarning}
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div className="mt-1.5">
+                  <span className="text-[10px] text-slate-400">
+                    数据来源：{funding.dataSource}
+                  </span>
                 </div>
               </div>
             </>
