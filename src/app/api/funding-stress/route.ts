@@ -87,13 +87,12 @@ export async function GET() {
     let onRrpDebug: string | null = null;
 
     try {
-      // 使用 search 接口获取 ON RRP 数据
+      // 使用 JSON API 获取 ON RRP 数据
       const today = new Date();
       const endDate = today.toISOString().slice(0, 10);
       const startDate = new Date(today.getTime() - 7 * 86400000).toISOString().slice(0, 10);
-      const rrpUrl = `${NYFED_BASE}/api/rp/results/search.csv` +
-        `?startDate=${startDate}&endDate=${endDate}` +
-        `&operationTypes=Reverse+Repo&term=overnight`;
+      const rrpUrl = `${NYFED_BASE}/rp/reverserepo/propositions/search.json` +
+        `?startDate=${startDate}&endDate=${endDate}`;
 
       const rrpRes = await fetch(rrpUrl, {
         headers: { "User-Agent": "TreasuryMonitor/1.0" },
@@ -101,81 +100,26 @@ export async function GET() {
       });
 
       if (!rrpRes.ok) {
-        onRrpDebug = `fetch failed: ${rrpRes.status}`;
+        const errBody = await rrpRes.text().catch(() => "");
+        onRrpDebug = `fetch failed: ${rrpRes.status}, url=${rrpUrl.slice(0, 80)}, body: ${errBody.slice(0, 200)}`;
       } else {
-        const csv = await rrpRes.text();
-        onRrpDebug = `csv received: ${csv.length} bytes`;
-        const lines = csv.trim().split("\n").map((l) => l.trim().replace(/\r$/, ""));
-        onRrpDebug += `, ${lines.length} lines`;
-        // 使用通用 CSV 解析 (处理引号包裹的字段)
-        const parseCSVLine = (line: string): string[] => {
-          const cols: string[] = [];
-          let current = "";
-          let inQuotes = false;
-          for (let i = 0; i < line.length; i++) {
-            const ch = line[i];
-            if (ch === '"') {
-              if (inQuotes && line[i + 1] === '"') {
-                // escaped quote inside quoted field
-                current += '"';
-                i++;
-              } else {
-                inQuotes = !inQuotes;
-              }
-            } else if (ch === "," && !inQuotes) {
-              cols.push(current);
-              current = "";
-            } else {
-              current += ch;
-            }
-          }
-          cols.push(current);
-          return cols;
-        };
+        const json = await rrpRes.json();
+        const operations = json?.repo?.operations;
+        onRrpDebug = `json received: ${operations ? operations.length : 0} operations`;
 
-        const headers = parseCSVLine(lines[0]);
-        const acceptedIdx = headers.findIndex(
-          (h) => h === "Total Amt Accepted ($Billions)"
-        );
-        const methodIdx = headers.findIndex(
-          (h) => h === "Operation Method"
-        );
-        const typeIdx = headers.findIndex(
-          (h) => h === "Operation Type"
-        );
-        onRrpDebug += `, acceptedIdx=${acceptedIdx}, methodIdx=${methodIdx}, typeIdx=${typeIdx}, headerCols=${headers.length}`;
-
-        if (acceptedIdx >= 0 && methodIdx >= 0 && typeIdx >= 0) {
-          // Filter for Reverse Repo + Fixed Rate (standing ON RRP facility)
-          const dataLines = lines.slice(1).filter((l) => {
-            if (!l.trim()) return false;
-            const cols = parseCSVLine(l);
-            const type = cols[typeIdx] ?? "";
-            const method = cols[methodIdx] ?? "";
-            return type === "Reverse Repo" && method === "Fixed Rate";
-          });
-          onRrpDebug += `, rrpRows=${dataLines.length}`;
-
-          if (dataLines.length >= 1) {
-            const latestCols = parseCSVLine(dataLines[0]);
-            const amt = parseFloat(latestCols[acceptedIdx] ?? "");
-            onRrpDebug += `, row0Cols=${latestCols.length}, amt='${latestCols[acceptedIdx]}', parsed=${amt}`;
-            if (!isNaN(amt)) { onRrpAmount = amt; onRrpDebug += " OK"; }
-            else onRrpDebug += " NaN";
-          }
-          if (dataLines.length >= 2) {
-            const prevCols = parseCSVLine(dataLines[1]);
-            const amt = parseFloat(prevCols[acceptedIdx] ?? "");
-            if (!isNaN(amt)) onRrpPrevAmount = amt;
-          }
-        } else {
-          onRrpDebug += " NOT FOUND";
+        if (operations && operations.length >= 1) {
+          // totalAmtAccepted 是美元金额，转为 $Billions
+          const amt = operations[0].totalAmtAccepted / 1e9;
+          onRrpAmount = Math.round(amt * 1000) / 1000; // 3 decimal places
+          onRrpDebug += `, latest=${operations[0].operationDate} amt=${onRrpAmount}B`;
+        }
+        if (operations && operations.length >= 2) {
+          const prevAmt = operations[1].totalAmtAccepted / 1e9;
+          onRrpPrevAmount = Math.round(prevAmt * 1000) / 1000;
         }
       }
     } catch (e) {
-      // ON RRP 失败时记录原因
       console.error("ON RRP fetch/parse error:", e instanceof Error ? e.message : String(e));
-      // 也在响应中暴露错误信息，便于调试
     }
 
     // ── IORB（FRED 优先，无 key 时 fallback） ──────────
@@ -193,8 +137,8 @@ export async function GET() {
 
     // Fallback IORB（美联储管理的利率，仅在 FOMC 会议时变动）
     // 当前值需要根据最近一次 FOMC 决策更新
-    // 最后更新: 2025-Q4 观察值
-    if (iorbRate === null) iorbRate = 3.50;
+    // 最后更新: 2026-06-03, IORB = 3.65%（Fed target range 3.50–3.75%）
+    if (iorbRate === null) iorbRate = 3.65;
 
     // ── 计算价差 ─────────────────────────────────────
     const sofr = sofrData?.percentRate ?? null;
@@ -277,7 +221,6 @@ export async function GET() {
       signalColor,
       onRrpWarning,
       sofriorbWarning,
-      onRrpDebug, // 调试信息，上线后可移除
       dataSource: fredApiKey
         ? "NY Fed + FRED"
         : "NY Fed（IORB 为内置 fallback 值，非实时）",
