@@ -41,96 +41,152 @@ export default function YieldOverviewCard() {
 
   const formatYield = (v: number) => `${v.toFixed(2)}%`;
 
-  // ── 收益率曲线形态信号判断 ──────────────────────────────────
-  // change2Y / change10Y 均为 bp（单日变动）
+  // ── 收益率曲线形态信号判断（10 种情况，阈值 1bp）────────────────
+  // Δ2Y = change2Y (bp), Δ10Y = change10Y (bp)
+  // ΔSpread = Δ10Y - Δ2Y  →  >0 Steepening, <0 Flattening
+  // 同向↑→Bear, 同向↓→Bull, 反向→Twist, 一端不变→Short/Long-end
   type CurveSignal = {
     label: string;
-    desc: string;
+    summary: string;        // 数值摘要 e.g. "2Y +6bp, 10Y -3bp, 2s10s -9bp"
+    interpretation: string;  // 驱动解释
     bg: string;
     text: string;
     border: string;
   };
 
-  function getCurveSignal(c2Y: number | null, c10Y: number | null): CurveSignal | null {
-    if (c2Y === null || c10Y === null) return null;
-    const THRESHOLD = 0.5; // bp，小于此值视为"基本不变"
-
-    const twoUp   = c2Y  >  THRESHOLD;
-    const twoDown = c2Y  < -THRESHOLD;
-    const tenUp   = c10Y >  THRESHOLD;
-    const tenDown = c10Y < -THRESHOLD;
-
-    // ── 规则：先确认两端同向，再比谁幅度更大 ──────────────────────────
-    //     2Y↑ & 10Y↑ → Bear 系列 | 2Y↓ & 10Y↓ → Bull 系列
-    //     2Y 上行更多 = Bear Flattening | 10Y 上行更多 = Bear Steepening
-    //     2Y 下行更多 = Bull Steepening | 10Y 下行更多 = Bull Flattening
-    // ────────────────────────────────────────────────────────────────────
-
-    if (twoUp && tenUp) {
-      if (c2Y > c10Y + THRESHOLD) {
-        return {
-          label: "Bear Flattening",
-          desc: "短端主导上行，曲线变平",
-          bg: "bg-red-50",
-          text: "text-red-700",
-          border: "border-red-200",
-        };
-      }
-      if (c10Y > c2Y + THRESHOLD) {
-        return {
-          label: "Bear Steepening",
-          desc: "长端主导上行，曲线变陡",
-          bg: "bg-orange-50",
-          text: "text-orange-700",
-          border: "border-orange-200",
-        };
-      }
-      // 两端涨幅接近 → 平行上移
-      return {
-        label: "Parallel Shift ↑",
-        desc: "曲线整体上行，形态基本不变",
-        bg: "bg-slate-50",
-        text: "text-slate-600",
-        border: "border-slate-200",
-      };
-    }
-
-    if (twoDown && tenDown) {
-      if (c2Y < c10Y - THRESHOLD) {
-        // c2Y 更负 → 短端跌幅更大
-        return {
-          label: "Bull Steepening",
-          desc: "短端主导下行，曲线变陡",
-          bg: "bg-emerald-50",
-          text: "text-emerald-700",
-          border: "border-emerald-200",
-        };
-      }
-      if (c10Y < c2Y - THRESHOLD) {
-        // c10Y 更负 → 长端跌幅更大
-        return {
-          label: "Bull Flattening",
-          desc: "长端主导下行，曲线变平",
-          bg: "bg-blue-50",
-          text: "text-blue-700",
-          border: "border-blue-200",
-        };
-      }
-      // 两端跌幅接近 → 平行下移
-      return {
-        label: "Parallel Shift ↓",
-        desc: "曲线整体下行，形态基本不变",
-        bg: "bg-slate-50",
-        text: "text-slate-600",
-        border: "border-slate-200",
-      };
-    }
-
-    // 两端反向（一涨一跌 / 一方基本不变） → 不归入以上四类，不显示标签
-    return null;
+  function bpStr(v: number): string {
+    return `${v > 0 ? "+" : ""}${v.toFixed(0)}bp`;
   }
 
-  const signal = getCurveSignal(yields.change2Y, yields.change10Y);
+  function getCurveSignal(c2Y: number | null, c10Y: number | null, cSpread: number | null): CurveSignal | null {
+    if (c2Y === null || c10Y === null) return null;
+    const THR = 1.0; // bp, |Δ| ≤ 1bp 视为基本不变
+
+    const twoUp    = c2Y  >  THR;
+    const twoDown  = c2Y  < -THR;
+    const twoFlat  = !twoUp && !twoDown;
+    const tenUp    = c10Y >  THR;
+    const tenDown  = c10Y < -THR;
+    const tenFlat  = !tenUp && !tenDown;
+
+    const dSpread = (c10Y - c2Y);           // >0 steepening, <0 flattening
+    const spreadBp = cSpread !== null ? `${bpStr(cSpread)}` : "--";
+
+    // ── 1. 同向上行 + 10Y 更多 → Bear Steepening ──
+    if (twoUp && tenUp && dSpread > THR) {
+      return {
+        label: "Bear Steepening",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "全曲线利率上行，长端受通胀预期/供给/期限溢价推动涨幅更大，曲线陡峭化。",
+        bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200",
+      };
+    }
+    // ── 2. 同向上行 + 2Y 更多 → Bear Flattening ──
+    if (twoUp && tenUp && dSpread < -THR) {
+      return {
+        label: "Bear Flattening",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "全曲线利率上行，短端受鹰派政策预期/加息冲击更大，曲线平坦化。",
+        bg: "bg-red-50", text: "text-red-700", border: "border-red-200",
+      };
+    }
+    // ── 3. 同向上行 + 幅度接近 → Bear Parallel ──
+    if (twoUp && tenUp) {
+      return {
+        label: "Bear Shift ↑",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "曲线整体平行上移，形态基本不变，反映全面利率上行压力。",
+        bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200",
+      };
+    }
+
+    // ── 4. 同向下行 + 2Y 更多 → Bull Steepening ──
+    if (twoDown && tenDown && dSpread > THR) {
+      return {
+        label: "Bull Steepening",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "全曲线利率下行，短端降息预期升温推动短端下行更快，曲线陡峭化。",
+        bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200",
+      };
+    }
+    // ── 5. 同向下行 + 10Y 更多 → Bull Flattening ──
+    if (twoDown && tenDown && dSpread < -THR) {
+      return {
+        label: "Bull Flattening",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "全曲线利率下行，长端受避险买盘/期限溢价回落推动下行更快，曲线平坦化。",
+        bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200",
+      };
+    }
+    // ── 6. 同向下行 + 幅度接近 → Bull Parallel ──
+    if (twoDown && tenDown) {
+      return {
+        label: "Bull Shift ↓",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "曲线整体平行下移，形态基本不变，反映全面利率下行。",
+        bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200",
+      };
+    }
+
+    // ── 7. 反向：2Y↑ + 10Y↓ → Twist Flattening ──
+    if (twoUp && tenDown) {
+      return {
+        label: "Twist Flattening",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "短端受鹰派政策/Fed路径重定价推动上行，长端交易增长放缓或避险买盘，曲线扭曲式走平。",
+        bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200",
+      };
+    }
+    // ── 8. 反向：2Y↓ + 10Y↑ → Twist Steepening ──
+    if (twoDown && tenUp) {
+      return {
+        label: "Twist Steepening",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "短端反映降息预期升温，长端受通胀、供给或期限溢价上升推动，曲线扭曲式变陡。",
+        bg: "bg-violet-50", text: "text-violet-700", border: "border-violet-200",
+      };
+    }
+
+    // ── 9. 仅短端变动 ──
+    if (twoUp && tenFlat) {
+      return {
+        label: "Short-end Bear Flattening",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "主要由短端政策预期冲击推动上行，长端基本稳定，曲线由短端主导走平。",
+        bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200",
+      };
+    }
+    if (twoDown && tenFlat) {
+      return {
+        label: "Short-end Bull Steepening",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "主要由降息预期推动短端下行，长端基本稳定，曲线由短端主导变陡。",
+        bg: "bg-teal-50", text: "text-teal-700", border: "border-teal-200",
+      };
+    }
+
+    // ── 10. 仅长端变动 ──
+    if (tenUp && twoFlat) {
+      return {
+        label: "Long-end Bear Steepening",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "主要由长端期限溢价或供给压力推动上行，短端基本锚定，曲线由长端主导变陡。",
+        bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200",
+      };
+    }
+    if (tenDown && twoFlat) {
+      return {
+        label: "Long-end Bull Flattening",
+        summary: `2Y ${bpStr(c2Y)}, 10Y ${bpStr(c10Y)}, 2s10s ${spreadBp}`,
+        interpretation: "主要由长端避险买盘或期限溢价下行推动，短端基本锚定，曲线由长端主导走平。",
+        bg: "bg-cyan-50", text: "text-cyan-700", border: "border-cyan-200",
+      };
+    }
+
+    return null; // 两端均基本不变
+  }
+
+  const signal = getCurveSignal(yields.change2Y, yields.change10Y, yields.change2s10s);
 
   const items = [
     {
@@ -176,7 +232,6 @@ export default function YieldOverviewCard() {
                 >
                   <span className="text-[9px]">▶</span>
                   {signal.label}
-                  <span className="font-normal opacity-70 hidden sm:inline">· {signal.desc}</span>
                 </span>
               )}
             </div>
@@ -205,6 +260,14 @@ export default function YieldOverviewCard() {
               ))}
             </div>
           </div>
+          {/* 信号解读行 */}
+          {signal && (
+            <div className={`mt-2.5 px-3 py-2 rounded-md border text-xs leading-relaxed ${signal.bg} ${signal.text} ${signal.border}`}>
+              <span className="font-mono font-semibold">{signal.summary}</span>
+              <span className="mx-2 text-slate-300">|</span>
+              <span className="opacity-85">{signal.interpretation}</span>
+            </div>
+          )}
           <div className="mt-3 pt-2 border-t border-blue-100">
             <a
               href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve"
