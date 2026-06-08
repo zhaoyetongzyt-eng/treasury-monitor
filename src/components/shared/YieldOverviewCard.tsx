@@ -193,9 +193,9 @@ export default function YieldOverviewCard() {
   );
 
   // ── 子卡片容器 ──
-  const SubCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  const SubCard = ({ children, className = "", pyClass = "py-3.5" }: { children: React.ReactNode; className?: string; pyClass?: string }) => (
     <Card className={`bg-gradient-to-b from-slate-50 to-blue-50/30 border-blue-100 flex flex-col ${className}`}>
-      <CardContent className="py-3.5 flex flex-col h-full">
+      <CardContent className={`flex flex-col h-full ${pyClass}`}>
         {children}
       </CardContent>
     </Card>
@@ -250,11 +250,11 @@ export default function YieldOverviewCard() {
           </div>
         </SubCard>
 
-        {/* ── 列 2：Real Yield & Breakeven ── */}
+        {/* ── 列 2：Real Yield & Breakeven（缩短，数据居中）── */}
         {yields.realYield10Y !== null && (
-          <SubCard className="flex-1 min-w-0">
+          <SubCard className="flex-1 min-w-0" pyClass="py-2.5">
             {/* 标题行 */}
-            <div className="flex items-center justify-between flex-wrap gap-2 mb-2.5">
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-1.5">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 Real Yield & Breakeven <span className="font-normal normal-case tracking-normal text-slate-400 text-[11px]">· 实际利率与通胀预期</span>
               </span>
@@ -264,10 +264,12 @@ export default function YieldOverviewCard() {
                 </span>
               )}
             </div>
-            {/* 数据 */}
-            {renderDataItems(realYieldItems)}
+            {/* 数据 — 上下居中 */}
+            <div className="flex-1 flex items-center justify-center min-h-0">
+              {renderDataItems(realYieldItems)}
+            </div>
             {/* 数据来源 */}
-            <div className="mt-auto pt-2.5">
+            <div className="pt-2">
               <a
                 href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_real_yield_curve"
                 target="_blank"
@@ -280,11 +282,11 @@ export default function YieldOverviewCard() {
           </SubCard>
         )}
 
-        {/* ── 列 3：Funding Stress ── */}
+        {/* ── 列 3：Funding Stress（加长，数据居中，5项两排）── */}
         {funding && funding.sofr !== null && (
-          <SubCard className="flex-1 min-w-0">
+          <SubCard className="flex-1 min-w-0" pyClass="py-4">
             {/* 标题行 */}
-            <div className="flex items-center justify-between flex-wrap gap-2 mb-2.5">
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 Funding Stress <span className="font-normal normal-case tracking-normal text-slate-400 text-[11px]">· 资金面压力</span>
               </span>
@@ -298,11 +300,9 @@ export default function YieldOverviewCard() {
                 {funding.signalLabel}
               </span>
             </div>
-            {/* 数据 */}
-            {renderDataItems(fundingItems)}
             {/* 预警信息 */}
             {(funding.onRrpWarning || funding.sofriorbWarning) && (
-              <div className="mt-2 flex flex-col gap-1">
+              <div className="mb-2 flex flex-col gap-1">
                 {funding.onRrpWarning && (
                   <span className="text-[11px] text-amber-600 bg-amber-50/50 px-2 py-0.5 rounded">
                     ⚠ {funding.onRrpWarning}
@@ -315,8 +315,33 @@ export default function YieldOverviewCard() {
                 )}
               </div>
             )}
+            {/* 数据 — 上下居中，限制宽度让 5 项自然换行成两排 */}
+            <div className="flex-1 flex items-center justify-center min-h-0">
+              <div className="flex items-center gap-x-5 gap-y-3 flex-wrap justify-center max-w-[340px]">
+                {fundingItems.map((item) => (
+                  <div key={item.label} className="text-center">
+                    <div className="text-[11px] text-slate-400 mb-0.5">{item.label}</div>
+                    <div className={`text-base font-bold font-mono ${item.color}`}>
+                      {item.display}
+                    </div>
+                    {item.change !== null && item.change !== undefined && (
+                      <div
+                        className={`text-[11px] font-mono ${
+                          item.change > 0 ? "text-red-500" : item.change < 0 ? "text-green-500" : "text-gray-400"
+                        }`}
+                      >
+                        {item.change > 0 ? "↑" : item.change < 0 ? "↓" : "→"}{" "}
+                        {item.changeUnit === "bn"
+                          ? `${item.change.toFixed(3)}bn`
+                          : `${Math.abs(item.change)}bp`}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
             {/* 数据来源 */}
-            <div className="mt-auto pt-2.5">
+            <div className="pt-2.5">
               <a
                 href="https://markets.newyorkfed.org/"
                 target="_blank"
