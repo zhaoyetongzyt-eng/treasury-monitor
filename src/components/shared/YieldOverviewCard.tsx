@@ -55,62 +55,78 @@ export default function YieldOverviewCard() {
     if (c2Y === null || c10Y === null) return null;
     const THRESHOLD = 0.5; // bp，小于此值视为"基本不变"
 
-    const twoUp = c2Y > THRESHOLD;
-    const twoDown = c2Y < -THRESHOLD;
-    const tenUp = c10Y > THRESHOLD;
+    const twoUp   = c2Y  >  THRESHOLD;
+    const twoDown = c2Y  < -THRESHOLD;
+    const tenUp   = c10Y >  THRESHOLD;
     const tenDown = c10Y < -THRESHOLD;
 
-    // Bear Steepening：长端涨幅 > 短端涨幅，曲线变陡，整体熊市
-    if (tenUp && c10Y > c2Y + THRESHOLD) {
+    // ── 规则：先确认两端同向，再比谁幅度更大 ──────────────────────────
+    //     2Y↑ & 10Y↑ → Bear 系列 | 2Y↓ & 10Y↓ → Bull 系列
+    //     2Y 上行更多 = Bear Flattening | 10Y 上行更多 = Bear Steepening
+    //     2Y 下行更多 = Bull Steepening | 10Y 下行更多 = Bull Flattening
+    // ────────────────────────────────────────────────────────────────────
+
+    if (twoUp && tenUp) {
+      if (c2Y > c10Y + THRESHOLD) {
+        return {
+          label: "Bear Flattening",
+          desc: "短端主导上行，曲线变平",
+          bg: "bg-red-50",
+          text: "text-red-700",
+          border: "border-red-200",
+        };
+      }
+      if (c10Y > c2Y + THRESHOLD) {
+        return {
+          label: "Bear Steepening",
+          desc: "长端主导上行，曲线变陡",
+          bg: "bg-orange-50",
+          text: "text-orange-700",
+          border: "border-orange-200",
+        };
+      }
+      // 两端涨幅接近 → 平行上移
       return {
-        label: "Bear Steepening",
-        desc: "长端主导上行，曲线变陡",
-        bg: "bg-orange-50",
-        text: "text-orange-700",
-        border: "border-orange-200",
-      };
-    }
-    // Bear Flattening：短端涨幅 > 长端涨幅，曲线变平，整体熊市
-    if (twoUp && c2Y > c10Y + THRESHOLD) {
-      return {
-        label: "Bear Flattening",
-        desc: "短端主导上行，曲线变平",
-        bg: "bg-red-50",
-        text: "text-red-700",
-        border: "border-red-200",
-      };
-    }
-    // Bull Flattening：长端跌幅 > 短端跌幅，曲线变平，整体牛市
-    if (tenDown && c10Y < c2Y - THRESHOLD) {
-      return {
-        label: "Bull Flattening",
-        desc: "长端主导下行，曲线变平",
-        bg: "bg-blue-50",
-        text: "text-blue-700",
-        border: "border-blue-200",
-      };
-    }
-    // Bull Steepening：短端跌幅 > 长端跌幅，曲线变陡，整体牛市
-    if (twoDown && c2Y < c10Y - THRESHOLD) {
-      return {
-        label: "Bull Steepening",
-        desc: "短端主导下行，曲线变陡",
-        bg: "bg-emerald-50",
-        text: "text-emerald-700",
-        border: "border-emerald-200",
-      };
-    }
-    // 并行移动（parallel shift）
-    if ((twoUp && tenUp) || (twoDown && tenDown)) {
-      const dir = twoUp ? "上行" : "下行";
-      return {
-        label: "Parallel Shift",
-        desc: `曲线整体${dir}，形态基本不变`,
+        label: "Parallel Shift ↑",
+        desc: "曲线整体上行，形态基本不变",
         bg: "bg-slate-50",
         text: "text-slate-600",
         border: "border-slate-200",
       };
     }
+
+    if (twoDown && tenDown) {
+      if (c2Y < c10Y - THRESHOLD) {
+        // c2Y 更负 → 短端跌幅更大
+        return {
+          label: "Bull Steepening",
+          desc: "短端主导下行，曲线变陡",
+          bg: "bg-emerald-50",
+          text: "text-emerald-700",
+          border: "border-emerald-200",
+        };
+      }
+      if (c10Y < c2Y - THRESHOLD) {
+        // c10Y 更负 → 长端跌幅更大
+        return {
+          label: "Bull Flattening",
+          desc: "长端主导下行，曲线变平",
+          bg: "bg-blue-50",
+          text: "text-blue-700",
+          border: "border-blue-200",
+        };
+      }
+      // 两端跌幅接近 → 平行下移
+      return {
+        label: "Parallel Shift ↓",
+        desc: "曲线整体下行，形态基本不变",
+        bg: "bg-slate-50",
+        text: "text-slate-600",
+        border: "border-slate-200",
+      };
+    }
+
+    // 两端反向（一涨一跌 / 一方基本不变） → 不归入以上四类，不显示标签
     return null;
   }
 
