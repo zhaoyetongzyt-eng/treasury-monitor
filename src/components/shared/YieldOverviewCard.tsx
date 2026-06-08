@@ -383,7 +383,7 @@ export default function YieldOverviewCard() {
                         <div className="text-[11px] text-slate-400 mb-0.5">{item.label}</div>
                         <div className={`text-base font-bold font-mono ${item.color}`}>
                           {item.unit === "bn"
-                            ? `$${item.value!.toFixed(0)}bn`
+                            ? `$${item.value!.toFixed(3)}bn`
                             : item.unit === "bp"
                               ? `${item.value! > 0 ? "+" : ""}${item.value!}${item.unit}`
                               : `${item.value!.toFixed(2)}%`}
@@ -400,7 +400,7 @@ export default function YieldOverviewCard() {
                           >
                             {item.change > 0 ? "↑" : item.change < 0 ? "↓" : "→"}{" "}
                             {item.unit === "bn"
-                              ? `${item.change.toFixed(1)}bn`
+                              ? `${item.change.toFixed(3)}bn`
                               : `${Math.abs(item.change)}bp`}
                           </div>
                         )}

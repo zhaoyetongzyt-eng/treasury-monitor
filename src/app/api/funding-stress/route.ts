@@ -161,7 +161,7 @@ export async function GET() {
       ? Math.round((tgcrData.percentRate - tgcrData.prevPercentRate) * 100)
       : null;
     const changeOnRrp = (onRrpAmount !== null && onRrpPrevAmount !== null)
-      ? Math.round((onRrpAmount - onRrpPrevAmount) * 10) / 10  // 保留 1 位小数
+      ? Math.round((onRrpAmount - onRrpPrevAmount) * 1000) / 1000  // 保留 3 位小数
       : null;
 
     // ── 信号判断 ─────────────────────────────────────
@@ -215,7 +215,7 @@ export async function GET() {
       sofrMinusIorb,       // bp
       changeSofr,          // bp
       changeTgcr,          // bp
-      changeOnRrp,         // $ Billions (1 decimal)
+      changeOnRrp,         // $ Billions (3 decimals)
       signal,
       signalLabel,
       signalColor,
