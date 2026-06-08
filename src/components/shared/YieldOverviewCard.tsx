@@ -308,29 +308,16 @@ export default function YieldOverviewCard() {
                 </div>
                 <div className="flex items-center gap-6 flex-wrap">
                   {[
-                    {
-                      label: "10Y Real Yield",
-                      value: `${yields.realYield10Y!.toFixed(2)}%`,
-                      change: yields.changeReal10Y,
-                      color: "text-blue-700",
-                    },
-                    {
-                      label: "10Y Breakeven",
-                      value: `${yields.breakeven10Y!.toFixed(2)}%`,
-                      change: yields.changeBE10Y,
-                      color: "text-amber-700",
-                    },
-                    {
-                      label: "5Y Breakeven",
-                      value: `${yields.breakeven5Y!.toFixed(2)}%`,
-                      change: yields.changeBE5Y,
-                      color: "text-orange-600",
-                    },
-                  ].map((item) => (
+                    { label: "10Y Real Yield", value: yields.realYield10Y, change: yields.changeReal10Y, color: "text-blue-700" },
+                    { label: "10Y Breakeven", value: yields.breakeven10Y, change: yields.changeBE10Y, color: "text-amber-700" },
+                    { label: "5Y Breakeven", value: yields.breakeven5Y, change: yields.changeBE5Y, color: "text-orange-600" },
+                  ]
+                    .filter((item): item is { label: string; value: number; change: number | null; color: string } => item.value !== null)
+                    .map((item) => (
                     <div key={item.label} className="text-center">
                       <div className="text-[11px] text-slate-400 mb-0.5">{item.label}</div>
                       <div className={`text-base font-bold font-mono ${item.color}`}>
-                        {item.value}
+                        {item.value.toFixed(2)}%
                       </div>
                       {item.change !== null && (
                         <div
