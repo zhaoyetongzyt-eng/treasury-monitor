@@ -336,6 +336,16 @@ export default function YieldOverviewCard() {
                     </div>
                   ))}
                 </div>
+                <div className="mt-2">
+                  <a
+                    href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_real_yield_curve"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-500 hover:text-blue-700 underline underline-offset-2"
+                  >
+                    TIPS数据：Treasury.gov · Daily Treasury Real Yield Curve ↗
+                  </a>
+                </div>
               </div>
             </>
           )}
