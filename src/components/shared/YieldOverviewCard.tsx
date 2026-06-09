@@ -315,9 +315,9 @@ export default function YieldOverviewCard() {
                 )}
               </div>
             )}
-            {/* 数据 — 上下居中，限制宽度让 5 项自然换行成两排 */}
+            {/* 数据 — 上下居中，一行排列不换行 */}
             <div className="flex-1 flex items-center justify-center min-h-0">
-              <div className="flex items-center gap-x-5 gap-y-3 flex-wrap justify-center max-w-[340px]">
+              <div className="flex items-center gap-x-5 justify-center flex-nowrap">
                 {fundingItems.map((item) => (
                   <div key={item.label} className="text-center">
                     <div className="text-[11px] text-slate-400 mb-0.5">{item.label}</div>
