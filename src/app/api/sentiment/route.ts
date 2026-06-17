@@ -60,8 +60,8 @@ export async function GET() {
     vixDate: "2026-06-15",
     hyOas: 2.66,                // ICE BofA US HY OAS Level (%)
     hyOasDate: "2026-06-15",
-    termPremium10Y: 80,         // THREEFYTP10 (FRED ACM), 0.80% → 80bp
-    tpDate: "2026-06-10",
+    termPremium10Y: 77,         // THREEFYTP10 (FRED ACM), 0.767% → 77bp
+    tpDate: "2026-06-12",
     fwdBE5Y5Y: 2.22,            // T5YIFR 5Y5Y Forward BE (%)
     fwdBEDate: "2026-06-13",
     spread10Y3M: 64,            // T10Y3M, 6/16 FRED +64bp
