@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "美债因子看板 · Treasury Monitor",
-  description: "美国政府债券因子追踪看板 — 拍卖节奏、持仓与资金流、杠杆率",
+  title: "美债流动性看板 · Treasury Liquidity Monitor",
+  description: "聚焦供给拍卖、交易承接、持仓流向、回购资金面与全球投资者行为，动态追踪美债市场流动性状态。",
 };
 
 export default function RootLayout({

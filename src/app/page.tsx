@@ -16,10 +16,10 @@ export default function Home() {
       {/* 看板标题 */}
       <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-slate-900 text-white mt-12">
         <div className="max-w-7xl mx-auto px-4 py-10">
-          <h1 className="text-3xl font-bold tracking-tight">美债因子看板</h1>
-          <p className="text-lg text-blue-200 mt-1 font-light">US Rates Factor Desk</p>
+          <h1 className="text-3xl font-bold tracking-tight">美债流动性看板</h1>
+          <p className="text-lg text-blue-200 mt-1 font-light">US Treasury Liquidity Monitor</p>
           <p className="text-sm text-blue-300/70 mt-3 max-w-2xl">
-            从供给拍卖、持仓流向、杠杆周期到全球投资者视角，多维度追踪美债市场核心驱动因子，为利率研究提供一站式量化参考。
+            聚焦供给拍卖、交易承接、持仓流向、回购资金面与全球投资者行为，动态追踪美债市场流动性状态、边际变化与潜在压力，为利率研究、风险监测和交易决策提供一站式量化参考。
           </p>
         </div>
       </div>
@@ -47,7 +47,7 @@ export default function Home() {
 
       {/* 页脚 */}
       <footer className="py-8 px-4 text-center text-xs text-gray-400 border-t border-gray-200 mt-8">
-        <p>美债因子看板 · Treasury Factor Monitor</p>
+        <p>美债流动性看板 · US Treasury Liquidity Monitor</p>
         <p className="mt-1">数据来源：Treasury FiscalData · CFTC COT · BIS · FRED</p>
         <p className="mt-1">数据快照：2026-05-18 收盘 · 非实时研究看板</p>
       </footer>
