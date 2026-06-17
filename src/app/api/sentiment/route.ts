@@ -63,7 +63,7 @@ export async function GET() {
     termPremium10Y: 77,         // THREEFYTP10 (FRED ACM), 0.767% → 77bp
     tpDate: "2026-06-12",
     fwdBE5Y5Y: 2.22,            // T5YIFR 5Y5Y Forward BE (%)
-    fwdBEDate: "2026-06-13",
+    fwdBEDate: "2026-06-16",
     spread10Y3M: 64,            // T10Y3M, 6/16 FRED +64bp
     spreadDate: "2026-06-16",
     dxyBroad: 119.5,            // DTWEXBGS Nominal Broad USD
