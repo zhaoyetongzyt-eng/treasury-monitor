@@ -12,7 +12,7 @@ export default function StatusBanner() {
               <div>
                 <p className="text-xs text-gray-500 mb-1">当前市场状态</p>
                 <Badge variant="secondary" className="text-sm bg-amber-100 text-amber-800 border-amber-200">
-                  谨慎偏空 · 数据快照 2026-05-18 收盘
+                  谨慎偏空 · 日频数据截至 2026-06-16
                 </Badge>
               </div>
             </div>

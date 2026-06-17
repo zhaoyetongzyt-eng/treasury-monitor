@@ -71,8 +71,8 @@ const MOF_WEEKLY_CSV =
 const FALLBACK_METRICS: KeyMetricsItem[] = [
   {
     label: "USD/JPY",
-    value: "159.34",
-    change: +0.14,
+    value: "160.24",
+    change: +0.90,
     unit: "",
     sub: "日元贬值 = 干预风险↑",
   },
@@ -81,21 +81,21 @@ const FALLBACK_METRICS: KeyMetricsItem[] = [
     value: "0.75",
     change: 0,
     unit: "%",
-    sub: "2025年12月加息至0.75%，下次会议6月15-16日",
+    sub: "2025年12月加息至0.75%",
   },
   {
     label: "日本10Y国债",
-    value: "2.70",
+    value: "2.65",
     change: 0,
     unit: "%",
-    sub: "5月18日一度触及2.8%创29年新高后回落",
+    sub: "FRED IRLTLT01JPM156N 2026-05 (月频)",
   },
   {
     label: "美日10Y利差",
-    value: "177",
+    value: "182",
     change: 0,
     unit: "bp",
-    sub: "美国4.47% vs 日本2.70%",
+    sub: "美国4.47% vs 日本2.65% (FRED)",
   },
   {
     label: "外汇储备",
@@ -267,8 +267,8 @@ function buildMetricsFromFred(fred: {
   ustJgbSpread: number;
   fxReserves: number;
 } {
-  const usdJpy = fred.usdJpy?.value ?? 159.34;
-  const jgb10Y = fred.jgb10Y?.value ?? 2.70;
+  const usdJpy = fred.usdJpy?.value ?? 160.24;
+  const jgb10Y = fred.jgb10Y?.value ?? 2.65;
   const ust10Y = fred.ust10Y?.value ?? 4.47;
   const fxMillions = fred.fxReserves?.value ?? 1257555;
   const fxTrillions = fxMillions / 1_000_000; // 百万美元 → 万亿美元
@@ -287,7 +287,7 @@ function buildMetricsFromFred(fred: {
       value: "0.75",
       change: 0,
       unit: "%",
-      sub: "2025年12月加息至0.75%，下次会议6月15-16日",
+      sub: "2025年12月加息至0.75%",
     },
     {
       label: "日本10Y国债",
@@ -356,12 +356,12 @@ export async function GET() {
     ? buildMetricsFromFred(fredResult)
     : {
         metrics: FALLBACK_METRICS,
-        usdJpy: 159.34,
-        usdJpyChange: +0.14,
+        usdJpy: 160.24,
+        usdJpyChange: +0.90,
         bojPolicyRate: 0.75,
-        jgb10YYield: 2.70,
+        jgb10YYield: 2.65,
         ust10YYield: 4.47,
-        ustJgbSpread: 177,
+        ustJgbSpread: 182,
         fxReserves: 1.26,
       };
 

@@ -48,12 +48,12 @@ const FALLBACK_HOLDINGS_TREND: JapanHoldingsTrend[] = [
   { date: "2025-07", holdings: 1082, change: -6 },
   { date: "2025-08", holdings: 1075, change: -7 },
   { date: "2025-09", holdings: 1068, change: -7 },
-  { date: "2025-10", holdings: 1085, change: +17 },
-  { date: "2025-11", holdings: 1105, change: +20 },
-  { date: "2025-12", holdings: 1130, change: +25 },
-  { date: "2026-01", holdings: 1178, change: +48 },
-  { date: "2026-02", holdings: 1239, change: +61 },
-  { date: "2026-03", holdings: 1192, change: -47 },
+  { date: "2025-10", holdings: 1200.0, change: +10.7 },
+  { date: "2025-11", holdings: 1202.7, change: +2.7 },
+  { date: "2025-12", holdings: 1185.5, change: -17.2 },
+  { date: "2026-01", holdings: 1225.3, change: +39.8 },
+  { date: "2026-02", holdings: 1239.3, change: +14.0 },
+  { date: "2026-03", holdings: 1191.6, change: -47.7 },
 ];
 
 // ============================================================
@@ -444,13 +444,13 @@ function JapanSignals({
     },
     {
       type: "neutral" as const,
-      title: `USD/JPY接近${Math.round(usdJpy)}，干预风险仍需关注`,
-      desc: `日元仍处弱势区间，USD/JPY接近${Math.round(usdJpy)}–${Math.round(usdJpy) + 1}关口。若汇率波动加快，日本外汇干预风险上升，但是否干预取决于汇率速度、波动率和官方表态。`,
+      title: `USD/JPY约160.2，仍处弱势区间，干预风险需关注`,
+      desc: `日元仍处弱势区间，USD/JPY约160.2，已在160关口上方。若汇率波动加快，日本外汇干预风险上升，但是否干预取决于汇率速度、波动率和官方表态。`,
     },
     {
       type: "bullish" as const,
       title: "美日10Y利差明显收窄",
-      desc: `日本10Y升至约${jgb10Y.toFixed(2)}%，美国10Y约${ust10Y.toFixed(2)}%，美日10Y利差已从此前约289bp压缩至约${ustJgbSpread}bp附近，削弱日本资金继续配置美债的边际吸引力。`,
+      desc: `日本10Y升至约${jgb10Y.toFixed(2)}%，美国10Y约${ust10Y.toFixed(2)}%，美日10Y利差已从此前约289bp压缩至约${ustJgbSpread}bp附近。若日本加息预期持续、美日利差继续收窄，可能削弱日本资金配置美债的边际吸引力。`,
     },
     {
       type: "neutral" as const,
@@ -531,10 +531,10 @@ export default function JapanSubModule() {
   const [weeklyFlows, setWeeklyFlows] = useState<JapanWeeklyFlow[] | null>(null);
   const [dataDate, setDataDate] = useState<string>("");
   const [freshness, setFreshness] = useState<string>("降级模式");
-  const [usdJpy, setUsdJpy] = useState(159.34);
-  const [jgb10Y, setJgb10Y] = useState(2.70);
+  const [usdJpy, setUsdJpy] = useState(160.24);
+  const [jgb10Y, setJgb10Y] = useState(2.65);
   const [ust10Y, setUst10Y] = useState(4.47);
-  const [ustJgbSpread, setUstJgbSpread] = useState(177);
+  const [ustJgbSpread, setUstJgbSpread] = useState(182);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -615,10 +615,10 @@ export default function JapanSubModule() {
               <p className="text-sm text-red-500">数据加载失败: {error}，使用降级数据</p>
               <KeyMetricsPanel
                 metrics={[
-                  { label: "USD/JPY", value: "159.34", change: +0.14, unit: "", sub: "日元贬值 = 干预风险↑" },
+                  { label: "USD/JPY", value: "160.24", change: +0.90, unit: "", sub: "日元贬值 = 干预风险↑" },
                   { label: "BOJ政策利率", value: "0.75", change: 0, unit: "%", sub: "2025年12月加息至0.75%" },
-                  { label: "日本10Y国债", value: "2.70", change: 0, unit: "%", sub: "收益率持续攀升" },
-                  { label: "美日10Y利差", value: "177", change: 0, unit: "bp", sub: "美国4.47% vs 日本2.70%" },
+                  { label: "日本10Y国债", value: "2.65", change: 0, unit: "%", sub: "FRED IRLTLT01JPM156N 2026-05" },
+                  { label: "美日10Y利差", value: "182", change: 0, unit: "bp", sub: "美国4.47% vs 日本2.65% (FRED)" },
                   { label: "外汇储备", value: "1.26", change: 0, unit: "万亿美元", sub: "干预弹药库规模" },
                 ]}
                 dataDate="2026-05-27"

@@ -48,8 +48,8 @@ export default function Home() {
       {/* 页脚 */}
       <footer className="py-8 px-4 text-center text-xs text-gray-400 border-t border-gray-200 mt-8">
         <p>美债流动性看板 · US Treasury Liquidity Monitor</p>
-        <p className="mt-1">数据来源：Treasury FiscalData · CFTC COT · BIS · FRED</p>
-        <p className="mt-1">数据快照：2026-05-18 收盘 · 非实时研究看板</p>
+        <p className="mt-1">数据来源：Treasury / TreasuryDirect / FiscalData / TIC / FRED / Fed / NY Fed / CFTC / BIS / MOF / ECB / IMF / WGC</p>
+        <p className="mt-1">数据更新时间：各模块最新可得数据，日频/周频/月频/季频不同步 · 非实时研究看板</p>
       </footer>
     </div>
   );
