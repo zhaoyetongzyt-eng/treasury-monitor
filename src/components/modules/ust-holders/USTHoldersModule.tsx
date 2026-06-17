@@ -571,7 +571,7 @@ export default function USTHoldersModule() {
     return (
       <section id="ust-holders" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
         <ModuleHeader
-          number="03"
+          number="04"
           title="UST 持有人结构"
           titleEn="UST Holder Structure"
           description="追踪美债主要持有人结构与边际变化：外资、美联储、银行、基金、货币市场基金、家庭与非营利部门等各类主体如何吸收新增供给，以及持仓结构的跨期演变。"
@@ -587,7 +587,7 @@ export default function USTHoldersModule() {
     return (
       <section id="ust-holders" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
         <ModuleHeader
-          number="03"
+          number="04"
           title="UST 持有人结构"
           titleEn="UST Holder Structure"
           description="追踪美债主要持有人结构与边际变化。"
@@ -603,7 +603,7 @@ export default function USTHoldersModule() {
   return (
     <section id="ust-holders" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
       <ModuleHeader
-        number="03"
+        number="04"
         title="UST 持有人结构"
         titleEn="UST Holder Structure"
         description="追踪美债主要持有人结构与边际变化：外资、美联储、银行、基金、货币市场基金、家庭与非营利部门等各类主体如何吸收新增供给，以及持仓结构的跨期演变。"

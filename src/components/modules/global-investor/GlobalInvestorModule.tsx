@@ -39,7 +39,7 @@ export default function GlobalInvestorModule() {
   return (
     <section id="global-investor" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
       <ModuleHeader
-        number="05"
+        number="06"
         title="全球资金与储备配置"
         titleEn="Global Reserves & Investor Lens"
         description="从储备资产多元化、日本最大持有人与英国高息替代资产三个维度，评估美债对全球资金的长期吸引力。"

@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { YieldSnapshot, FundingStressSnapshot } from "@/types";
 
 // ============================================================
-// 收益率概览卡片 — 三列均衡布局
+// 美债日频因子｜Daily UST Factors — 统一白色卡片容器
 // ============================================================
 
 export default function YieldOverviewCard() {
@@ -26,10 +26,10 @@ export default function YieldOverviewCard() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 pt-6 pb-2">
-        <Card className="bg-gradient-to-r from-slate-50 to-blue-50 border-blue-100">
-          <CardContent className="py-4">
+        <Card className="bg-white border-gray-200 shadow-sm">
+          <CardContent className="py-5">
             <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
-              <span className="animate-pulse">加载收益率数据...</span>
+              <span className="animate-pulse">加载美债日频因子数据...</span>
             </div>
           </CardContent>
         </Card>
@@ -118,6 +118,18 @@ export default function YieldOverviewCard() {
 
   const formatPct = (v: number) => `${v.toFixed(2)}%`;
 
+  // 金额格式化：0 → $0；< 0.01bn → $X.XXm；≥ 0.01bn → $X.XXXbn
+  function formatBn(amount: number): string {
+    if (amount === 0) return "$0";
+    if (amount < 0.01) return `$${(amount * 1000).toFixed(2)}m`;
+    return `$${amount.toFixed(3)}bn`;
+  }
+  function formatBnChange(change: number): string {
+    if (change === 0) return "0";
+    if (Math.abs(change) < 0.01) return `${(change * 1000).toFixed(2)}m`;
+    return `${change.toFixed(3)}bn`;
+  }
+
   type RenderItem = { label: string; display: string; change: number | null; color: string; changeUnit: "%" | "bn" };
 
   const yieldItems: RenderItem[] = [
@@ -161,9 +173,10 @@ export default function YieldOverviewCard() {
   const fundingItems: RenderItem[] = funding ? [
     { label: "SOFR", display: formatPct(funding.sofr!), change: funding.changeSofr, color: "text-slate-800", changeUnit: "%" as const },
     { label: "TGCR", display: formatPct(funding.tgcr!), change: funding.changeTgcr, color: "text-slate-700", changeUnit: "%" as const },
-    { label: "ON RRP", display: `$${funding.onRrpAmount?.toFixed(3) ?? "--"}bn`, change: funding.changeOnRrp, color: "text-purple-700", changeUnit: "bn" as const },
+    { label: "ON RRP", display: funding.onRrpAmount !== null ? formatBn(funding.onRrpAmount) : "--", change: funding.changeOnRrp, color: "text-purple-700", changeUnit: "bn" as const },
+    { label: "SRF", display: funding.srfAmount !== null ? formatBn(funding.srfAmount) : "--", change: funding.changeSrf, color: "text-orange-700", changeUnit: "bn" as const },
     { label: "SOFR−EFFR", display: `${funding.sofrMinusEffr! > 0 ? "+" : ""}${funding.sofrMinusEffr!}bp`, change: null, color: funding.sofrMinusEffr !== null && funding.sofrMinusEffr > 5 ? "text-red-600" : "text-slate-600", changeUnit: "%" as const },
-    { label: "SOFR−IORB", display: `${funding.sofrMinusIorb! > 0 ? "+" : ""}${funding.sofrMinusIorb!}bp`, change: null, color: funding.sofrMinusIorb !== null && funding.sofrMinusIorb > 5 ? "text-red-600" : "text-slate-500", changeUnit: "%" as const },
+    { label: "SOFR−ONRRP", display: funding.sofrMinusOnRrp !== null ? `${funding.sofrMinusOnRrp! > 0 ? "+" : ""}${funding.sofrMinusOnRrp!}bp` : "--", change: null, color: funding.sofrMinusOnRrp !== null && funding.sofrMinusOnRrp >= 25 ? "text-red-600" : funding.sofrMinusOnRrp !== null && funding.sofrMinusOnRrp >= 15 ? "text-amber-600" : "text-slate-500", changeUnit: "%" as const },
   ].filter((item) => item.display !== "--") : [];
 
   // ── 通用数据项渲染 ──
@@ -183,7 +196,7 @@ export default function YieldOverviewCard() {
             >
               {item.change > 0 ? "↑" : item.change < 0 ? "↓" : "→"}{" "}
               {item.changeUnit === "bn"
-                ? `${item.change.toFixed(3)}bn`
+                ? formatBnChange(item.change)
                 : `${Math.abs(item.change)}bp`}
             </div>
           )}
@@ -192,177 +205,199 @@ export default function YieldOverviewCard() {
     </div>
   );
 
-  // ── 子卡片容器 ──
-  const SubCard = ({ children, className = "", pyClass = "py-3.5" }: { children: React.ReactNode; className?: string; pyClass?: string }) => (
-    <Card className={`bg-gradient-to-b from-slate-50 to-blue-50/30 border-blue-100 flex flex-col ${className}`}>
-      <CardContent className={`flex flex-col h-full ${pyClass}`}>
-        {children}
-      </CardContent>
-    </Card>
+  // ── 收益率快照列 ──
+  const yieldColumn = (
+    <div className="px-5 py-4 flex flex-col">
+      <div className="flex items-center gap-2 flex-wrap mb-3">
+        <span className="text-xs font-semibold text-slate-600">
+          收益率快照 <span className="font-normal tracking-normal text-slate-400 text-[11px]">· Yield Snapshot</span>
+        </span>
+        {signal && (
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold tracking-wide ${signal.bg} ${signal.text} ${signal.border}`}>
+            <span className={`w-[6px] h-[6px] rounded-full ${signal.accent}`} />
+            {signal.label}
+          </span>
+        )}
+      </div>
+
+      <div className="flex-1 flex items-center justify-center">
+        {renderDataItems(yieldItems)}
+      </div>
+
+      <div className="mt-auto pt-3">
+        <a
+          href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
+        >
+          Data: Treasury.gov · Daily Yield Curve ↗
+        </a>
+      </div>
+    </div>
   );
+
+  // ── Real Yield 列 ──
+  const realYieldColumn = yields.realYield10Y !== null ? (
+    <div className="px-5 py-4 flex flex-col">
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+        <span className="text-xs font-semibold text-slate-600">
+          实际利率与通胀预期 <span className="font-normal tracking-normal text-slate-400 text-[11px]">· Real Yield & Breakeven</span>
+        </span>
+        {realYieldDriver && (
+          <span className={`text-[10.5px] font-semibold ${realYieldDriver.color}`}>
+            {realYieldDriver.text}
+          </span>
+        )}
+      </div>
+
+      <div className="flex-1 flex items-center justify-center">
+        {renderDataItems(realYieldItems)}
+      </div>
+
+      <div className="pt-3">
+        <a
+          href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_real_yield_curve"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
+        >
+          Data: Treasury.gov · TIPS Real Yield Curve ↗
+        </a>
+      </div>
+    </div>
+  ) : null;
+
+  // ── Funding Stress 列 ──
+  const fundingColumn = funding && funding.sofr !== null ? (
+    <div className="px-5 py-4 flex flex-col">
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+        <span className="text-xs font-semibold text-slate-600">
+          资金面压力 <span className="font-normal tracking-normal text-slate-400 text-[11px]">· Funding Stress</span>
+        </span>
+        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+          funding.signal === "funding_stable"
+            ? "bg-emerald-50 text-emerald-700"
+            : funding.signal === "mild_pressure"
+              ? "bg-amber-50 text-amber-700"
+              : "bg-red-50 text-red-700"
+        }`}>
+          {funding.signalLabel}
+        </span>
+      </div>
+
+      {(funding.onRrpWarning || funding.sofriorbWarning || funding.sofrOnrrpWarning) && (
+        <div className="mb-2.5 flex flex-col gap-1">
+          {funding.onRrpWarning && (
+            <span className="text-[11px] text-amber-600 bg-amber-50/50 px-2 py-0.5 rounded">
+              {funding.onRrpWarning}
+            </span>
+          )}
+          {funding.sofriorbWarning && (
+            <span className="text-[11px] text-red-600 bg-red-50/50 px-2 py-0.5 rounded">
+              {funding.sofriorbWarning}
+            </span>
+          )}
+          {funding.sofrOnrrpWarning && (
+            <span className="text-[11px] text-red-600 bg-red-50/50 px-2 py-0.5 rounded">
+              {funding.sofrOnrrpWarning}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="flex-1 flex items-center justify-center">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-3">
+          {fundingItems.map((item) => (
+            <div key={item.label} className="text-center">
+              <div className="text-[11px] text-slate-400 mb-0.5">{item.label}</div>
+              <div className={`text-base font-bold font-mono ${item.color}`}>
+                {item.display}
+              </div>
+              {item.change !== null && item.change !== undefined && (
+                <div
+                  className={`text-[11px] font-mono ${
+                    item.change > 0 ? "text-red-500" : item.change < 0 ? "text-green-500" : "text-gray-400"
+                  }`}
+                >
+                  {item.change > 0 ? "↑" : item.change < 0 ? "↓" : "→"}{" "}
+                  {item.changeUnit === "bn"
+                    ? `${item.change.toFixed(3)}bn`
+                    : `${Math.abs(item.change)}bp`}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-3">
+        <a
+          href="https://www.newyorkfed.org/markets/reference-rates/sofr"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
+        >
+          Data: NY Fed SOFR ↗
+        </a>
+        <span className="text-[10px] text-slate-400 mx-1">|</span>
+        <a
+          href="https://www.newyorkfed.org/markets/desk-operations/reverse-repo"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
+        >
+          ON RRP ↗
+        </a>
+        <span className="text-[10px] text-slate-400 mx-1">|</span>
+        <a
+          href="https://www.newyorkfed.org/markets/desk-operations/repo"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
+        >
+          SRF ↗
+        </a>
+        <span className="text-[10px] text-slate-400 mx-1">|</span>
+        <a
+          href="https://fred.stlouisfed.org/series/IORB"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
+        >
+          FRED IORB ↗
+        </a>
+      </div>
+    </div>
+  ) : null;
+
+  // ── 计算实际显示的列数，决定网格列数 ──
+  const visibleCols = [yieldColumn, realYieldColumn, fundingColumn].filter(Boolean).length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 pt-6 pb-2">
-      <div className="flex flex-col lg:flex-row gap-4">
+      <Card className="bg-white border-gray-200/80 shadow-sm overflow-hidden">
+        {/* 统一标题头 */}
+        <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+          <h2 className="text-sm font-bold text-slate-800 tracking-tight">
+            美债日频因子
+            <span className="font-normal text-slate-400 mx-1.5">｜</span>
+            <span className="font-normal text-slate-500 text-xs tracking-normal">Daily UST Factors</span>
+          </h2>
+          <span className="text-xs text-slate-400 font-mono bg-slate-50 px-2.5 py-1 rounded-md">
+            {yields.date}
+          </span>
+        </div>
 
-        {/* ── 列 1：收益率快照 ── */}
-        <SubCard className="flex-1 min-w-0">
-          {/* 标题行 */}
-          <div className="flex items-center justify-between flex-wrap gap-2 mb-2.5">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              收益率快照
-            </span>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10.5px] text-slate-400 font-mono">{yields.date}</span>
-              {signal && (
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold tracking-wide ${signal.bg} ${signal.text} ${signal.border}`}>
-                  <span className={`w-[6px] h-[6px] rounded-full ${signal.accent}`} />
-                  {signal.label}
-                </span>
-              )}
-            </div>
-          </div>
-          {/* 数据 */}
-          {renderDataItems(yieldItems)}
-          {/* 信号解读 */}
-          {signal && (
-            <div className="mt-2.5 flex items-start gap-2.5 rounded-lg bg-white/60 backdrop-blur-sm border border-white/80 shadow-sm px-3 py-2">
-              <div className={`w-[3px] shrink-0 self-stretch rounded-full mt-0.5 ${signal.accent}`} />
-              <div className="min-w-0 text-[11.5px] leading-[1.6]">
-                <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                  <span className={`text-[10.5px] font-bold uppercase tracking-wider ${signal.text}`}>{signal.label}</span>
-                  <span className="text-[10px] text-slate-400 font-mono">{signal.summary}</span>
-                </div>
-                <div className="text-slate-600">{signal.interpretation}</div>
-              </div>
-            </div>
-          )}
-          {/* 数据来源 */}
-          <div className="mt-auto pt-2.5">
-            <a
-              href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
-            >
-              Data: Treasury.gov · Daily Yield Curve ↗
-            </a>
-          </div>
-        </SubCard>
-
-        {/* ── 列 2：Real Yield & Breakeven（缩短，数据居中）── */}
-        {yields.realYield10Y !== null && (
-          <SubCard className="flex-1 min-w-0" pyClass="py-2.5">
-            {/* 标题行 */}
-            <div className="flex items-center justify-between flex-wrap gap-2 mb-1.5">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Real Yield & Breakeven <span className="font-normal normal-case tracking-normal text-slate-400 text-[11px]">· 实际利率与通胀预期</span>
-              </span>
-              {realYieldDriver && (
-                <span className={`text-[10.5px] font-semibold ${realYieldDriver.color}`}>
-                  {realYieldDriver.text}
-                </span>
-              )}
-            </div>
-            {/* 数据 — 上下居中 */}
-            <div className="flex-1 flex items-center justify-center min-h-0">
-              {renderDataItems(realYieldItems)}
-            </div>
-            {/* 数据来源 */}
-            <div className="pt-2">
-              <a
-                href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_real_yield_curve"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
-              >
-                Data: Treasury.gov · TIPS Real Yield Curve ↗
-              </a>
-            </div>
-          </SubCard>
-        )}
-
-        {/* ── 列 3：Funding Stress（加长，数据居中，5项两排）── */}
-        {funding && funding.sofr !== null && (
-          <SubCard className="flex-1 min-w-0" pyClass="py-4">
-            {/* 标题行 */}
-            <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Funding Stress <span className="font-normal normal-case tracking-normal text-slate-400 text-[11px]">· 资金面压力</span>
-              </span>
-              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                funding.signal === "funding_stable"
-                  ? "bg-emerald-50 text-emerald-700"
-                  : funding.signal === "mild_pressure"
-                    ? "bg-amber-50 text-amber-700"
-                    : "bg-red-50 text-red-700"
-              }`}>
-                {funding.signalLabel}
-              </span>
-            </div>
-            {/* 预警信息 */}
-            {(funding.onRrpWarning || funding.sofriorbWarning) && (
-              <div className="mb-2 flex flex-col gap-1">
-                {funding.onRrpWarning && (
-                  <span className="text-[11px] text-amber-600 bg-amber-50/50 px-2 py-0.5 rounded">
-                    ⚠ {funding.onRrpWarning}
-                  </span>
-                )}
-                {funding.sofriorbWarning && (
-                  <span className="text-[11px] text-red-600 bg-red-50/50 px-2 py-0.5 rounded">
-                    ⚠ {funding.sofriorbWarning}
-                  </span>
-                )}
-              </div>
-            )}
-            {/* 数据 — 上下居中，一行排列不换行 */}
-            <div className="flex-1 flex items-center justify-center min-h-0">
-              <div className="flex items-center gap-x-5 justify-center flex-nowrap">
-                {fundingItems.map((item) => (
-                  <div key={item.label} className="text-center">
-                    <div className="text-[11px] text-slate-400 mb-0.5">{item.label}</div>
-                    <div className={`text-base font-bold font-mono ${item.color}`}>
-                      {item.display}
-                    </div>
-                    {item.change !== null && item.change !== undefined && (
-                      <div
-                        className={`text-[11px] font-mono ${
-                          item.change > 0 ? "text-red-500" : item.change < 0 ? "text-green-500" : "text-gray-400"
-                        }`}
-                      >
-                        {item.change > 0 ? "↑" : item.change < 0 ? "↓" : "→"}{" "}
-                        {item.changeUnit === "bn"
-                          ? `${item.change.toFixed(3)}bn`
-                          : `${Math.abs(item.change)}bp`}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* 数据来源 */}
-            <div className="pt-2.5">
-              <a
-                href="https://markets.newyorkfed.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
-              >
-                Data: NY Fed ↗
-              </a>
-              <span className="text-[10px] text-slate-400 mx-1">|</span>
-              <a
-                href="https://fred.stlouisfed.org/series/IORB"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
-              >
-                FRED IORB ↗
-              </a>
-            </div>
-          </SubCard>
-        )}
-      </div>
+        {/* 三列内容区 — 垂直分割线保留边界 */}
+        <div className={`grid grid-cols-1 ${
+          visibleCols === 3 ? "lg:grid-cols-3" : visibleCols === 2 ? "lg:grid-cols-2" : ""
+        } divide-y lg:divide-y-0 lg:divide-x divide-gray-100`}>
+          {yieldColumn}
+          {realYieldColumn}
+          {fundingColumn}
+        </div>
+      </Card>
     </div>
   );
 }

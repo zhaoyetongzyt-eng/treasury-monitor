@@ -210,17 +210,47 @@ export interface FundingStressSnapshot {
   tgcr: number | null;           // Tri-Party General Collateral Rate (%)
   effr: number | null;           // Effective Federal Funds Rate (%)
   onRrpAmount: number | null;    // ON RRP Usage ($ Billions)
+  onRrpRate: number | null;      // ON RRP offering rate (%)
   iorbRate: number | null;       // Interest on Reserve Balances (%)
+  srfAmount: number | null;      // SRF Usage ($ Billions)
+  srfRate: number | null;        // SRF stop-out rate (%)
   sofrMinusEffr: number | null;  // bp
   sofrMinusIorb: number | null;  // bp
+  sofrMinusOnRrp: number | null; // bp
   changeSofr: number | null;     // bp
   changeTgcr: number | null;     // bp
-  changeOnRrp: number | null;    // $ Billions (1 decimal)
+  changeOnRrp: number | null;    // $ Billions
+  changeSrf: number | null;      // $ Billions
   signal: "funding_stable" | "mild_pressure" | "funding_stress" | "liquidity_declining";
   signalLabel: string;
   signalColor: "emerald" | "amber" | "red";
   onRrpWarning: string | null;
   sofriorbWarning: string | null;
+  sofrOnrrpWarning: string | null;
+  dataSource: string;
+}
+
+/** 宏观基本面快照 */
+export interface FundamentalsSnapshot {
+  success: boolean;
+  date: string | null;
+  // GDP
+  gdpQoQ: number | null;         // Real GDP QoQ SAAR (%)
+  gdpDate: string | null;
+  // Core PCE
+  corePceYoY: number | null;     // Core PCE YoY (%)
+  corePceDate: string | null;
+  // CPI
+  cpiYoY: number | null;         // CPI YoY (%)
+  cpiDate: string | null;
+  // 就业
+  unemployment: number | null;   // U-3 Unemployment Rate (%)
+  nfpMoM: number | null;         // Nonfarm Payrolls MoM change (thousands)
+  employmentDate: string | null;
+  // 财政
+  deficitPctGDP: number | null;  // Federal Deficit as % of GDP
+  deficitDate: string | null;
+  updatedAt: string;
   dataSource: string;
 }
 
@@ -333,6 +363,62 @@ export interface UKMetricsResponse {
     status: "实时" | "部分实时" | "降级模式";
     fredStatus: "ok" | "error";
   };
+}
+
+/** 情绪面快照 */
+export interface SentimentSnapshot {
+  success: boolean;
+  date: string | null;
+  // 波动率
+  vix: number | null;               // VIX (CBOE Volatility Index)
+  vixDate: string | null;
+  // 信用
+  hyOas: number | null;             // HY OAS (%, e.g. 3.40 = 340bp)
+  hyOasDate: string | null;
+  // 利率
+  termPremium10Y: number | null;    // ACM Term Premium 10Y (bp)
+  tpDate: string | null;
+  // 通胀预期
+  fwdBE5Y5Y: number | null;         // 5Y5Y Forward Breakeven (%)
+  fwdBEDate: string | null;
+  // 衰退信号
+  spread10Y3M: number | null;       // 10Y-3M Spread (bp)
+  spreadDate: string | null;
+  // 美元
+  dxyBroad: number | null;          // Broad Dollar Index
+  dxyDate: string | null;
+  // 美债波动率
+  moveIndex: number | null;         // ICE BofA MOVE Index (美债隐含波动率，非FRED数据)
+  moveDate: string | null;
+  realVol10Y: number | null;        // 10Y Treasury Realized Volatility (bp/yr, 20d annualized)
+  realVolDate: string | null;
+  updatedAt: string;
+  dataSource: string;
+}
+
+/** 政策面快照 */
+export interface PolicySnapshot {
+  success: boolean;
+  date: string | null;
+  // 利率
+  ffTargetUpper: number | null;       // FFR Target Range Upper (%)
+  ffTargetLower: number | null;       // FFR Target Range Lower (%)
+  ffEffective: number | null;         // Effective FFR (%)
+  ffTargetDate: string | null;        // 最近一次调整日期
+  iorbRate: number | null;            // IORB Rate (%)
+  onRrpRate: number | null;           // ON RRP Award Rate (%)
+  // 资产负债表
+  fedBalanceSheet: number | null;     // Fed Total Assets ($ Trillion)
+  fedBsDate: string | null;
+  fedBs4WkAgo: number | null;         // 4周前 Fed Total Assets ($ Trillion)
+  qtMonthlyPace: number | null;       // QT Monthly Pace ($ Billion/month, 负值=缩表)
+  // 预期
+  twoYMinusFFR: number | null;        // 2Y Yield - Effective FFR (bp)
+  tenYMinusFFR: number | null;        // 10Y Yield - Effective FFR (bp)
+  spread5s30s: number | null;         // 5Y-30Y Spread (bp)
+  spread5s30sDate: string | null;
+  updatedAt: string;
+  dataSource: string;
 }
 
 /** 模块配置 */

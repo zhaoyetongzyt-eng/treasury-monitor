@@ -1,5 +1,6 @@
 import NavBar from "@/components/layout/NavBar";
 import YieldOverviewCard from "@/components/shared/YieldOverviewCard";
+import MacroFrameworkModule from "@/components/modules/macro-framework/MacroFrameworkModule";
 import AuctionModule from "@/components/modules/auction/AuctionModule";
 import HoldingsModule from "@/components/modules/holdings/HoldingsModule";
 import USTHoldersModule from "@/components/modules/ust-holders/USTHoldersModule";
@@ -26,7 +27,10 @@ export default function Home() {
       {/* 收益率概览卡片（所有模块之前） */}
       <YieldOverviewCard />
 
-      {/* ★ 模块 01：供给与拍卖 */}
+      {/* ★ 模块 01：宏观定价框架 */}
+      <MacroFrameworkModule />
+
+      {/* 模块 02：供给与拍卖 */}
       <AuctionModule />
 
       {/* 模块 02：持仓与资金流 */}

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 // ============================================================
 // Funding Stress / 资金面压力 API
 // 数据源：
-//   - NY Fed Markets API（SOFR / TGCR / EFFR / ON RRP，无需 key）
+//   - NY Fed Markets API（SOFR / TGCR / EFFR / ON RRP / SRF，无需 key）
 //   - FRED API（IORB，需 key，无 key 时用内置 fallback）
 // ============================================================
 
@@ -13,23 +13,6 @@ interface NyFedRate {
   effectiveDate: string;
   percentRate: number;
   volumeInBillions: number;
-}
-
-async function fetchNyFedRate(endpoint: string): Promise<NyFedRate | null> {
-  const url = `${NYFED_BASE}${endpoint}`;
-  const res = await fetch(url, {
-    headers: { "User-Agent": "TreasuryMonitor/1.0" },
-    cache: "no-store",
-  });
-  if (!res.ok) return null;
-  const json = await res.json();
-  const rates = json?.refRates;
-  if (!rates || rates.length < 2) return null;
-  return {
-    effectiveDate: rates[0].effectiveDate,
-    percentRate: rates[0].percentRate,
-    volumeInBillions: rates[0].volumeInBillions,
-  };
 }
 
 interface NyFedRateWithPrev extends NyFedRate {
@@ -54,6 +37,25 @@ async function fetchNyFedRateWithPrev(endpoint: string): Promise<NyFedRateWithPr
   };
 }
 
+/** NY Fed 操作记录 */
+interface NyFedOperation {
+  operationId: string;
+  operationDate: string;
+  operationType: "Repo" | "Reverse Repo";
+  operationMethod: string;
+  totalAmtAccepted: number;
+  settlementType: string;
+  term: string;
+  note?: string;
+  details?: Array<{
+    securityType: string;
+    amtAccepted?: number;
+    percentOfferingRate?: number;
+    percentStopOutRate?: number;
+    percentWeightedAverageRate?: number;
+  }>;
+}
+
 async function fetchFredSeries(seriesId: string, apiKey: string) {
   const url = `https://api.stlouisfed.org/fred/series/observations` +
     `?series_id=${seriesId}&api_key=${apiKey}&file_type=json` +
@@ -72,71 +74,115 @@ async function fetchFredSeries(seriesId: string, apiKey: string) {
   return { latest, previous };
 }
 
+/** 从 lastTwoWeeks 中提取 ON RRP / SRF 数据 */
+async function fetchRepoOperations(): Promise<{
+  onRrp: { amount: number; rate: number; date: string } | null;
+  onRrpPrev: { amount: number } | null;
+  srf: { amount: number; rate: number; date: string } | null;
+  srfPrev: { amount: number } | null;
+}> {
+  const result = { onRrp: null as any, onRrpPrev: null as any, srf: null as any, srfPrev: null as any };
+
+  try {
+    const url = `${NYFED_BASE}/rp/all/all/results/lastTwoWeeks.json`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": "TreasuryMonitor/1.0" },
+      cache: "no-store",
+    });
+    if (!res.ok) return result;
+    const json = await res.json();
+    const ops: NyFedOperation[] = json?.repo?.operations ?? [];
+
+    // ── ON RRP：Reverse Repo + Fixed Rate ──
+    const reverseRepoOps = ops.filter(
+      (o) => o.operationType === "Reverse Repo" && o.operationMethod === "Fixed Rate"
+    );
+    reverseRepoOps.sort((a, b) => b.operationDate.localeCompare(a.operationDate));
+
+    if (reverseRepoOps.length >= 1) {
+      const latest = reverseRepoOps[0];
+      const offeringRate = latest.details?.[0]?.percentOfferingRate ?? 3.50;
+      result.onRrp = {
+        amount: latest.totalAmtAccepted / 1e9,
+        rate: offeringRate,
+        date: latest.operationDate,
+      };
+    }
+    if (reverseRepoOps.length >= 2) {
+      result.onRrpPrev = { amount: reverseRepoOps[1].totalAmtAccepted / 1e9 };
+    }
+
+    // ── SRF：Repo + Full Allotment（排除 SVE），按日汇总 ──
+    // NY Fed 每日 SRF 分上午/下午两次操作，需按日合并总量
+    const srfOps = ops.filter(
+      (o) =>
+        o.operationType === "Repo" &&
+        o.operationMethod === "Full Allotment" &&
+        !(o.note ?? "").includes("Small Value Exercise")
+    );
+
+    // 按日汇总：key = operationDate, value = { totalAmt, latestRate, opCount }
+    const srfByDate = new Map<string, { totalAmt: number; latestRate: number }>();
+    for (const op of srfOps) {
+      const existing = srfByDate.get(op.operationDate);
+      const rate = op.details?.[0]?.percentStopOutRate ?? 3.75;
+      if (existing) {
+        existing.totalAmt += op.totalAmtAccepted;
+        existing.latestRate = rate; // 取当天最后一次的利率
+      } else {
+        srfByDate.set(op.operationDate, { totalAmt: op.totalAmtAccepted, latestRate: rate });
+      }
+    }
+
+    const srfDates = Array.from(srfByDate.keys()).sort((a, b) => b.localeCompare(a));
+
+    if (srfDates.length >= 1) {
+      const latest = srfByDate.get(srfDates[0])!;
+      result.srf = {
+        amount: latest.totalAmt / 1e9,
+        rate: latest.latestRate,
+        date: srfDates[0],
+      };
+    }
+    if (srfDates.length >= 2) {
+      result.srfPrev = { amount: srfByDate.get(srfDates[1])!.totalAmt / 1e9 };
+    }
+
+    return result;
+  } catch (e) {
+    console.error("Repo operations fetch error:", e instanceof Error ? e.message : String(e));
+    return result;
+  }
+}
+
 export async function GET() {
   try {
-    // ── 并行获取 SOFR / TGCR / EFFR（JSON API） ──────────
-    const [sofrData, tgcrData, effrData] = await Promise.all([
+    // ── 并行获取 SOFR / TGCR / EFFR + 操作数据 ──────────
+    const [sofrData, tgcrData, effrData, repoOpsData] = await Promise.all([
       fetchNyFedRateWithPrev("/rates/secured/sofr/last/2.json"),
       fetchNyFedRateWithPrev("/rates/secured/tgcr/last/2.json"),
       fetchNyFedRateWithPrev("/rates/unsecured/effr/last/2.json"),
+      fetchRepoOperations(),
     ]);
 
-    // ── 获取 ON RRP 数据（CSV API） ─────────────────────
-    let onRrpAmount: number | null = null;
-    let onRrpPrevAmount: number | null = null;
-    let onRrpDebug: string | null = null;
-
-    try {
-      // 使用 JSON API 获取 ON RRP 数据
-      const today = new Date();
-      const endDate = today.toISOString().slice(0, 10);
-      const startDate = new Date(today.getTime() - 7 * 86400000).toISOString().slice(0, 10);
-      const rrpUrl = `${NYFED_BASE}/rp/reverserepo/propositions/search.json` +
-        `?startDate=${startDate}&endDate=${endDate}`;
-
-      const rrpRes = await fetch(rrpUrl, {
-        headers: { "User-Agent": "TreasuryMonitor/1.0" },
-        cache: "no-store",
-      });
-
-      if (!rrpRes.ok) {
-        const errBody = await rrpRes.text().catch(() => "");
-        onRrpDebug = `fetch failed: ${rrpRes.status}, url=${rrpUrl.slice(0, 80)}, body: ${errBody.slice(0, 200)}`;
-      } else {
-        const json = await rrpRes.json();
-        const operations = json?.repo?.operations;
-        onRrpDebug = `json received: ${operations ? operations.length : 0} operations`;
-
-        if (operations && operations.length >= 1) {
-          // totalAmtAccepted 是美元金额，转为 $Billions
-          const amt = operations[0].totalAmtAccepted / 1e9;
-          onRrpAmount = Math.round(amt * 1000) / 1000; // 3 decimal places
-          onRrpDebug += `, latest=${operations[0].operationDate} amt=${onRrpAmount}B`;
-        }
-        if (operations && operations.length >= 2) {
-          const prevAmt = operations[1].totalAmtAccepted / 1e9;
-          onRrpPrevAmount = Math.round(prevAmt * 1000) / 1000;
-        }
-      }
-    } catch (e) {
-      console.error("ON RRP fetch/parse error:", e instanceof Error ? e.message : String(e));
-    }
+    // ── ON RRP / SRF ─────────────────────────────────
+    const onRrpAmount = repoOpsData.onRrp?.amount ?? null;
+    const onRrpRate = repoOpsData.onRrp?.rate ?? null;
+    const onRrpPrevAmount = repoOpsData.onRrpPrev?.amount ?? null;
+    const srfAmount = repoOpsData.srf?.amount ?? null;
+    const srfRate = repoOpsData.srf?.rate ?? null;
+    const srfPrevAmount = repoOpsData.srfPrev?.amount ?? null;
 
     // ── IORB（FRED 优先，无 key 时 fallback） ──────────
     const fredApiKey = process.env.FRED_API_KEY || null;
     let iorbRate: number | null = null;
-    let iorbPrevRate: number | null = null;
 
     if (fredApiKey) {
       const iorb = await fetchFredSeries("IORB", fredApiKey);
-      if (iorb) {
-        iorbRate = iorb.latest;
-        iorbPrevRate = iorb.previous;
-      }
+      if (iorb) iorbRate = iorb.latest;
     }
 
     // Fallback IORB（美联储管理的利率，仅在 FOMC 会议时变动）
-    // 当前值需要根据最近一次 FOMC 决策更新
     // 最后更新: 2026-06-03, IORB = 3.65%（Fed target range 3.50–3.75%）
     if (iorbRate === null) iorbRate = 3.65;
 
@@ -153,6 +199,10 @@ export async function GET() {
       ? Math.round((sofr - iorbRate) * 100)
       : null;
 
+    const sofrMinusOnRrp = (sofr !== null && onRrpRate !== null)
+      ? Math.round((sofr - onRrpRate) * 100)
+      : null;
+
     // bp 日变动
     const changeSofr = sofrData
       ? Math.round((sofrData.percentRate - sofrData.prevPercentRate) * 100)
@@ -161,14 +211,17 @@ export async function GET() {
       ? Math.round((tgcrData.percentRate - tgcrData.prevPercentRate) * 100)
       : null;
     const changeOnRrp = (onRrpAmount !== null && onRrpPrevAmount !== null)
-      ? Math.round((onRrpAmount - onRrpPrevAmount) * 1000) / 1000  // 保留 3 位小数
+      ? Math.round((onRrpAmount - onRrpPrevAmount) * 1000) / 1000
+      : null;
+    const changeSrf = (srfAmount !== null && srfPrevAmount !== null)
+      ? Math.round((srfAmount - srfPrevAmount) * 1000) / 1000
       : null;
 
     // ── 信号判断 ─────────────────────────────────────
     type Signal = "funding_stable" | "mild_pressure" | "funding_stress" | "liquidity_declining";
     let signal: Signal = "funding_stable";
     let signalLabel = "Funding Stable";
-    let signalColor = "emerald";
+    let signalColor: "emerald" | "amber" | "red" = "emerald";
 
     if (sofrMinusEffr !== null) {
       if (sofrMinusEffr > 10) {
@@ -179,28 +232,34 @@ export async function GET() {
         signal = "mild_pressure";
         signalLabel = "Mild Pressure";
         signalColor = "amber";
-      } else {
-        signal = "funding_stable";
-        signalLabel = "Funding Stable";
-        signalColor = "emerald";
       }
     }
 
-    // 独立检测 ON RRP 快速下降（额外预警）
+    // ON RRP 快速下降预警
     let onRrpWarning: string | null = null;
     if (onRrpAmount !== null && onRrpPrevAmount !== null) {
       const pctChange = onRrpPrevAmount > 0
         ? (onRrpAmount - onRrpPrevAmount) / onRrpPrevAmount
         : 0;
-      if (pctChange < -0.10) { // 日降幅超过 10%
+      if (pctChange < -0.10) {
         onRrpWarning = "ON RRP 快速下降 — 闲置流动性缓冲减少";
       }
     }
 
-    // SOFR 明显高于 IORB 的独立预警
+    // SOFR 明显高于 IORB
     let sofriorbWarning: string | null = null;
     if (sofrMinusIorb !== null && sofrMinusIorb > 5) {
       sofriorbWarning = "SOFR 高于 IORB — 银行体系边际流动性压力上升";
+    }
+
+    // SOFR–ON RRP 利差 25bp 警示
+    let sofrOnrrpWarning: string | null = null;
+    if (sofrMinusOnRrp !== null) {
+      if (sofrMinusOnRrp >= 50) {
+        sofrOnrrpWarning = `SOFR–ON RRP 利差 ${sofrMinusOnRrp}bp（远超 25bp 阈值）— 准备金充裕度显著下降`;
+      } else if (sofrMinusOnRrp >= 25) {
+        sofrOnrrpWarning = `SOFR–ON RRP 利差 ${sofrMinusOnRrp}bp（触及 25bp 阈值）— 准备金充裕度下降，关注 SRF 使用量`;
+      }
     }
 
     return NextResponse.json({
@@ -210,17 +269,23 @@ export async function GET() {
       tgcr,
       effr,
       onRrpAmount,         // $ Billions
+      onRrpRate,           // %
       iorbRate,
+      srfAmount,           // $ Billions
+      srfRate,             // %
       sofrMinusEffr,       // bp
       sofrMinusIorb,       // bp
+      sofrMinusOnRrp,      // bp
       changeSofr,          // bp
       changeTgcr,          // bp
-      changeOnRrp,         // $ Billions (3 decimals)
+      changeOnRrp,         // $ Billions
+      changeSrf,           // $ Billions
       signal,
       signalLabel,
       signalColor,
       onRrpWarning,
       sofriorbWarning,
+      sofrOnrrpWarning,
       dataSource: fredApiKey
         ? "NY Fed + FRED"
         : "NY Fed（IORB 为内置 fallback 值，非实时）",

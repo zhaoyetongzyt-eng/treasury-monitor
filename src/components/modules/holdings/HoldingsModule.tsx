@@ -354,7 +354,7 @@ export default function HoldingsModule() {
   return (
     <section id="holdings" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
       <ModuleHeader
-        number="02"
+        number="03"
         title="持仓与资金流"
         titleEn="Holdings & Fund Flows"
         description="监控期货市场资管机构与杠杆基金的持仓博弈，以及海外官方/私人部门的美债配置动向。"

@@ -12,11 +12,12 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { id: "status", number: "", title: "摘要", titleEn: "Summary" },
-  { id: "auction", number: "01", title: "供给与拍卖", titleEn: "Supply & Auction" },
-  { id: "holdings", number: "02", title: "持仓与资金流", titleEn: "Holdings & Flows" },
-  { id: "ust-holders", number: "03", title: "UST 持有人结构", titleEn: "UST Holders Structure" },
-  { id: "leverage", number: "04", title: "杠杆率", titleEn: "Leverage Ratios" },
-  { id: "global-investor", number: "05", title: "全球资金与储备配置", titleEn: "Global Reserves & Investor Lens" },
+  { id: "macro-framework", number: "01", title: "宏观定价框架", titleEn: "Macro Pricing Framework" },
+  { id: "auction", number: "02", title: "供给与拍卖", titleEn: "Supply & Auction" },
+  { id: "holdings", number: "03", title: "持仓与资金流", titleEn: "Holdings & Flows" },
+  { id: "ust-holders", number: "04", title: "UST 持有人结构", titleEn: "UST Holders Structure" },
+  { id: "leverage", number: "05", title: "杠杆率", titleEn: "Leverage Ratios" },
+  { id: "global-investor", number: "06", title: "全球资金与储备配置", titleEn: "Global Reserves & Investor Lens" },
 ];
 
 export default function NavBar() {

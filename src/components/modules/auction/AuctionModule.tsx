@@ -443,7 +443,7 @@ export default function AuctionModule() {
   return (
     <section id="auction" className="py-8 px-4 max-w-7xl mx-auto scroll-mt-16">
       <ModuleHeader
-        number="01"
+        number="02"
         title="供给与拍卖"
         titleEn="Supply & Auction"
         description="追踪美国国债拍卖节奏——从发行规模、中标利率到投标倍数，评估市场需求热度。"
