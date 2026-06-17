@@ -59,7 +59,7 @@ export default function SentimentSubModule() {
 
   // 格式化
   const fmtVix = (v: number | null) => v !== null ? v.toFixed(1) : "--";
-  const fmtOas = (v: number | null) => v !== null ? `${v.toFixed(0)}bp` : "--";
+  const fmtOas = (v: number | null) => v !== null ? `${v.toFixed(2)}%` : "--";
   const fmtBp = (v: number | null) => v !== null ? `${v > 0 ? "+" : ""}${v}bp` : "--";
   const fmtPct2 = (v: number | null) => v !== null ? `${v.toFixed(2)}%` : "--";
   const fmtDxy = (v: number | null) => v !== null ? v.toFixed(1) : "--";
@@ -72,7 +72,7 @@ export default function SentimentSubModule() {
     ? (data.vix > 25 ? "text-red-600" : data.vix > 20 ? "text-amber-600" : data.vix > 15 ? "text-emerald-600" : "text-blue-600")
     : "text-gray-800";
 
-  // HY OAS 信号：<300bp 宽松，300-500bp 正常，>500bp 压力
+  // HY OAS 信号：<3.0% 宽松，3.0-5.0% 正常，>5.0% 压力
   const hySignal = data.hyOas !== null
     ? (data.hyOas > 5.0 ? "信用压力" : data.hyOas > 3.5 ? "偏高" : "宽松")
     : "";
@@ -103,7 +103,7 @@ export default function SentimentSubModule() {
 
   // DXY 信号
   const dxyColor = data.dxyBroad !== null
-    ? (data.dxyBroad > 130 ? "text-red-600" : data.dxyBroad > 125 ? "text-amber-600" : "text-emerald-600")
+    ? (data.dxyBroad > 125 ? "text-red-600" : data.dxyBroad > 120 ? "text-amber-600" : "text-emerald-600")
     : "text-gray-800";
 
   const rows: IndicatorRow[] = [
@@ -114,22 +114,22 @@ export default function SentimentSubModule() {
       unit: "",
       date: data.vixDate,
       sub: vixSignal,
-      trend: data.vix !== null ? (data.vix > 22 ? "up" : data.vix < 14 ? "down" : "flat") : undefined,
+      trend: data.vix !== null ? (data.vix > 25 ? "up" : data.vix < 15 ? "down" : "flat") : undefined,
       color: vixColor,
     },
     {
-      label: "高收益债 OAS",
-      labelEn: "HY OAS (Credit Spread)",
+      label: "高收益债 OAS（水平值）",
+      labelEn: "HY OAS Level (ICE BofA)",
       value: fmtOas(data.hyOas),
-      unit: "bp",
+      unit: "%",
       date: data.hyOasDate,
-      sub: hySignal,
-      trend: data.hyOas !== null ? (data.hyOas > 4.0 ? "up" : data.hyOas < 3.0 ? "down" : "flat") : undefined,
+      sub: data.hyOas !== null ? `≈${Math.round(data.hyOas * 100)}bp ${hySignal}` : hySignal,
+      trend: data.hyOas !== null ? (data.hyOas > 3.5 ? "up" : data.hyOas < 2.5 ? "down" : "flat") : undefined,
       color: hyColor,
     },
     {
-      label: "期限溢价（10Y ACM）",
-      labelEn: "ACM Term Premium 10Y",
+      label: "期限溢价（10Y ACM / THREEFYTP10）",
+      labelEn: "ACM Term Premium (FRED)",
       value: fmtBp(data.termPremium10Y),
       unit: "bp",
       date: data.tpDate,
@@ -151,7 +151,7 @@ export default function SentimentSubModule() {
     },
     {
       label: "10Y–3M 利差（衰退信号）",
-      labelEn: "10Y–3M Spread",
+      labelEn: "10Y-3M Spread (T10Y3M)",
       value: fmtBp(data.spread10Y3M),
       unit: "bp",
       date: data.spreadDate,
@@ -165,8 +165,8 @@ export default function SentimentSubModule() {
       value: fmtDxy(data.dxyBroad),
       unit: "",
       date: data.dxyDate,
-      sub: data.dxyBroad !== null
-        ? (data.dxyBroad > 130 ? "强美元" : data.dxyBroad > 125 ? "偏强" : "偏弱")
+          sub: data.dxyBroad !== null
+            ? (data.dxyBroad > 125 ? "强美元" : data.dxyBroad > 120 ? "偏强" : "偏弱")
         : undefined,
       trend: data.dxyBroad !== null ? (data.dxyBroad > 130 ? "up" : "flat") : undefined,
       color: dxyColor,
@@ -189,13 +189,13 @@ export default function SentimentSubModule() {
     },
     {
       label: "10Y 实现波动率（20d年化）",
-      labelEn: "10Y Realized Vol (annualized)",
+      labelEn: "10Y Realized Vol (self-calc)",
       value: data.realVol10Y !== null ? `${data.realVol10Y}bp/yr` : "--",
       unit: "bp/yr",
       date: data.realVolDate,
       sub: data.realVol10Y !== null
         ? (data.realVol10Y > 100 ? "利率波动偏高" : data.realVol10Y > 70 ? "正常偏高" : "低波动")
-        : undefined,
+        : "口径：DGS10日bps变动×20d std×√252",
       trend: data.realVol10Y !== null
         ? (data.realVol10Y > 90 ? "up" : data.realVol10Y < 60 ? "down" : "flat")
         : undefined,

@@ -54,23 +54,23 @@ export async function GET() {
   const fredApiKey = process.env.FRED_API_KEY || null;
 
   // ── Fallback：无 API key 时使用的内置最新值（手动更新）──
-  // 最后更新: 2026-06-11
+  // 最后更新: 2026-06-17
   const FALLBACK = {
-    vix: 19.2,
-    vixDate: "2026-06-10",
-    hyOas: 3.45,              // 345bp
-    hyOasDate: "2026-06-10",
-    termPremium10Y: 12,       // 12bp
+    vix: 16.20,                 // VIXCLS 收盘
+    vixDate: "2026-06-15",
+    hyOas: 2.66,                // ICE BofA US HY OAS Level (%)
+    hyOasDate: "2026-06-15",
+    termPremium10Y: 80,         // THREEFYTP10 (FRED ACM), 0.80% → 80bp
     tpDate: "2026-06-10",
-    fwdBE5Y5Y: 2.18,          // 2.18%
-    fwdBEDate: "2026-06-10",
-    spread10Y3M: -8,          // -8bp (still inverted)
-    spreadDate: "2026-06-10",
-    dxyBroad: 129.8,
-    dxyDate: "2026-06-09",
-    moveIndex: null,           // MOVE index NOT available on FRED
+    fwdBE5Y5Y: 2.22,            // T5YIFR 5Y5Y Forward BE (%)
+    fwdBEDate: "2026-06-13",
+    spread10Y3M: 64,            // T10Y3M, 6/16 FRED +64bp
+    spreadDate: "2026-06-16",
+    dxyBroad: 119.5,            // DTWEXBGS Nominal Broad USD
+    dxyDate: "2026-06-12",
+    moveIndex: null,            // MOVE index NOT available on FRED (需 ICE/Bloomberg)
     moveDate: null,
-    realVol10Y: 82,            // 10Y 20d realized vol (bp/yr)
+    realVol10Y: 82,             // 10Y 20d realized vol (bp/yr, 自算: DGS10日变动std×√252)
     realVolDate: null,
   };
 
