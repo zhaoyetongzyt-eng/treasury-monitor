@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import ModuleHeader from "@/components/layout/ModuleHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -47,23 +47,19 @@ function LoadingSkeleton() {
         titleEn="Leverage Ratios"
         description="追踪美国三部门（家庭/企业/政府）债务占 GDP 比率，评估系统性杠杆风险与潜在去杠杆压力。"
       />
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">三部门杠杆率 · 债务/GDP（%）</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="p-3 rounded-lg border border-gray-100 bg-gray-50">
-                <Skeleton className="h-4 w-16 mb-2" />
-                <Skeleton className="h-8 w-20 mb-2" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-            ))}
-          </div>
-          <Skeleton className="h-[320px] w-full rounded-lg" />
-        </CardContent>
-      </Card>
+      <div className="rounded-xl border border-gray-200 bg-white p-6">
+        <Skeleton className="h-6 w-48 mb-4" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="p-3 rounded-lg border border-gray-100 bg-gray-50">
+              <Skeleton className="h-4 w-16 mb-2" />
+              <Skeleton className="h-8 w-20 mb-2" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ))}
+        </div>
+        <Skeleton className="h-[320px] w-full rounded-lg" />
+      </div>
     </section>
   );
 }
@@ -99,94 +95,92 @@ function LeveragePanel({
   })();
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-base">三部门杠杆率 · 债务/GDP（%）</CardTitle>
-            <p className="text-xs text-gray-400 mt-0.5">杠杆率历史趋势（2020 至今）</p>
-          </div>
-          <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-            {dataDate}
-          </Badge>
+    <div className="rounded-xl border border-gray-200 bg-white p-6">
+      {/* 标题行 */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-base font-heading font-medium text-gray-900">三部门杠杆率 · 债务/GDP（%）</h3>
+          <p className="text-xs text-gray-400 mt-0.5">杠杆率历史趋势（2020 至今）</p>
         </div>
-      </CardHeader>
-      <CardContent>
-        {/* 上方：4 个数据方块横排 */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          {summary.map((item) => (
-            <div
-              key={item.sector}
-              className="p-3 rounded-lg border border-gray-200 bg-white hover:shadow-sm transition-shadow"
-            >
-              <p className="text-xs text-gray-500 mb-1">
-                {SECTOR_ICONS[item.sector] || ""} {item.sector}
-              </p>
-              <p className="text-2xl font-bold text-gray-900">{item.debtToGDP}%</p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className={`text-xs font-mono ${item.yoyChange > 0 ? "text-red-600" : "text-emerald-600"}`}>
-                  {item.yoyChange > 0 ? "+" : ""}{item.yoyChange}pp
-                </span>
-                <Badge variant="outline" className={`text-xs ${trendBadge(item.trend)}`}>
-                  {item.trend}
-                </Badge>
-              </div>
-              {yoyRefQuarter && (
-                <p className="text-[10px] text-gray-400 mt-1">
-                  同比变化，较{yoyRefQuarter}
-                </p>
-              )}
+        <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+          {dataDate}
+        </Badge>
+      </div>
+
+      {/* 上方：4 个数据方块横排 */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        {summary.map((item) => (
+          <div
+            key={item.sector}
+            className="p-3 rounded-lg border border-gray-200 bg-gray-50 hover:shadow-sm transition-shadow"
+          >
+            <p className="text-xs text-gray-500 mb-1">
+              {SECTOR_ICONS[item.sector] || ""} {item.sector}
+            </p>
+            <p className="text-2xl font-bold text-gray-900">{item.debtToGDP}%</p>
+            <div className="flex items-center gap-2 mt-2">
+              <span className={`text-xs font-mono ${item.yoyChange > 0 ? "text-red-600" : "text-emerald-600"}`}>
+                {item.yoyChange > 0 ? "+" : ""}{item.yoyChange}pp
+              </span>
+              <Badge variant="outline" className={`text-xs ${trendBadge(item.trend)}`}>
+                {item.trend}
+              </Badge>
             </div>
-          ))}
-        </div>
+            {yoyRefQuarter && (
+              <p className="text-[10px] text-gray-400 mt-1">
+                同比变化，较{yoyRefQuarter}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
 
-        {/* 下方：折线图占满宽度 */}
-        <ResponsiveContainer width="100%" height={320}>
-          <LineChart data={trend} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis
-              dataKey="quarter"
-              tick={{ fontSize: 11 }}
-              interval={Math.max(1, Math.floor(trend.length / 12))}
-            />
-            <YAxis domain={[60, 140]} tick={{ fontSize: 11 }} />
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <Tooltip
-              formatter={(value: any, name: any) => [`${value}%`, name]}
-              labelFormatter={(label: any) => `季度: ${label}`}
-            />
-            <Legend />
-            <Line
-              type="monotone" dataKey="家庭" stroke="#10B981" strokeWidth={2}
-              dot={{ r: 0 }} activeDot={{ r: 4 }}
-            />
-            <Line
-              type="monotone" dataKey="企业" stroke="#F59E0B" strokeWidth={2}
-              dot={{ r: 0 }} activeDot={{ r: 4 }}
-            />
-            <Line
-              type="monotone" dataKey="政府" stroke="#EF4444" strokeWidth={2}
-              dot={{ r: 0 }} activeDot={{ r: 4 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      {/* 下方：折线图占满宽度 */}
+      <ResponsiveContainer width="100%" height={320}>
+        <LineChart data={trend} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="quarter"
+            tick={{ fontSize: 11 }}
+            interval={Math.max(1, Math.floor(trend.length / 12))}
+          />
+          <YAxis domain={[60, 140]} tick={{ fontSize: 11 }} />
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <Tooltip
+            formatter={(value: any, name: any) => [`${value}%`, name]}
+            labelFormatter={(label: any) => `季度: ${label}`}
+          />
+          <Legend />
+          <Line
+            type="monotone" dataKey="家庭" stroke="#10B981" strokeWidth={2}
+            dot={{ r: 0 }} activeDot={{ r: 4 }}
+          />
+          <Line
+            type="monotone" dataKey="企业" stroke="#F59E0B" strokeWidth={2}
+            dot={{ r: 0 }} activeDot={{ r: 4 }}
+          />
+          <Line
+            type="monotone" dataKey="政府" stroke="#EF4444" strokeWidth={2}
+            dot={{ r: 0 }} activeDot={{ r: 4 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
 
-        {/* 底部来源 */}
-        <div className="mt-4 pt-3 border-t border-gray-100">
-          <p className="text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-            <span>数据来源：{dataSource}</span>
-            <a
-              href="https://data.bis.org/topics/TOTAL_CREDIT"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
-            >
-              原始数据 ↗
-            </a>
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+      {/* 底部来源 */}
+      <div className="mt-4 pt-3 border-t border-gray-100">
+        <p className="text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+          <span>数据来源：{dataSource}</span>
+          <a
+            href="https://data.bis.org/topics/TOTAL_CREDIT"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+          >
+            原始数据 ↗
+          </a>
+        </p>
+      </div>
+    </div>
   );
 }
 
