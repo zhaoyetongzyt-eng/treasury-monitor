@@ -204,7 +204,7 @@ export default function PolicySubModule() {
             { label: "FF Target (Lower)", id: "DFEDTARL" },
             { label: "FF Effective", id: "DFF" },
             { label: "IORB", id: "IORB" },
-            { label: "ON RRP", id: "RRPONTSYD" },
+            { label: "ON RRP", id: "RRPONTSYAWARD" },
             { label: "Fed B/S", id: "WALCL" },
             { label: "2Y Yield", id: "DGS2" },
             { label: "10Y Yield", id: "DGS10" },

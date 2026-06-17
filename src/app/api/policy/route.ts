@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 //   - FFR Target Range: DFEDTARU (Upper) + DFEDTARL (Lower)
 //   - Effective FFR: DFF
 //   - IORB Rate: IORB
-//   - ON RRP Award Rate: RRPONTSYD
+//   - ON RRP Award Rate: RRPONTSYAWARD
 //   - Fed Balance Sheet: WALCL (Wednesday Level, weekly)
 //   - QT Pace: 从 WALCL 最近4周变化推算月均
 //   - Policy Expectations: 2Y - FFR, 10Y - FFR spreads
@@ -103,7 +103,7 @@ export async function GET() {
       ffTargetLowerData,  // DFEDTARL (1 obs)
       ffEffData,          // DFF (1 obs)
       iorbData,           // IORB (1 obs)
-      onRrpData,          // RRPONTSYD (1 obs)
+      onRrpData,          // RRPONTSYAWARD (1 obs)
       walclData,          // WALCL (5 obs → latest + 4 weeks ago)
       // 2Y/10Y from DGS2/DGS10 (1 obs each)
       dgs2Data,
@@ -115,7 +115,7 @@ export async function GET() {
       fetchFredSeries("DFEDTARL", fredApiKey!, 1),
       fetchFredSeries("DFF", fredApiKey!, 1),
       fetchFredSeries("IORB", fredApiKey!, 1),
-      fetchFredSeries("RRPONTSYD", fredApiKey!, 1),
+      fetchFredSeries("RRPONTSYAWARD", fredApiKey!, 1),
       fetchFredSeries("WALCL", fredApiKey!, 5),
       fetchFredSeries("DGS2", fredApiKey!, 1),
       fetchFredSeries("DGS10", fredApiKey!, 1),
