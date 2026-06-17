@@ -40,6 +40,8 @@ interface JapanMetricsResponse {
     weekStart: string;
     netForeignBonds: number;
     netForeignStocks: number;
+    netForeignLongBonds: number;
+    netForeignShortBonds: number;
   }[];
   updatedAt: string;
   freshness: {
@@ -105,14 +107,14 @@ const FALLBACK_METRICS: KeyMetricsItem[] = [
 ];
 
 const FALLBACK_WEEKLY_FLOWS = [
-  { weekStart: "03-30", netForeignBonds: 1230, netForeignStocks: -320 },
-  { weekStart: "04-06", netForeignBonds: -980, netForeignStocks: 150 },
-  { weekStart: "04-13", netForeignBonds: 560, netForeignStocks: -180 },
-  { weekStart: "04-20", netForeignBonds: -2150, netForeignStocks: -410 },
-  { weekStart: "04-27", netForeignBonds: -840, netForeignStocks: 220 },
-  { weekStart: "05-04", netForeignBonds: 340, netForeignStocks: -90 },
-  { weekStart: "05-11", netForeignBonds: -1200, netForeignStocks: -280 },
-  { weekStart: "05-18", netForeignBonds: -630, netForeignStocks: 110 },
+  { weekStart: "05/03-09", netForeignBonds: 1497, netForeignStocks: -583, netForeignLongBonds: 1644, netForeignShortBonds: -148 },
+  { weekStart: "05/10-16", netForeignBonds: 831, netForeignStocks: 41, netForeignLongBonds: 773, netForeignShortBonds: 58 },
+  { weekStart: "05/17-23", netForeignBonds: -114, netForeignStocks: -368, netForeignLongBonds: 8, netForeignShortBonds: -122 },
+  { weekStart: "05/24-30", netForeignBonds: -172, netForeignStocks: -1068, netForeignLongBonds: -184, netForeignShortBonds: 12 },
+  { weekStart: "05/31-06", netForeignBonds: 240, netForeignStocks: -944, netForeignLongBonds: 198, netForeignShortBonds: 42 },
+  { weekStart: "06/07-13", netForeignBonds: 0, netForeignStocks: 0, netForeignLongBonds: 0, netForeignShortBonds: 0 },
+  { weekStart: "06/14-20", netForeignBonds: 0, netForeignStocks: 0, netForeignLongBonds: 0, netForeignShortBonds: 0 },
+  { weekStart: "06/21-27", netForeignBonds: 0, netForeignStocks: 0, netForeignLongBonds: 0, netForeignShortBonds: 0 },
 ];
 
 // ============================================================
@@ -190,7 +192,7 @@ async function fetchAllFredData(apiKey: string) {
  */
 async function fetchMofWeekly(
   weeks: number = 8
-): Promise<{ weekStart: string; netForeignBonds: number; netForeignStocks: number }[] | null> {
+): Promise<{ weekStart: string; netForeignBonds: number; netForeignStocks: number; netForeignLongBonds: number; netForeignShortBonds: number }[] | null> {
   try {
     const res = await fetch(MOF_WEEKLY_CSV, {
       signal: AbortSignal.timeout(15000),
@@ -201,7 +203,7 @@ async function fetchMofWeekly(
     const text = await res.text();
     const lines = text.split("\n").filter((l) => l.trim());
 
-    const result: { weekStart: string; netForeignBonds: number; netForeignStocks: number }[] = [];
+    const result: { weekStart: string; netForeignBonds: number; netForeignStocks: number; netForeignLongBonds: number; netForeignShortBonds: number }[] = [];
 
     // 找到包含日期格式的行（"YYYY.M.D - M.D"）
     for (const line of lines) {
@@ -231,8 +233,10 @@ async function fetchMofWeekly(
       // MOF 数据单位是亿日元，转换为十亿日元
       const netForeignBonds = Math.round((bondsLTNet + bondsSTNet) / 10);
       const netForeignStocks = Math.round(stocksNet / 10);
+      const netForeignLongBonds = Math.round(bondsLTNet / 10);
+      const netForeignShortBonds = Math.round(bondsSTNet / 10);
 
-      result.push({ weekStart, netForeignBonds, netForeignStocks });
+      result.push({ weekStart, netForeignBonds, netForeignStocks, netForeignLongBonds, netForeignShortBonds });
     }
 
     if (result.length === 0) return null;
