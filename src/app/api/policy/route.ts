@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 // 数据源：FRED API（需 key，无 key 时 fallback 为内置最新值）
 //
 // 指标：
-//   - FFR Target Range: DFEDTAR (Upper) + DFEDTARL (Lower)
+//   - FFR Target Range: DFEDTARU (Upper) + DFEDTARL (Lower)
 //   - Effective FFR: DFF
 //   - IORB Rate: IORB
 //   - ON RRP Award Rate: RRPONTSYD
@@ -99,7 +99,7 @@ export async function GET() {
   try {
     // ── 并行获取所有 FRED 序列 ──────────────────────────
     const [
-      ffTargetUpperData,  // DFEDTAR (1 obs → latest)
+      ffTargetUpperData,  // DFEDTARU (1 obs → latest)
       ffTargetLowerData,  // DFEDTARL (1 obs)
       ffEffData,          // DFF (1 obs)
       iorbData,           // IORB (1 obs)
@@ -111,7 +111,7 @@ export async function GET() {
       dgs5Data,
       dgs30Data,
     ] = await Promise.all([
-      fetchFredSeries("DFEDTAR", fredApiKey!, 1),
+      fetchFredSeries("DFEDTARU", fredApiKey!, 1),
       fetchFredSeries("DFEDTARL", fredApiKey!, 1),
       fetchFredSeries("DFF", fredApiKey!, 1),
       fetchFredSeries("IORB", fredApiKey!, 1),
