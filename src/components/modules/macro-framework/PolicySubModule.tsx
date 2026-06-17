@@ -200,7 +200,8 @@ export default function PolicySubModule() {
         <p className="text-[10px] text-gray-400 mb-2">数据来源 · FRED (Federal Reserve Economic Data)</p>
         <div className="grid grid-cols-3 gap-x-2 gap-y-1">
           {[
-            { label: "FF Target", id: "DFEDTAR" },
+            { label: "FF Target (Upper)", id: "DFEDTARU" },
+            { label: "FF Target (Lower)", id: "DFEDTARL" },
             { label: "FF Effective", id: "DFF" },
             { label: "IORB", id: "IORB" },
             { label: "ON RRP", id: "RRPONTSYD" },
