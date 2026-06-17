@@ -187,22 +187,6 @@ export default function SentimentSubModule() {
         ? (data.moveIndex > 120 ? "text-red-600" : data.moveIndex > 90 ? "text-amber-600" : "text-emerald-600")
         : "text-gray-400",
     },
-    {
-      label: "10Y 实现波动率（20d年化）",
-      labelEn: "10Y Realized Vol (self-calc)",
-      value: data.realVol10Y !== null ? `${data.realVol10Y}bp/yr` : "--",
-      unit: "bp/yr",
-      date: data.realVolDate,
-      sub: data.realVol10Y !== null
-        ? (data.realVol10Y > 100 ? "利率波动偏高" : data.realVol10Y > 70 ? "正常偏高" : "低波动")
-        : "口径：DGS10日bps变动×20d std×√252",
-      trend: data.realVol10Y !== null
-        ? (data.realVol10Y > 90 ? "up" : data.realVol10Y < 60 ? "down" : "flat")
-        : undefined,
-      color: data.realVol10Y !== null
-        ? (data.realVol10Y > 100 ? "text-red-600" : data.realVol10Y > 70 ? "text-amber-600" : "text-emerald-600")
-        : "text-gray-800",
-    },
   ];
 
   return (
@@ -257,7 +241,6 @@ export default function SentimentSubModule() {
             { label: "5Y5Y BE", id: "T5YIFR" },
             { label: "10Y-3M", id: "T10Y3M" },
             { label: "USD Broad", id: "DTWEXBGS" },
-            { label: "10Y RealVol", id: "DGS10" },
           ].map((s) => (
             <a
               key={s.id}

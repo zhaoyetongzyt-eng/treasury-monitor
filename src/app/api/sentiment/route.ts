@@ -12,7 +12,6 @@ import { NextResponse } from "next/server";
 //   - 10Y-3M Spread: T10Y3M (10-Year minus 3-Month Treasury)
 //   - Broad Dollar Index: DTWEXBGS (Trade-Weighted Broad USD)
 //   - MOVE Index: Attempt FRED (BAMLMOVE, may be unavailable)
-//   - 10Y Realized Vol: Calculated from DGS10 last 60 days (20d annualized bp)
 // ============================================================
 
 const FRED_BASE = "https://api.stlouisfed.org/fred/series/observations";
@@ -70,8 +69,6 @@ export async function GET() {
     dxyDate: "2026-06-12",
     moveIndex: 67.3,            // ICE BofA MOVE Index (2026-06-17)
     moveDate: "2026-06-17",
-    realVol10Y: 82,             // 10Y 20d realized vol (bp/yr, 自算: DGS10日变动std×√252)
-    realVolDate: null,
   };
 
   if (!fredApiKey) {
@@ -92,8 +89,6 @@ export async function GET() {
       dxyDate: FALLBACK.dxyDate,
       moveIndex: FALLBACK.moveIndex,
       moveDate: FALLBACK.moveDate,
-      realVol10Y: FALLBACK.realVol10Y,
-      realVolDate: FALLBACK.realVolDate,
       updatedAt: new Date().toISOString(),
       dataSource: "Fallback (无 FRED API Key — 内置值，非实时)",
     });
@@ -109,7 +104,6 @@ export async function GET() {
       spreadData,       // T10Y3M (1 obs)
       dxyData,          // DTWEXBGS (1 obs)
       moveData,         // BAMLMOVE attempt (1 obs, may fail)
-      dgs10Daily,       // DGS10 (60 obs → realized vol)
     ] = await Promise.all([
       fetchFredSeries("VIXCLS", fredApiKey!, 1),
       fetchFredSeries("BAMLH0A0HYM2", fredApiKey!, 1),
@@ -118,7 +112,6 @@ export async function GET() {
       fetchFredSeries("T10Y3M", fredApiKey!, 1),
       fetchFredSeries("DTWEXBGS", fredApiKey!, 1),
       fetchFredSeries("BAMLMOVE", fredApiKey!, 1),
-      fetchFredSeries("DGS10", fredApiKey!, 60),
     ]);
 
     // ── VIX ──────────────────────────────────────────
@@ -163,30 +156,6 @@ export async function GET() {
     const moveDate = (moveData.obs.length > 0 && !moveData.error)
       ? moveData.obs[0].date : FALLBACK.moveDate;
 
-    // ── 10Y Realized Volatility (20-day, annualized) ──
-    let realVol10Y: number | null = FALLBACK.realVol10Y;
-    let realVolDate: string | null = FALLBACK.realVolDate;
-    if (dgs10Daily.obs.length >= 21) {
-      // Compute daily bp changes
-      const changes: number[] = [];
-      for (let i = 0; i < dgs10Daily.obs.length - 1; i++) {
-        const cur = parseVal(dgs10Daily.obs[i]);
-        const prev = parseVal(dgs10Daily.obs[i + 1]);
-        if (cur !== null && prev !== null) {
-          changes.push((cur - prev) * 100); // bp change
-        }
-      }
-      // Last 20 changes → std * √252
-      if (changes.length >= 20) {
-        const recent = changes.slice(0, 20);
-        const mean = recent.reduce((s, v) => s + v, 0) / recent.length;
-        const variance = recent.reduce((s, v) => s + (v - mean) ** 2, 0) / recent.length;
-        const dailyStd = Math.sqrt(variance);
-        realVol10Y = Math.round(dailyStd * Math.sqrt(252));
-      }
-      realVolDate = dgs10Daily.obs[0]?.date ?? null;
-    }
-
     return NextResponse.json({
       success: true,
       date: vixDate,
@@ -204,8 +173,6 @@ export async function GET() {
       dxyDate,
       moveIndex: move,
       moveDate,
-      realVol10Y,
-      realVolDate,
       updatedAt: new Date().toISOString(),
       dataSource: "FRED (Federal Reserve Economic Data)",
     });

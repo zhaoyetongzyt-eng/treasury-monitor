@@ -393,8 +393,6 @@ export interface SentimentSnapshot {
   // 美债波动率
   moveIndex: number | null;         // ICE BofA MOVE Index (美债隐含波动率，非FRED数据)
   moveDate: string | null;
-  realVol10Y: number | null;        // 10Y Treasury Realized Volatility (bp/yr, 20d annualized)
-  realVolDate: string | null;
   updatedAt: string;
   dataSource: string;
 }
