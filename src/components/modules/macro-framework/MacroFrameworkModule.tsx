@@ -87,6 +87,14 @@ export default function MacroFrameworkModule() {
         </div>
 
       </div>
+
+      {/* 口径说明 */}
+      <div className="mt-3 px-5 py-3 rounded-lg bg-slate-50 border border-slate-100">
+        <p className="text-[11px] leading-relaxed text-slate-500">
+          <span className="font-semibold text-slate-600">数据频率说明：</span>
+          GDP为季频，PCE/CPI/就业为月频，Fed资产负债表为周频，利率、利差、VIX、信用利差和美元指数为日频。不同指标最新发布日期不同，页面展示为各自最新可得数据，非同一交易日截面。
+        </p>
+      </div>
     </section>
   );
 }

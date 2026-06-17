@@ -272,6 +272,7 @@ export interface AuctionIssuance {
   recordCount: number;
   avgBidToCover: number;
   dataFreshness: string | null;
+  termAvgBidToCover: Record<string, number>;  // 各品种今年以来投标倍数均值
 }
 
 /** 拍卖 API 响应 */

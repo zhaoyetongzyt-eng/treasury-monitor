@@ -266,7 +266,13 @@ function UpcomingAuctionTable({
 // ============================================================
 // 投标倍数图表
 // ============================================================
-function AuctionChart({ auctions }: { auctions: AuctionRecord[] }) {
+function AuctionChart({
+  auctions,
+  termAvgBidToCover,
+}: {
+  auctions: AuctionRecord[];
+  termAvgBidToCover: Record<string, number>;
+}) {
   // 保留主要品种做图表
   const chartData = auctions
     .filter((a) =>
@@ -275,17 +281,15 @@ function AuctionChart({ auctions }: { auctions: AuctionRecord[] }) {
     .map((a) => ({
       name: a.securityTerm,
       value: a.bidToCover,
+      avg: termAvgBidToCover[a.securityTerm] ?? 0,
     }));
 
   if (chartData.length === 0) return null;
 
-  // 投标倍数平均值参考线值
-  const avgBtc = 2.5;
-
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">投标倍数 vs 历史均值</CardTitle>
+        <CardTitle className="text-base">投标倍数 vs 品种均值</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={200}>
@@ -296,7 +300,7 @@ function AuctionChart({ auctions }: { auctions: AuctionRecord[] }) {
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize: 11 }} />
             <YAxis domain={[0, 4]} tick={{ fontSize: 11 }} />
-            <Tooltip formatter={(v) => [Number(v).toFixed(2), "投标倍数"]} />
+            <Tooltip formatter={(v, name) => [Number(v).toFixed(2), name === "value" ? "最新投标倍数" : "今年以来均值"]} />
             <Bar
               dataKey="value"
               name="最新"
@@ -304,10 +308,9 @@ function AuctionChart({ auctions }: { auctions: AuctionRecord[] }) {
               radius={[4, 4, 0, 0]}
               barSize={24}
             />
-            {/* 参考线通过 recharts ReferenceLine 不好看，改用第二条 bar */}
             <Bar
-              dataKey={() => avgBtc}
-              name="历史均值"
+              dataKey="avg"
+              name="今年以来均值"
               fill="#E2E8F0"
               radius={[4, 4, 0, 0]}
               barSize={24}
@@ -321,6 +324,9 @@ function AuctionChart({ auctions }: { auctions: AuctionRecord[] }) {
             />
           </BarChart>
         </ResponsiveContainer>
+        <p className="mt-2 text-[10px] text-gray-400 leading-relaxed">
+          今年以来均值 = 该品种 2026-01-01 至今全部已完成拍卖的投标倍数算术平均
+        </p>
       </CardContent>
     </Card>
   );
@@ -473,7 +479,7 @@ export default function AuctionModule() {
 
       {/* 第二行：投标倍数图表 + 发行结构 横向并列 */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AuctionChart auctions={auctions} />
+        <AuctionChart auctions={auctions} termAvgBidToCover={issuance?.termAvgBidToCover ?? {}} />
         <AuctionIssuanceCard issuance={issuance} loading={loadingAuctions} />
       </div>
 

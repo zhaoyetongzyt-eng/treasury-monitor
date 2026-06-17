@@ -169,6 +169,20 @@ export async function GET() {
       return true;
     });
 
+    // ── 按品种计算 YTD 平均投标倍数（去重前，用全部拍卖）──
+    const termYtdSums: Record<string, { sum: number; count: number }> = {};
+    for (const r of completed) {
+      const term = SECURITY_TERM_MAP[r.securityTerm];
+      const btc = Number(r.bidToCoverRatio);
+      if (!termYtdSums[term]) termYtdSums[term] = { sum: 0, count: 0 };
+      termYtdSums[term].sum += btc;
+      termYtdSums[term].count += 1;
+    }
+    const termAvgBidToCover: Record<string, number> = {};
+    for (const [term, acc] of Object.entries(termYtdSums)) {
+      termAvgBidToCover[term] = Math.round((acc.sum / acc.count) * 100) / 100;
+    }
+
     // 去重：每个品种只保留最新的一场
     const seenCompleted = new Set<string>();
     const uniqueCompleted: TdAuctionedItem[] = [];
@@ -250,6 +264,7 @@ export async function GET() {
           ? Math.round((auctions.reduce((s, a) => s + a.bidToCover, 0) / auctions.length) * 100) / 100
           : 0,
       dataFreshness: auctions.map((a) => a.auctionDate).filter(Boolean).sort().reverse()[0] || null,
+      termAvgBidToCover,
     };
 
     // ============================================================
