@@ -52,18 +52,18 @@ export async function GET() {
   const fredApiKey = process.env.FRED_API_KEY || null;
 
   // ── Fallback：无 API key 时使用的内置最新值（手动更新）──
-  // 最后更新: 2026-06-11
+  // 最后更新: 2026-06-17（用户核对纠正）
   const FALLBACK = {
-    gdpQoQ: -0.3,          // Q1 2026: -0.3% SAAR (BEA June 25 rev)
+    gdpQoQ: 1.6,          // Q1 2026: +1.6% SAAR (BEA 二次估计)
     gdpDate: "2026-Q1",
-    corePceYoY: 2.8,       // Apr 2026: 2.8% YoY
+    corePceYoY: 3.3,       // Apr 2026: 3.3% YoY (BEA PCE)
     corePceDate: "2026-04",
-    cpiYoY: 2.3,           // Apr 2026: 2.3% YoY
+    cpiYoY: 3.8,           // Apr 2026: 3.8% YoY (BLS Headline CPI)
     cpiDate: "2026-04",
-    unemployment: 4.2,     // May 2026: 4.2%
-    nfpMoM: 139,           // May 2026: +139K
+    unemployment: 4.3,     // May 2026: 4.3% (BLS)
+    nfpMoM: 172,           // May 2026: +172K (BLS)
     employmentDate: "2026-05",
-    deficitPctGDP: -6.2,   // FY 2025: -6.2% GDP
+    deficitPctGDP: -5.8,   // FY 2025: -5.77% GDP (FRED FYFSGDA188S)
     deficitDate: "2025-FY",
   };
 

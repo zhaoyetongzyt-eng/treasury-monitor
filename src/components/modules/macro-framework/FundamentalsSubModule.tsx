@@ -82,8 +82,8 @@ export default function FundamentalsSubModule() {
       color: data.corePceYoY !== null ? (data.corePceYoY >= 2.5 ? "text-amber-600" : "text-emerald-600") : undefined,
     },
     {
-      label: "CPI（同比）",
-      labelEn: "CPI YoY",
+      label: "CPI 总体（同比）",
+      labelEn: "Headline CPI YoY",
       value: fmtPct1(data.cpiYoY),
       unit: "%",
       date: data.cpiDate,
