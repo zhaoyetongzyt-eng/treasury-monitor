@@ -64,7 +64,7 @@ export async function GET() {
     iorbRate: 3.65,
     onRrpRate: 3.50,
     fedBalanceSheet: 6.725,    // $ Trillion
-    fedBsDate: "2026-06-17",
+    fedBsDate: "2026-06-10",
     fedBs4WkAgo: 6.75,
     qtMonthlyPace: -45,       // $ Billion/month（估算）
     twoYMinusFFR: 42,         // 2Y - FFR ≈ +42bp
