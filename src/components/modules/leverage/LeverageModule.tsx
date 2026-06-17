@@ -47,13 +47,13 @@ function LoadingSkeleton() {
         titleEn="Leverage Ratios"
         description="追踪美国三部门（家庭/企业/政府）债务占 GDP 比率，评估系统性杠杆风险与潜在去杠杆压力。"
       />
-      <div className="space-y-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">三部门杠杆率 · 债务/GDP（%）</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">三部门杠杆率 · 债务/GDP（%）</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-2 grid grid-cols-2 gap-4">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="p-3 rounded-lg border border-gray-100 bg-gray-50">
                   <Skeleton className="h-4 w-16 mb-2" />
@@ -62,10 +62,12 @@ function LoadingSkeleton() {
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-        <Skeleton className="h-[400px] w-full rounded-lg" />
-      </div>
+            <div className="lg:col-span-3">
+              <Skeleton className="h-[320px] w-full rounded-lg" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </section>
   );
 }
@@ -83,12 +85,17 @@ const SECTOR_ICONS: Record<string, string> = {
   "私人非金融部门": "📊",
 };
 
-function LeverageSummary({ data, dataDate, dataSource }: {
-  data: LeverageSummaryItem[];
+function LeveragePanel({
+  summary,
+  trend,
+  dataDate,
+  dataSource,
+}: {
+  summary: LeverageSummaryItem[];
+  trend: LeverageTrendPoint[];
   dataDate: string;
   dataSource: string;
 }) {
-  // 根据 dataDate 计算同比参考季度（例如 2025-Q3 → 2024-Q3）
   const yoyRefQuarter = (() => {
     const m = dataDate.match(/^(\d{4})-Q(\d)$/);
     if (!m) return "";
@@ -99,118 +106,94 @@ function LeverageSummary({ data, dataDate, dataSource }: {
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">三部门杠杆率 · 债务/GDP（%）</CardTitle>
+          <div>
+            <CardTitle className="text-base">三部门杠杆率 · 债务/GDP（%）</CardTitle>
+            <p className="text-xs text-gray-400 mt-0.5">杠杆率历史趋势（2020 至今）</p>
+          </div>
           <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
             {dataDate}
           </Badge>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {data.map((item) => (
-            <div
-              key={item.sector}
-              className="p-3 rounded-lg border border-gray-200 bg-white hover:shadow-sm transition-shadow"
-            >
-              <p className="text-xs text-gray-500 mb-1">
-                {SECTOR_ICONS[item.sector] || ""} {item.sector}
-              </p>
-              <p className="text-2xl font-bold text-gray-900">{item.debtToGDP}%</p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className={`text-xs font-mono ${item.yoyChange > 0 ? "text-red-600" : "text-emerald-600"}`}>
-                  {item.yoyChange > 0 ? "+" : ""}{item.yoyChange}pp
-                </span>
-                <Badge variant="outline" className={`text-xs ${trendBadge(item.trend)}`}>
-                  {item.trend}
-                </Badge>
-              </div>
-              {yoyRefQuarter && (
-                <p className="text-[10px] text-gray-400 mt-1">
-                  同比变化，较{yoyRefQuarter}
+        {/* 左右分栏：左 数据块 2x2 / 右 折线图 */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* 左侧：4 个数据方块 2x2 */}
+          <div className="lg:col-span-2 grid grid-cols-2 gap-3">
+            {summary.map((item) => (
+              <div
+                key={item.sector}
+                className="p-3 rounded-lg border border-gray-200 bg-white hover:shadow-sm transition-shadow"
+              >
+                <p className="text-xs text-gray-500 mb-1">
+                  {SECTOR_ICONS[item.sector] || ""} {item.sector}
                 </p>
-              )}
-            </div>
-          ))}
+                <p className="text-2xl font-bold text-gray-900">{item.debtToGDP}%</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className={`text-xs font-mono ${item.yoyChange > 0 ? "text-red-600" : "text-emerald-600"}`}>
+                    {item.yoyChange > 0 ? "+" : ""}{item.yoyChange}pp
+                  </span>
+                  <Badge variant="outline" className={`text-xs ${trendBadge(item.trend)}`}>
+                    {item.trend}
+                  </Badge>
+                </div>
+                {yoyRefQuarter && (
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    同比变化，较{yoyRefQuarter}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* 右侧：折线图 */}
+          <div className="lg:col-span-3">
+            <ResponsiveContainer width="100%" height={320}>
+              <LineChart data={trend} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="quarter"
+                  tick={{ fontSize: 11 }}
+                  interval={Math.max(1, Math.floor(trend.length / 12))}
+                />
+                <YAxis domain={[60, 140]} tick={{ fontSize: 11 }} />
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                <Tooltip
+                  formatter={(value: any, name: any) => [`${value}%`, name]}
+                  labelFormatter={(label: any) => `季度: ${label}`}
+                />
+                <Legend />
+                <Line
+                  type="monotone" dataKey="家庭" stroke="#10B981" strokeWidth={2}
+                  dot={{ r: 0 }} activeDot={{ r: 4 }}
+                />
+                <Line
+                  type="monotone" dataKey="企业" stroke="#F59E0B" strokeWidth={2}
+                  dot={{ r: 0 }} activeDot={{ r: 4 }}
+                />
+                <Line
+                  type="monotone" dataKey="政府" stroke="#EF4444" strokeWidth={2}
+                  dot={{ r: 0 }} activeDot={{ r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>数据来源：{dataSource}</span>
-          <a
-            href="https://data.bis.org/topics/TOTAL_CREDIT"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
-          >
-            原始数据 ↗
-          </a>
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
 
-function LeverageChart({ data, isLoading }: {
-  data: LeverageTrendPoint[];
-  isLoading: boolean;
-}) {
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">杠杆率历史趋势（2020 至今）</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[320px] w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">杠杆率历史趋势（2020 至今）</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={320}>
-          <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis
-              dataKey="quarter"
-              tick={{ fontSize: 11 }}
-              interval={Math.max(1, Math.floor(data.length / 12))}
-            />
-            <YAxis domain={[60, 140]} tick={{ fontSize: 11 }} />
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <Tooltip
-              formatter={(value: any, name: any) => [`${value}%`, name]}
-              labelFormatter={(label: any) => `季度: ${label}`}
-            />
-            <Legend />
-            <Line
-              type="monotone" dataKey="家庭" stroke="#10B981" strokeWidth={2}
-              dot={{ r: 0 }} activeDot={{ r: 4 }}
-            />
-            <Line
-              type="monotone" dataKey="企业" stroke="#F59E0B" strokeWidth={2}
-              dot={{ r: 0 }} activeDot={{ r: 4 }}
-            />
-            <Line
-              type="monotone" dataKey="政府" stroke="#EF4444" strokeWidth={2}
-              dot={{ r: 0 }} activeDot={{ r: 4 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-        <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>来源：BIS Total Credit · 市场价值计价 · 经断点调整 · 占 GDP 百分比</span>
-          <a
-            href="https://data.bis.org/topics/TOTAL_CREDIT"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
-          >
-            原始数据 ↗
-          </a>
-        </p>
+        {/* 底部来源 */}
+        <div className="mt-4 pt-3 border-t border-gray-100">
+          <p className="text-xs text-gray-400 flex justify-between flex-wrap gap-2">
+            <span>数据来源：{dataSource}</span>
+            <a
+              href="https://data.bis.org/topics/TOTAL_CREDIT"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              原始数据 ↗
+            </a>
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
@@ -278,10 +261,7 @@ export default function LeverageModule() {
         titleEn="Leverage Ratios"
         description="追踪美国三部门（家庭/企业/政府）债务占 GDP 比率，评估系统性杠杆风险与潜在去杠杆压力。"
       />
-      <div className="space-y-6">
-        <LeverageSummary data={summary} dataDate={dataDate} dataSource={dataSource} />
-        <LeverageChart data={trend} isLoading={loading} />
-      </div>
+      <LeveragePanel summary={summary} trend={trend} dataDate={dataDate} dataSource={dataSource} />
     </section>
   );
 }
