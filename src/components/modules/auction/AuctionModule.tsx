@@ -300,7 +300,7 @@ function AuctionChart({
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize: 11 }} />
             <YAxis domain={[0, 4]} tick={{ fontSize: 11 }} />
-            <Tooltip formatter={(v, name) => [Number(v).toFixed(2), name === "value" ? "最新投标倍数" : "今年以来均值"]} />
+            <Tooltip formatter={(v, name) => [Number(v).toFixed(2), name === "value" ? "最新" : "今年以来均值"]} />
             <Bar
               dataKey="value"
               name="最新"
