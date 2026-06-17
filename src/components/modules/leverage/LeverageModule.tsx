@@ -219,46 +219,6 @@ function LeverageChart({ data, isLoading }: {
   );
 }
 
-function RiskNotes() {
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">杠杆风险提示</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-start gap-2 p-2 rounded bg-amber-50 border border-amber-100">
-          <span className="text-amber-500 text-sm mt-0.5">⚠️</span>
-          <div>
-            <p className="text-sm font-medium text-amber-800">杠杆基金长端净空头轧空风险</p>
-            <p className="text-xs text-amber-600 mt-0.5">CFTC显示杠杆基金在美债期货长端维持显著净空头。若经济数据转弱、避险买盘升温或降息预期快速上修，空头回补可能放大长端收益率下行。历史分位需基于同一合约口径回溯计算。</p>
-          </div>
-        </div>
-        <div className="flex items-start gap-2 p-2 rounded bg-red-50 border border-red-100">
-          <span className="text-red-500 text-sm mt-0.5">🔴</span>
-          <div>
-            <p className="text-sm font-medium text-red-800">基差交易去杠杆风险</p>
-            <p className="text-xs text-red-600 mt-0.5">美债现金-期货基差交易依赖repo融资和期货保证金。若融资条件收紧、保证金上升或市场流动性下降，相关仓位可能被迫去杠杆，并放大国债市场波动。</p>
-          </div>
-        </div>
-        <div className="flex items-start gap-2 p-2 rounded bg-emerald-50 border border-emerald-100">
-          <span className="text-emerald-500 text-sm mt-0.5">✅</span>
-          <div>
-            <p className="text-sm font-medium text-emerald-800">私人部门持续去杠杆</p>
-            <p className="text-xs text-emerald-600 mt-0.5">家庭与非金融企业债务/GDP自疫情后高位回落，私人部门杠杆压力下降，有助于降低由私人信用扩张触发的系统性风险。</p>
-          </div>
-        </div>
-        <div className="flex items-start gap-2 p-2 rounded bg-blue-50 border border-blue-100">
-          <span className="text-blue-500 text-sm mt-0.5">ℹ️</span>
-          <div>
-            <p className="text-sm font-medium text-blue-800">政府杠杆率高位波动</p>
-            <p className="text-xs text-blue-600 mt-0.5">BIS口径下，美国广义政府债务/GDP维持在约106%–110%区间；若使用联邦总公共债务口径，比例约在120%以上。财政赤字和利息支出压力意味着中长端供给仍是中长期利空因素。</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function LeverageModule() {
   const [summary, setSummary] = useState<LeverageSummaryItem[]>([]);
   const [trend, setTrend] = useState<LeverageTrendPoint[]>([]);
@@ -324,7 +284,6 @@ export default function LeverageModule() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <LeverageSummary data={summary} dataDate={dataDate} dataSource={dataSource} />
-          <RiskNotes />
         </div>
         <LeverageChart data={trend} isLoading={loading} />
       </div>
