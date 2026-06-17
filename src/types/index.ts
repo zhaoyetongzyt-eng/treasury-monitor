@@ -418,7 +418,7 @@ export interface PolicySnapshot {
   // 预期
   twoYMinusFFR: number | null;        // 2Y Yield - Effective FFR (bp)
   tenYMinusFFR: number | null;        // 10Y Yield - Effective FFR (bp)
-  spread5s30s: number | null;         // 5Y-30Y Spread (bp)
+  spread5s30s: number | null;         // 30Y-5Y Spread (bp)
   spread5s30sDate: string | null;
   updatedAt: string;
   dataSource: string;

@@ -12,7 +12,7 @@ import { NextResponse } from "next/server";
 //   - Fed Balance Sheet: WALCL (Wednesday Level, weekly)
 //   - QT Pace: 从 WALCL 最近4周变化推算月均
 //   - Policy Expectations: 2Y - FFR, 10Y - FFR spreads
-//   - 5Y-30Y Spread: DGS5 - DGS30 (curve shape signal)
+//   - 30Y-5Y Spread: DGS30 - DGS5 (curve shape signal)
 // ============================================================
 
 const FRED_BASE = "https://api.stlouisfed.org/fred/series/observations";
@@ -69,7 +69,7 @@ export async function GET() {
     qtMonthlyPace: -45,       // $ Billion/month（估算）
     twoYMinusFFR: 42,         // 2Y - FFR ≈ +42bp
     tenYMinusFFR: 84,         // 10Y - FFR ≈ +84bp
-    spread5s30s: 75,          // 30Y - 5Y ≈ 70–80bp
+    spread5s30s: 79,          // 30Y - 5Y = 79bp (2026-06-15)
     spread5s30sDate: null,
   };
 

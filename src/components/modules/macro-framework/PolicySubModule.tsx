@@ -137,8 +137,8 @@ export default function PolicySubModule() {
         : undefined,
     },
     {
-      label: "5Y–30Y 利差（曲线形态）",
-      labelEn: "5Y-30Y Spread",
+      label: "30Y–5Y 利差（曲线形态）",
+      labelEn: "30Y-5Y Spread",
       value: fmtBp(data.spread5s30s),
       unit: "bp",
       date: data.spread5s30sDate,
