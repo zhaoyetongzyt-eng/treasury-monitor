@@ -326,6 +326,15 @@ function AuctionChart({
         </ResponsiveContainer>
         <p className="mt-2 text-[10px] text-gray-400 leading-relaxed">
           今年以来均值 = 该品种 2026-01-01 至今全部已完成拍卖（含再开）的投标倍数算术平均
+           |{" "}
+          <a
+            href="https://www.treasurydirect.gov/auctions/auction-query/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 underline hover:text-gray-600 transition-colors"
+          >
+            数据来源：TreasuryDirect 拍卖查询
+          </a>
         </p>
       </CardContent>
     </Card>
