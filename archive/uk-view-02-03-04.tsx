@@ -796,3 +796,21 @@ function RelativeValue({
     </Card>
   );
 }
+
+/* ============================================================
+ * 「本模块关注的四个信号」卡片
+ * 存档日期: 2026-06-17 (10:46)
+ * ============================================================ */
+
+          {/* 四个核心信号（白色问题框） */}
+          <div className="p-4 rounded-lg bg-white border border-gray-200">
+            <h3 className="text-sm font-bold text-gray-800 mb-2">本模块关注的四个信号</h3>
+            <ol className="space-y-1.5 text-xs text-gray-700 list-decimal list-inside">
+              <li className="font-medium">
+                相对收益率：当 Gilt 收益率处于高位时，UST 的收益率优势是否仍然存在？
+              </li>
+              <li>对冲后收益：对欧洲/全球资金而言，UST 与 Gilt 谁的 hedged carry 更有吸引力？</li>
+              <li>风险溢价：若英国财政风险溢价回落，Gilt 是否会分流部分长端主权债配置需求？</li>
+              <li>供给竞争：若 Gilt 长端供给压力缓解，美债长端是否面临相对估值压力？</li>
+            </ol>
+          </div>
