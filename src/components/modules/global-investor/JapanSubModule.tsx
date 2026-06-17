@@ -163,6 +163,11 @@ function HoldingsTrendChart({ data }: { data: JapanHoldingsTrend[] }) {
 // ============================================================
 
 function WeeklyFlowChart({ data, freshness }: { data: JapanWeeklyFlow[]; freshness?: string }) {
+  // 过滤掉三值均为 0 的占位条目（未来尚未发布的周）
+  const filtered = data.filter((d) =>
+    d.netForeignBonds !== 0 || d.netForeignStocks !== 0 ||
+    (d.netForeignLongBonds ?? 0) !== 0 || (d.netForeignShortBonds ?? 0) !== 0
+  );
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -182,7 +187,7 @@ function WeeklyFlowChart({ data, freshness }: { data: JapanWeeklyFlow[]; freshne
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+          <BarChart data={filtered} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis
               dataKey="weekStart"
