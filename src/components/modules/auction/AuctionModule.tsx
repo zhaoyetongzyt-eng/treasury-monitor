@@ -325,7 +325,7 @@ function AuctionChart({
           </BarChart>
         </ResponsiveContainer>
         <p className="mt-2 text-[10px] text-gray-400 leading-relaxed">
-          今年以来均值 = 该品种 2026-01-01 至今全部已完成拍卖的投标倍数算术平均
+          今年以来均值 = 该品种 2026-01-01 至今全部已完成拍卖（含再开）的投标倍数算术平均
         </p>
       </CardContent>
     </Card>

@@ -61,6 +61,42 @@ const SECURITY_TERM_MAP: Record<string, string> = {
   "19-Year 7-Month": "约20年期国债(再开)",
   "19-Year 6-Month": "约20年期国债(再开)",
   "19-Year 5-Month": "约20年期国债(再开)",
+  // 5-Year reopenings
+  "4-Year 11-Month": "约5年期国债(再开)",
+  "4-Year 10-Month": "约5年期国债(再开)",
+  "4-Year 9-Month": "约5年期国债(再开)",
+  "4-Year 8-Month": "约5年期国债(再开)",
+  "4-Year 7-Month": "约5年期国债(再开)",
+  "4-Year 6-Month": "约5年期国债(再开)",
+  "4-Year 5-Month": "约5年期国债(再开)",
+  "4-Year 4-Month": "约5年期国债(再开)",
+};
+
+/** 将再开标签合并到主品种，用于计算今年以来均值 */
+const AUCTION_GROUP_MAP: Record<string, string> = {
+  "约2年期国债(再开)": "2年期国债",
+  "约5年期国债(再开)": "5年期国债",
+  "约10年期国债(再开)": "10年期国债",
+  "约30年期国债(再开)": "30年期国债",
+  "约20年期国债(再开)": "20年期国债",
+  // 所有主品种保留自身映射
+  "4周国库券": "4周国库券",
+  "8周国库券": "8周国库券",
+  "13周国库券": "13周国库券",
+  "17周国库券": "17周国库券",
+  "26周国库券": "26周国库券",
+  "52周国库券": "52周国库券",
+  "6周国库券": "6周国库券",
+  "27天国库券": "27天国库券",
+  "42天国库券": "42天国库券",
+  "现金管理票据": "现金管理票据",
+  "2年期国债": "2年期国债",
+  "3年期国债": "3年期国债",
+  "5年期国债": "5年期国债",
+  "7年期国债": "7年期国债",
+  "10年期国债": "10年期国债",
+  "20年期国债": "20年期国债",
+  "30年期国债": "30年期国债",
 };
 
 /** 自动评级：基于投标倍数 */
@@ -173,10 +209,11 @@ export async function GET() {
     const termYtdSums: Record<string, { sum: number; count: number }> = {};
     for (const r of completed) {
       const term = SECURITY_TERM_MAP[r.securityTerm];
+      const group = AUCTION_GROUP_MAP[term] || term;
       const btc = Number(r.bidToCoverRatio);
-      if (!termYtdSums[term]) termYtdSums[term] = { sum: 0, count: 0 };
-      termYtdSums[term].sum += btc;
-      termYtdSums[term].count += 1;
+      if (!termYtdSums[group]) termYtdSums[group] = { sum: 0, count: 0 };
+      termYtdSums[group].sum += btc;
+      termYtdSums[group].count += 1;
     }
     const termAvgBidToCover: Record<string, number> = {};
     for (const [term, acc] of Object.entries(termYtdSums)) {
