@@ -19,7 +19,7 @@ export default function Home() {
           <h1 className="text-3xl font-bold tracking-tight">美债流动性看板</h1>
           <p className="text-lg text-blue-200 mt-1 font-light">US Treasury Liquidity Monitor</p>
           <p className="text-sm text-blue-300/70 mt-3 max-w-2xl">
-            聚焦供给拍卖、交易承接、持仓流向、回购资金面与全球投资者行为，动态追踪美债市场流动性状态、边际变化与潜在压力，为利率研究、风险监测和交易决策提供一站式量化参考。
+            从供给拍卖、持仓流向、杠杆周期到全球投资者视角，多维度追踪美债市场流动性变化、需求承接与潜在压力，为利率研究与交易判断提供一站式量化参考。
           </p>
         </div>
       </div>
