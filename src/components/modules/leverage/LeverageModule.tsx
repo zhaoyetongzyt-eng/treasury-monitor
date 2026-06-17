@@ -47,11 +47,11 @@ function LoadingSkeleton() {
         titleEn="Leverage Ratios"
         description="追踪美国三部门（家庭/企业/政府）债务占 GDP 比率，评估系统性杠杆风险与潜在去杠杆压力。"
       />
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
+      <div>
         <Skeleton className="h-6 w-48 mb-4" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="p-3 rounded-lg border border-gray-100 bg-gray-50">
+            <div key={i} className="p-3 rounded-lg border border-gray-100 bg-white">
               <Skeleton className="h-4 w-16 mb-2" />
               <Skeleton className="h-8 w-20 mb-2" />
               <Skeleton className="h-4 w-24" />
@@ -95,7 +95,7 @@ function LeveragePanel({
   })();
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
+    <div>
       {/* 标题行 */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -112,7 +112,7 @@ function LeveragePanel({
         {summary.map((item) => (
           <div
             key={item.sector}
-            className="p-3 rounded-lg border border-gray-200 bg-gray-50 hover:shadow-sm transition-shadow"
+            className="p-3 rounded-lg border border-gray-200 bg-white hover:shadow-sm transition-shadow"
           >
             <p className="text-xs text-gray-500 mb-1">
               {SECTOR_ICONS[item.sector] || ""} {item.sector}
