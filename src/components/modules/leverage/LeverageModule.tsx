@@ -52,20 +52,16 @@ function LoadingSkeleton() {
           <CardTitle className="text-base">三部门杠杆率 · 债务/GDP（%）</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="p-3 rounded-lg border border-gray-100 bg-gray-50">
-                  <Skeleton className="h-4 w-16 mb-2" />
-                  <Skeleton className="h-8 w-20 mb-2" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              ))}
-            </div>
-            <div className="lg:col-span-3">
-              <Skeleton className="h-[320px] w-full rounded-lg" />
-            </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="p-3 rounded-lg border border-gray-100 bg-gray-50">
+                <Skeleton className="h-4 w-16 mb-2" />
+                <Skeleton className="h-8 w-20 mb-2" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            ))}
           </div>
+          <Skeleton className="h-[320px] w-full rounded-lg" />
         </CardContent>
       </Card>
     </section>
@@ -116,69 +112,64 @@ function LeveragePanel({
         </div>
       </CardHeader>
       <CardContent>
-        {/* 左右分栏：左 数据块 2x2 / 右 折线图 */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* 左侧：4 个数据方块 2x2 */}
-          <div className="lg:col-span-2 grid grid-cols-2 gap-3">
-            {summary.map((item) => (
-              <div
-                key={item.sector}
-                className="p-3 rounded-lg border border-gray-200 bg-white hover:shadow-sm transition-shadow"
-              >
-                <p className="text-xs text-gray-500 mb-1">
-                  {SECTOR_ICONS[item.sector] || ""} {item.sector}
-                </p>
-                <p className="text-2xl font-bold text-gray-900">{item.debtToGDP}%</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className={`text-xs font-mono ${item.yoyChange > 0 ? "text-red-600" : "text-emerald-600"}`}>
-                    {item.yoyChange > 0 ? "+" : ""}{item.yoyChange}pp
-                  </span>
-                  <Badge variant="outline" className={`text-xs ${trendBadge(item.trend)}`}>
-                    {item.trend}
-                  </Badge>
-                </div>
-                {yoyRefQuarter && (
-                  <p className="text-[10px] text-gray-400 mt-1">
-                    同比变化，较{yoyRefQuarter}
-                  </p>
-                )}
+        {/* 上方：4 个数据方块横排 */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          {summary.map((item) => (
+            <div
+              key={item.sector}
+              className="p-3 rounded-lg border border-gray-200 bg-white hover:shadow-sm transition-shadow"
+            >
+              <p className="text-xs text-gray-500 mb-1">
+                {SECTOR_ICONS[item.sector] || ""} {item.sector}
+              </p>
+              <p className="text-2xl font-bold text-gray-900">{item.debtToGDP}%</p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className={`text-xs font-mono ${item.yoyChange > 0 ? "text-red-600" : "text-emerald-600"}`}>
+                  {item.yoyChange > 0 ? "+" : ""}{item.yoyChange}pp
+                </span>
+                <Badge variant="outline" className={`text-xs ${trendBadge(item.trend)}`}>
+                  {item.trend}
+                </Badge>
               </div>
-            ))}
-          </div>
-
-          {/* 右侧：折线图 */}
-          <div className="lg:col-span-3">
-            <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={trend} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis
-                  dataKey="quarter"
-                  tick={{ fontSize: 11 }}
-                  interval={Math.max(1, Math.floor(trend.length / 12))}
-                />
-                <YAxis domain={[60, 140]} tick={{ fontSize: 11 }} />
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                <Tooltip
-                  formatter={(value: any, name: any) => [`${value}%`, name]}
-                  labelFormatter={(label: any) => `季度: ${label}`}
-                />
-                <Legend />
-                <Line
-                  type="monotone" dataKey="家庭" stroke="#10B981" strokeWidth={2}
-                  dot={{ r: 0 }} activeDot={{ r: 4 }}
-                />
-                <Line
-                  type="monotone" dataKey="企业" stroke="#F59E0B" strokeWidth={2}
-                  dot={{ r: 0 }} activeDot={{ r: 4 }}
-                />
-                <Line
-                  type="monotone" dataKey="政府" stroke="#EF4444" strokeWidth={2}
-                  dot={{ r: 0 }} activeDot={{ r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+              {yoyRefQuarter && (
+                <p className="text-[10px] text-gray-400 mt-1">
+                  同比变化，较{yoyRefQuarter}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
+
+        {/* 下方：折线图占满宽度 */}
+        <ResponsiveContainer width="100%" height={320}>
+          <LineChart data={trend} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis
+              dataKey="quarter"
+              tick={{ fontSize: 11 }}
+              interval={Math.max(1, Math.floor(trend.length / 12))}
+            />
+            <YAxis domain={[60, 140]} tick={{ fontSize: 11 }} />
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <Tooltip
+              formatter={(value: any, name: any) => [`${value}%`, name]}
+              labelFormatter={(label: any) => `季度: ${label}`}
+            />
+            <Legend />
+            <Line
+              type="monotone" dataKey="家庭" stroke="#10B981" strokeWidth={2}
+              dot={{ r: 0 }} activeDot={{ r: 4 }}
+            />
+            <Line
+              type="monotone" dataKey="企业" stroke="#F59E0B" strokeWidth={2}
+              dot={{ r: 0 }} activeDot={{ r: 4 }}
+            />
+            <Line
+              type="monotone" dataKey="政府" stroke="#EF4444" strokeWidth={2}
+              dot={{ r: 0 }} activeDot={{ r: 4 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
 
         {/* 底部来源 */}
         <div className="mt-4 pt-3 border-t border-gray-100">
