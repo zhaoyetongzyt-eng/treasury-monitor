@@ -68,8 +68,8 @@ export async function GET() {
     spreadDate: "2026-06-16",
     dxyBroad: 119.5,            // DTWEXBGS Nominal Broad USD
     dxyDate: "2026-06-12",
-    moveIndex: null,            // MOVE index NOT available on FRED (需 ICE/Bloomberg)
-    moveDate: null,
+    moveIndex: 67.3,            // ICE BofA MOVE Index (2026-06-17)
+    moveDate: "2026-06-17",
     realVol10Y: 82,             // 10Y 20d realized vol (bp/yr, 自算: DGS10日变动std×√252)
     realVolDate: null,
   };
