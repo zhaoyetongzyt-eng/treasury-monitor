@@ -47,26 +47,23 @@ function LoadingSkeleton() {
         titleEn="Leverage Ratios"
         description="追踪美国三部门（家庭/企业/政府）债务占 GDP 比率，评估系统性杠杆风险与潜在去杠杆压力。"
       />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">三部门杠杆率 · 债务/GDP（%）</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="p-3 rounded-lg border border-gray-100 bg-gray-50">
-                    <Skeleton className="h-4 w-16 mb-2" />
-                    <Skeleton className="h-8 w-20 mb-2" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          <Skeleton className="h-64 w-full rounded-lg" />
-        </div>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">三部门杠杆率 · 债务/GDP（%）</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="p-3 rounded-lg border border-gray-100 bg-gray-50">
+                  <Skeleton className="h-4 w-16 mb-2" />
+                  <Skeleton className="h-8 w-20 mb-2" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
         <Skeleton className="h-[400px] w-full rounded-lg" />
       </div>
     </section>
@@ -281,10 +278,8 @@ export default function LeverageModule() {
         titleEn="Leverage Ratios"
         description="追踪美国三部门（家庭/企业/政府）债务占 GDP 比率，评估系统性杠杆风险与潜在去杠杆压力。"
       />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <LeverageSummary data={summary} dataDate={dataDate} dataSource={dataSource} />
-        </div>
+      <div className="space-y-6">
+        <LeverageSummary data={summary} dataDate={dataDate} dataSource={dataSource} />
         <LeverageChart data={trend} isLoading={loading} />
       </div>
     </section>
