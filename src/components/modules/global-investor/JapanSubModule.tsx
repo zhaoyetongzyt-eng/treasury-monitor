@@ -168,10 +168,10 @@ function WeeklyFlowChart({ data, freshness }: { data: JapanWeeklyFlow[]; freshne
       <CardHeader className="pb-2">
         <CardTitle className="text-base">日本对外国证券投资周度流向（MOF）</CardTitle>
         <p className="text-xs text-gray-500">
-          日本居民对外国中长期/短期债券与股票/投资基金的净买入（十亿日元）。
+          日本居民对外国股票/投资基金、中长期债券、短期债券的周度净买入，单位：十亿日元。
           <br />
           <span className="text-amber-600 font-medium">
-            ⚠ MOF 数据为全部外国证券合计，不可直接拆分为美债。正值 = 净买入海外资产。
+            ⚠ MOF 数据为日本居民对全部外国证券的交易流向，不等同于日本对美债的买卖。「外国长期债券」与「外国短期债券」为分项数据；若合并展示，标注「外国债券合计」更准确。
           </span>
           {freshness && (
             <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-green-50 text-green-700 border border-green-200">
@@ -181,7 +181,7 @@ function WeeklyFlowChart({ data, freshness }: { data: JapanWeeklyFlow[]; freshne
         </p>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={220}>
           <BarChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis
@@ -198,8 +198,13 @@ function WeeklyFlowChart({ data, freshness }: { data: JapanWeeklyFlow[]; freshne
               contentStyle={{ fontSize: 12, borderRadius: 8 }}
               formatter={(v, n) => {
                 const val = Number(v);
-                const label = String(n) === "netForeignBonds" ? "外国债券（含中长期+短期）" : "外国股票/投资基金";
-                return [`${val > 0 ? "+" : ""}${val} 亿日元`, label];
+                const labels: Record<string, string> = {
+                  netForeignLongBonds: "外国中长期债券",
+                  netForeignShortBonds: "外国短期债券",
+                  netForeignStocks: "外国股票/投资基金",
+                };
+                const label = labels[String(n)] || String(n);
+                return [`${val > 0 ? "+" : ""}${val} 十亿日元`, label];
               }}
             />
             <Legend
@@ -207,21 +212,36 @@ function WeeklyFlowChart({ data, freshness }: { data: JapanWeeklyFlow[]; freshne
               wrapperStyle={{ fontSize: 12 }}
             />
             <Bar
-              dataKey="netForeignBonds"
-              name="外国债券"
+              dataKey="netForeignLongBonds"
+              name="外国中长期债券"
               fill="#2563eb"
               radius={[3, 3, 0, 0]}
+              stackId="bonds"
             >
               {data.map((entry, i) => (
                 <Cell
-                  key={`bond-${i}`}
-                  fill={entry.netForeignBonds >= 0 ? "#dc2626" : "#16a34a"}
+                  key={`long-${i}`}
+                  fill={(entry.netForeignLongBonds ?? 0) >= 0 ? "#dc2626" : "#16a34a"}
+                />
+              ))}
+            </Bar>
+            <Bar
+              dataKey="netForeignShortBonds"
+              name="外国短期债券"
+              fill="#22c55e"
+              radius={[3, 3, 0, 0]}
+              stackId="bonds"
+            >
+              {data.map((entry, i) => (
+                <Cell
+                  key={`short-${i}`}
+                  fill={(entry.netForeignShortBonds ?? 0) >= 0 ? "#ef4444" : "#22c55e"}
                 />
               ))}
             </Bar>
             <Bar
               dataKey="netForeignStocks"
-              name="外国股票"
+              name="外国股票/投资基金"
               fill="#f59e0b"
               radius={[3, 3, 0, 0]}
             >
@@ -237,20 +257,29 @@ function WeeklyFlowChart({ data, freshness }: { data: JapanWeeklyFlow[]; freshne
 
         <div className="mt-3 p-2 rounded bg-amber-50 border border-amber-100">
           <p className="text-[11px] text-amber-700 leading-relaxed">
-            <strong>口径说明：</strong>MOF 统计的是日本居民对<b>全部外国</b>（不限于美国）的中长期债券、短期债券和股票/投资基金的净买入/净卖出。
-            外国中长期债券可能以美债为主，但也包含欧债、澳债等。如需日本对美债专项持仓与变动，请参见上方 TIC 月频图表。
+            <strong>口径说明：</strong>MOF 统计的是指定主要机构投资者对外国证券的取得与处分，正值代表净取得/净买入，负值代表净处分/净卖出。外国债券可能包括美债、欧债、澳债等，不能直接等同于日本对美债的专项持仓变化；如需美债持仓，请参考 TIC 月度数据。
           </p>
         </div>
         <p className="mt-3 text-xs text-gray-400 flex justify-between flex-wrap gap-2">
-          <span>来源：日本财务省（MOF）证券交易统计 · 周频 · 2014年起正值=净买入</span>
-          <a
-            href="https://www.mof.go.jp/english/policy/international_policy/reference/itn_transactions_in_securities/index.htm"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
-          >
-            原始数据 ↗
-          </a>
+          <span>来源：日本财务省（MOF）证券交易统计 · 周频 · 2014年起</span>
+          <span className="flex gap-2">
+            <a
+              href="https://www.mof.go.jp/english/policy/international_policy/reference/itn_transactions_in_securities/week.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              week.pdf ↗
+            </a>
+            <a
+              href="https://www.mof.go.jp/english/policy/international_policy/reference/itn_transactions_in_securities/index.htm"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline underline-offset-2"
+            >
+              原始数据 ↗
+            </a>
+          </span>
         </p>
       </CardContent>
     </Card>
@@ -483,6 +512,15 @@ function JapanSignals({
 // 主组件
 // ============================================================
 
+/** MOF 周度资金流内置 fallback 数据（5周，按最新 PDF 计算，单位：十亿日元） */
+const FALLBACK_WEEKLY_FLOWS: JapanWeeklyFlow[] = [
+  { weekStart: "05/03-09", netForeignBonds: 1496.8, netForeignStocks: -582.6, netForeignLongBonds: 1644.3, netForeignShortBonds: -147.5 },
+  { weekStart: "05/10-16", netForeignBonds: 830.7, netForeignStocks: 41.4, netForeignLongBonds: 773.0, netForeignShortBonds: 57.7 },
+  { weekStart: "05/17-23", netForeignBonds: -113.9, netForeignStocks: -367.8, netForeignLongBonds: 8.2, netForeignShortBonds: -122.1 },
+  { weekStart: "05/24-30", netForeignBonds: -172.4, netForeignStocks: -1068.1, netForeignLongBonds: -184.4, netForeignShortBonds: 12.0 },
+  { weekStart: "05/31-06", netForeignBonds: 239.8, netForeignStocks: -943.6, netForeignLongBonds: 197.5, netForeignShortBonds: 42.3 },
+];
+
 export default function JapanSubModule() {
   const [metrics, setMetrics] = useState<JapanMetricsResponse["metrics"] | null>(null);
   const [weeklyFlows, setWeeklyFlows] = useState<JapanWeeklyFlow[] | null>(null);
@@ -547,17 +585,15 @@ export default function JapanSubModule() {
         {/* 周度资金流（MOF - API 动态） */}
         {loading ? (
           <WeeklyFlowSkeleton />
-        ) : weeklyFlows ? (
+        ) : (
           <WeeklyFlowChart
-            data={weeklyFlows}
+            data={weeklyFlows && weeklyFlows.length > 0 ? weeklyFlows : FALLBACK_WEEKLY_FLOWS}
             freshness={
               freshness === "实时" || freshness === "部分实时"
                 ? "MOF 实时"
                 : undefined
             }
           />
-        ) : (
-          <WeeklyFlowChart data={[]} />
         )}
       </div>
 

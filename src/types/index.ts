@@ -134,9 +134,11 @@ export interface JapanHoldingsTrend {
 
 /** 日本视角 - 周度资金流（MOF 全部外国证券，不可拆分为美债） */
 export interface JapanWeeklyFlow {
-  weekStart: string;           // 周开始日期
-  netForeignBonds: number;     // 净买入外国中长期+短期债券（十亿日元）
-  netForeignStocks: number;    // 净买入外国股票/投资基金份额（十亿日元）
+  weekStart: string;              // 周开始日期
+  netForeignBonds: number;        // 净买入外国中长期+短期债券（十亿日元）
+  netForeignStocks: number;       // 净买入外国股票/投资基金份额（十亿日元）
+  netForeignLongBonds?: number;   // 净买入外国中长期债券（十亿日元）
+  netForeignShortBonds?: number;  // 净买入外国短期债券（十亿日元）
 }
 
 /** 日本视角 - 关键指标（组件内使用） */
