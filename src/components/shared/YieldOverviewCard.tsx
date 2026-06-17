@@ -255,7 +255,7 @@ export default function YieldOverviewCard() {
         {renderDataItems(realYieldItems)}
       </div>
 
-      <div className="pt-3">
+      <div className="pt-3 flex flex-wrap gap-x-4 gap-y-1">
         <a
           href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_real_yield_curve"
           target="_blank"
@@ -263,6 +263,22 @@ export default function YieldOverviewCard() {
           className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
         >
           Data: Treasury.gov · TIPS Real Yield Curve ↗
+        </a>
+        <a
+          href="https://fred.stlouisfed.org/series/T10YIE"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
+        >
+          FRED: 10Y Breakeven (T10YIE) ↗
+        </a>
+        <a
+          href="https://fred.stlouisfed.org/series/T5YIE"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
+        >
+          FRED: 5Y Breakeven (T5YIE) ↗
         </a>
       </div>
     </div>
