@@ -54,22 +54,22 @@ export async function GET() {
   const fredApiKey = process.env.FRED_API_KEY || null;
 
   // ── Fallback：无 API key 时使用的内置最新值（手动更新）──
-  // 最后更新: 2026-06-11
-  // FOMC 2025-12-18 维持 4.25-4.50%，下次会议 2026-07-29
+  // 最后更新: 2026-06-17
+  // FOMC 降息至 3.50-3.75%，下次会议 2026-07-29
   const FALLBACK = {
-    ffTargetUpper: 4.50,
-    ffTargetLower: 4.25,
-    ffTargetDate: "2025-12-18",
-    ffEffective: 4.33,
-    iorbRate: 4.40,
-    onRrpRate: 4.25,
-    fedBalanceSheet: 6.78,    // $ Trillion
-    fedBsDate: "2026-06-04",
-    fedBs4WkAgo: 6.82,
-    qtMonthlyPace: -45,       // $ Billion/month
-    twoYMinusFFR: -46,        // 2Y ~3.87% - 4.33% = -46bp
-    tenYMinusFFR: 14,         // 10Y ~4.47% - 4.33% = 14bp
-    spread5s30s: 25,          // 5Y ~4.12% - 30Y ~3.87% ≈ 25bp (flattening bias)
+    ffTargetUpper: 3.75,
+    ffTargetLower: 3.50,
+    ffTargetDate: "2026-06-17",
+    ffEffective: 3.63,
+    iorbRate: 3.65,
+    onRrpRate: 3.50,
+    fedBalanceSheet: 6.725,    // $ Trillion
+    fedBsDate: "2026-06-17",
+    fedBs4WkAgo: 6.75,
+    qtMonthlyPace: -45,       // $ Billion/month（估算）
+    twoYMinusFFR: 42,         // 2Y - FFR ≈ +42bp
+    tenYMinusFFR: 84,         // 10Y - FFR ≈ +84bp
+    spread5s30s: 75,          // 30Y - 5Y ≈ 70–80bp
     spread5s30sDate: null,
   };
 
