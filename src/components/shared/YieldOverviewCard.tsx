@@ -151,13 +151,12 @@ export default function YieldOverviewCard() {
     { label: "5Y Breakeven", display: yields.breakeven5Y !== null ? formatPct(yields.breakeven5Y) : "--", change: yields.changeBE5Y, color: "text-orange-600", changeUnit: "%" as const },
   ].filter((item) => item.display !== "--");
 
-  // ── 流动性警示：Real Rate − BEI（负值越深 = 流动性风险越高）────────
+  // ── 流动性警示：Real Rate − BEI（正值偏高 = 实际利率主导，需关注）────────
   const realMinusBeiValue = yields.realMinusBei10Y;
   const realMinusBeiSignal = realMinusBeiValue !== null
-    ? (realMinusBeiValue > 0.5 ? { color: "text-slate-600", signal: "实际利率主导，金融条件偏紧" }
-      : realMinusBeiValue > -0.5 ? { color: "text-emerald-700", signal: "中性区间" }
-      : realMinusBeiValue > -1.0 ? { color: "text-amber-600", signal: "流动性边际收紧" }
-      : { color: "text-red-600", signal: "⚠ 流动性压力上升" })
+    ? (realMinusBeiValue > 0.4 ? { color: "text-red-600", signal: "实际利率主导偏强" }
+      : realMinusBeiValue >= 0.1 ? { color: "text-amber-600", signal: "实际利率小幅高于BEI" }
+      : { color: "text-slate-400", signal: "中性/通胀预期主导" })
     : null;
 
   const realYieldDriver = (() => {
