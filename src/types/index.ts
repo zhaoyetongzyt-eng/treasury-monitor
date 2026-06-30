@@ -203,6 +203,7 @@ export interface YieldSnapshot {
   changeReal10Y: number | null;      // bp
   changeBE10Y: number | null;        // bp
   changeBE5Y: number | null;         // bp
+  realMinusBei10Y: number | null;   // 10Y Real Rate − 10Y BEI (流动性警示指标, bp)
 }
 
 /** 资金面压力快照（Funding Stress） */

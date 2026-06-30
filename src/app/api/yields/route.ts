@@ -198,6 +198,9 @@ export async function GET() {
       changeReal10Y,
       changeBE10Y,
       changeBE5Y,
+      realMinusBei10Y: (realYield10Y !== null && breakeven10Y !== null)
+        ? Math.round((realYield10Y - breakeven10Y) * 100) / 100
+        : null,
       updatedAt: new Date().toISOString(),
     });
   } catch (error) {

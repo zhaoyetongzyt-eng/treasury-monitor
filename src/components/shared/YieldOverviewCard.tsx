@@ -151,6 +151,15 @@ export default function YieldOverviewCard() {
     { label: "5Y Breakeven", display: yields.breakeven5Y !== null ? formatPct(yields.breakeven5Y) : "--", change: yields.changeBE5Y, color: "text-orange-600", changeUnit: "%" as const },
   ].filter((item) => item.display !== "--");
 
+  // ── 流动性警示：Real Rate − BEI（负值越深 = 流动性风险越高）────────
+  const realMinusBeiValue = yields.realMinusBei10Y;
+  const realMinusBeiSignal = realMinusBeiValue !== null
+    ? (realMinusBeiValue > 0.5 ? { color: "text-slate-600", signal: "实际利率主导，金融条件偏紧" }
+      : realMinusBeiValue > -0.5 ? { color: "text-emerald-700", signal: "中性区间" }
+      : realMinusBeiValue > -1.0 ? { color: "text-amber-600", signal: "流动性边际收紧" }
+      : { color: "text-red-600", signal: "⚠ 流动性压力上升" })
+    : null;
+
   const realYieldDriver = (() => {
     if (!yields) return null;
     const cN = yields.change10Y;
@@ -251,8 +260,21 @@ export default function YieldOverviewCard() {
         )}
       </div>
 
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex flex-col items-center justify-center gap-3">
         {renderDataItems(realYieldItems)}
+
+        {/* 流动性警示：10Y Real Rate − 10Y BEI */}
+        {realMinusBeiValue !== null && realMinusBeiSignal && (
+          <div className="flex items-center gap-3 px-3 py-1.5 rounded-md bg-slate-50 border border-slate-200/60">
+            <div className="text-[11px] text-slate-500 whitespace-nowrap">Real−BEI</div>
+            <div className={`text-sm font-bold font-mono ${realMinusBeiSignal.color}`}>
+              {realMinusBeiValue > 0 ? "+" : ""}{realMinusBeiValue.toFixed(2)}%
+            </div>
+            <span className={`text-[10.5px] font-medium ${realMinusBeiSignal.color} hidden sm:inline`}>
+              {realMinusBeiSignal.signal}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="pt-3 flex flex-wrap gap-x-4 gap-y-1">
@@ -279,6 +301,14 @@ export default function YieldOverviewCard() {
           className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
         >
           FRED: 5Y Breakeven (T5YIE) ↗
+        </a>
+        <a
+          href="https://fred.stlouisfed.org/series/DFII10"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-blue-500 hover:text-blue-700 underline underline-offset-2"
+        >
+          FRED: 10Y Real Rate (DFII10) ↗
         </a>
       </div>
     </div>
