@@ -25,36 +25,36 @@ interface TICApiResponse {
 }
 
 // ===== 内置最新数据（fallback）=====
-// 数据月份: 2026-03（TIC 月报通常滞后 2 个月）
-// 来源: https://ticdata.treasury.gov/.../slt_table5.html
+// 数据月份: 2026-05（TIC 月报通常滞后 2 个月）
+// 来源: https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html
 const FALLBACK_HOLDINGS: TICHoldingItem[] = [
-  { country: "Japan", amount: 1191.6, trend: "下降", change: -47.7, isMajor: true },
-  { country: "United Kingdom", amount: 926.9, trend: "上升", change: 29.6, isMajor: true },
-  { country: "China, Mainland", amount: 652.3, trend: "下降", change: -41.0, isMajor: true },
-  { country: "Cayman Islands", amount: 459.4, trend: "上升", change: 16.4, isMajor: true },
-  { country: "Belgium", amount: 454.0, trend: "平稳", change: -0.7, isMajor: true },
-  { country: "Canada", amount: 439.4, trend: "下降", change: -6.9, isMajor: true },
-  { country: "Luxembourg", amount: 432.0, trend: "下降", change: -13.7, isMajor: true },
-  { country: "France", amount: 393.0, trend: "平稳", change: -2.1, isMajor: true },
-  { country: "Ireland", amount: 355.2, trend: "上升", change: 4.6, isMajor: true },
-  { country: "Taiwan", amount: 300.8, trend: "下降", change: -12.7, isMajor: true },
-  { country: "Switzerland", amount: 286.4, trend: "平稳", change: -0.3, isMajor: true },
-  { country: "Hong Kong", amount: 278.2, trend: "上升", change: 9.0, isMajor: false },
-  { country: "Singapore", amount: 274.3, trend: "下降", change: -5.7, isMajor: false },
-  { country: "Norway", amount: 217.4, trend: "下降", change: -5.6, isMajor: false },
-  { country: "India", amount: 183.0, trend: "下降", change: -7.6, isMajor: false },
-  { country: "Brazil", amount: 168.0, trend: "平稳", change: -2.6, isMajor: false },
-  { country: "Saudi Arabia", amount: 149.6, trend: "下降", change: -10.8, isMajor: false },
-  { country: "Korea, South", amount: 136.8, trend: "下降", change: -4.1, isMajor: false },
-  { country: "United Arab Emirates", amount: 114.1, trend: "下降", change: -5.8, isMajor: false },
-  { country: "Germany", amount: 112.5, trend: "上升", change: 3.7, isMajor: false },
+  { country: "Japan", amount: 1143.1, trend: "下降", change: -66.8, isMajor: true },
+  { country: "United Kingdom", amount: 948.6, trend: "上升", change: 11.1, isMajor: true },
+  { country: "China, Mainland", amount: 659.3, trend: "上升", change: 8.2, isMajor: true },
+  { country: "Belgium", amount: 472.0, trend: "上升", change: 12.1, isMajor: true },
+  { country: "Cayman Islands", amount: 471.3, trend: "平稳", change: -0.3, isMajor: true },
+  { country: "Luxembourg", amount: 436.0, trend: "平稳", change: 4.9, isMajor: true },
+  { country: "Canada", amount: 435.8, trend: "上升", change: 38.7, isMajor: true },
+  { country: "France", amount: 393.1, trend: "平稳", change: -0.2, isMajor: true },
+  { country: "Ireland", amount: 357.2, trend: "上升", change: 11.9, isMajor: true },
+  { country: "Taiwan", amount: 306.0, trend: "上升", change: 5.1, isMajor: true },
+  { country: "Switzerland", amount: 281.1, trend: "下降", change: -7.5, isMajor: true },
+  { country: "Singapore", amount: 278.0, trend: "平稳", change: 0.5, isMajor: true },
+  { country: "Hong Kong", amount: 271.9, trend: "平稳", change: 2.8, isMajor: true },
+  { country: "Norway", amount: 207.3, trend: "下降", change: -7.4, isMajor: false },
+  { country: "India", amount: 181.3, trend: "平稳", change: 0.3, isMajor: true },
+  { country: "Brazil", amount: 168.9, trend: "平稳", change: 0.3, isMajor: true },
+  { country: "Saudi Arabia", amount: 140.3, trend: "平稳", change: 0.2, isMajor: false },
+  { country: "Korea, South", amount: 132.3, trend: "平稳", change: -2.9, isMajor: false },
+  { country: "United Arab Emirates", amount: 118.6, trend: "上升", change: 6.1, isMajor: false },
+  { country: "Israel", amount: 117.6, trend: "平稳", change: 4.2, isMajor: false },
 ];
 
 const FALLBACK_SUMMARY = {
-  total: 9348.7,
-  officialTotal: 3902.2,
-  officialBills: 441.0,
-  officialBondsNotes: 3461.2,
+  total: 9371.1,
+  officialTotal: 3848.0,
+  officialBills: 396.2,
+  officialBondsNotes: 3451.8,
 };
 
 // 主要国家 / 地区标记
@@ -232,9 +232,9 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      dataDate: "2026-03",
-      previousDate: "2026-02",
-      dataSource: "内置数据(TIC 2026-03)",
+      dataDate: "2026-05",
+      previousDate: "2026-04",
+      dataSource: "内置数据(TIC 2026-05)",
       holdings: FALLBACK_HOLDINGS,
       summary: FALLBACK_SUMMARY,
       updatedAt: new Date().toISOString(),

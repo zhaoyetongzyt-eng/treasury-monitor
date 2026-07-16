@@ -628,7 +628,7 @@ export default function USTHoldersModule() {
         <Layer2MarginalFlow marginalFlows={data.marginalFlows} />
 
         {/* 海外前10持仓 — 第二层外资视角补充 */}
-        <ForeignHoldersTable holders={data.foreignTop10} dataDate="2026-03" />
+        <ForeignHoldersTable holders={data.foreignTop10} dataDate="2026-05" />
 
         {/* ================================================================ */}
         {/* ★ 第三层：年度结构变化 */}
@@ -660,7 +660,7 @@ export default function USTHoldersModule() {
           ))}
         </div>
         <p className="text-xs text-gray-400 mt-2">
-          Z.1 数据截至 {data.z1Date}（{data.z1PublicationDate} 发布）· Fed 数据截至 2026-05-20 · TIC 数据截至 2026-03
+          Z.1 数据截至 {data.z1Date}（{data.z1PublicationDate} 发布）· Fed 数据截至 2026-05-20 · TIC 数据截至 2026-05
         </p>
       </div>
     </section>

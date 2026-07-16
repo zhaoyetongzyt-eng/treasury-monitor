@@ -22,7 +22,7 @@ import type { JapanHoldingsTrend, JapanWeeklyFlow, JapanMetricsResponse } from "
 // ============================================================
 
 // ============================================================
-// TIC 日本美债持仓趋势（内置 fallback，数据截至 2026-03）
+// TIC 日本美债持仓趋势（内置 fallback，数据截至 2026-05）
 // 来源：Treasury TIC SLT Table 5
 // ============================================================
 
@@ -54,6 +54,8 @@ const FALLBACK_HOLDINGS_TREND: JapanHoldingsTrend[] = [
   { date: "2026-01", holdings: 1225.3, change: +39.8 },
   { date: "2026-02", holdings: 1239.3, change: +14.0 },
   { date: "2026-03", holdings: 1191.6, change: -47.7 },
+  { date: "2026-04", holdings: 1209.9, change: +18.3 },
+  { date: "2026-05", holdings: 1143.1, change: -66.8 },
 ];
 
 // ============================================================
@@ -439,8 +441,8 @@ function JapanSignals({
   const signals = [
     {
       type: "bearish" as const,
-      title: "日本3月减持美债47.7B",
-      desc: "TIC数据显示，日本3月美债持仓从1,239.3B降至1,191.6B，单月减少47.7B，至少为近一年最大降幅。",
+      title: "日本5月减持美债66.8B",
+      desc: "TIC数据显示，日本5月美债持仓从1,209.9B降至1,143.1B，单月减少66.8B，为近一年最大降幅。",
     },
     {
       type: "neutral" as const,

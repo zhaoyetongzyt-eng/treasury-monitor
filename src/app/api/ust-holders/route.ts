@@ -7,7 +7,7 @@ import type { MarginalFlowItem } from "@/types";
  *
  * 数据源：
  *   - Federal Reserve Z.1 L.210 (Q4 2025): 部门持仓结构
- *   - TIC (Treasury International Capital): 海外持仓国别明细 (2026-03)
+ *   - TIC (Treasury International Capital): 海外持仓国别明细 (2026-05)
  *   - FRED TREAST: 美联储 SOMA 持仓 (周频, 2026-05-20)
  *   - JEC Senate Monthly Debt Update: 总债务规模 (2026-05-05)
  *
@@ -157,20 +157,20 @@ const holderCategories = (() => {
 })();
 
 // ============================================================
-// TIC 前10海外持仓（2026-03，来源：Treasury TIC slt_table5.html）
+// TIC 前10海外持仓（2026-05，来源：Treasury TIC slt_table5.html）
 // 与 /api/tic 同一数据源，按持仓量排序
 // ============================================================
 const foreignTop10 = [
-  { country: "日本", holdings: 1191.6, monthlyChange: -47.7, monthlyChangePct: -3.8, yoyChangePct: -5.2, rank: 1, isBuyer: false, note: "连续第3个月减持，或受日元干预影响" },
-  { country: "英国", holdings: 926.9, monthlyChange: +29.6, monthlyChangePct: +3.3, yoyChangePct: +8.1, rank: 2, isBuyer: true, note: "全球托管中心，含对冲基金仓位" },
-  { country: "中国", holdings: 652.3, monthlyChange: -41.0, monthlyChangePct: -5.9, yoyChangePct: -14.3, rank: 3, isBuyer: false, note: "降至2008年以来最低" },
-  { country: "开曼群岛", holdings: 459.4, monthlyChange: +16.4, monthlyChangePct: +3.7, yoyChangePct: -3.2, rank: 4, isBuyer: true, note: "对冲基金离岸实体集中地" },
-  { country: "比利时", holdings: 454.0, monthlyChange: -0.7, monthlyChangePct: -0.2, yoyChangePct: +5.8, rank: 5, isBuyer: false, note: "Euroclear 托管中心" },
-  { country: "加拿大", holdings: 439.4, monthlyChange: -6.9, monthlyChangePct: -1.5, yoyChangePct: +3.2, rank: 6, isBuyer: false, note: "养老金与金融机构分散配置" },
-  { country: "卢森堡", holdings: 432.0, monthlyChange: -13.7, monthlyChangePct: -3.1, yoyChangePct: +2.5, rank: 7, isBuyer: false, note: "欧洲基金托管中心" },
-  { country: "法国", holdings: 393.0, monthlyChange: -2.1, monthlyChangePct: -0.5, yoyChangePct: -1.8, rank: 8, isBuyer: false, note: "欧元区第二大美债持有国" },
-  { country: "爱尔兰", holdings: 355.2, monthlyChange: +4.6, monthlyChangePct: +1.3, yoyChangePct: -1.8, rank: 9, isBuyer: true, note: "欧洲资管与基金注册中心" },
-  { country: "台湾", holdings: 300.8, monthlyChange: -12.7, monthlyChangePct: -4.1, yoyChangePct: -5.8, rank: 10, isBuyer: false, note: "连续多月温和减持" },
+  { country: "日本", holdings: 1143.1, monthlyChange: -66.8, monthlyChangePct: -5.5, yoyChangePct: 0.0, rank: 1, isBuyer: false, note: "5月大幅减持$66.8B，可能与日元干预、资产再配置及估值波动有关" },
+  { country: "英国", holdings: 948.6, monthlyChange: +11.1, monthlyChangePct: +1.2, yoyChangePct: +17.2, rank: 2, isBuyer: true, note: "全球托管中心，5月环比增持$11.1B" },
+  { country: "中国", holdings: 659.3, monthlyChange: +8.2, monthlyChangePct: +1.3, yoyChangePct: -10.0, rank: 3, isBuyer: true, note: "5月小幅增持$8.2B，但仍处于历史低位区间" },
+  { country: "比利时", holdings: 472.0, monthlyChange: +12.1, monthlyChangePct: +2.6, yoyChangePct: +13.6, rank: 4, isBuyer: true, note: "Euroclear 托管中心，5月增持$12.1B" },
+  { country: "开曼群岛", holdings: 471.3, monthlyChange: -0.3, monthlyChangePct: -0.1, yoyChangePct: +6.8, rank: 5, isBuyer: false, note: "对冲基金离岸实体集中地，5月基本持平" },
+  { country: "加拿大", holdings: 435.8, monthlyChange: +38.7, monthlyChangePct: +9.7, yoyChangePct: +1.3, rank: 6, isBuyer: true, note: "5月大幅增持$38.7B，可能反映养老金或金融机构配置" },
+  { country: "卢森堡", holdings: 436.0, monthlyChange: +4.9, monthlyChangePct: +1.1, yoyChangePct: +5.7, rank: 7, isBuyer: true, note: "欧洲基金托管中心，5月温和增持" },
+  { country: "法国", holdings: 393.1, monthlyChange: -0.2, monthlyChangePct: -0.1, yoyChangePct: +4.8, rank: 8, isBuyer: false, note: "欧元区第二大美债持有国，5月基本持平" },
+  { country: "爱尔兰", holdings: 357.2, monthlyChange: +11.9, monthlyChangePct: +3.4, yoyChangePct: +11.9, rank: 9, isBuyer: true, note: "欧洲资管与基金注册中心，5月增持$11.9B" },
+  { country: "台湾", holdings: 306.0, monthlyChange: +5.1, monthlyChangePct: +1.7, yoyChangePct: +0.4, rank: 10, isBuyer: true, note: "5月温和增持$5.1B" },
 ];
 
 // ============================================================
@@ -214,14 +214,14 @@ const flowSummary = {
   fedHoldings: 4.46,                 // 万亿美元 (FRED TREAST May 20, 2026: $4,457.7B 面值)
   fedHoldingsSource: "FRED TREAST · 2026-05-20 · 面值",
   
-  foreignHoldings: 9.35,             // 万亿美元 (TIC March 2026: $9,348.7B)
-  foreignHoldingsSource: "TIC SLT Table 5 · 2026-03 · 期末持仓 · 面值",
+  foreignHoldings: 9.37,             // 万亿美元 (TIC May 2026: $9,371.1B)
+  foreignHoldingsSource: "TIC SLT Table 5 · 2026-05 · 期末持仓 · 面值",
   
-  domesticHoldings: 16.85,           // 万亿美元 (30.66 - 4.46 - 9.35, 估算残差项)
+  domesticHoldings: 16.83,           // 万亿美元 (30.66 - 4.46 - 9.37, 估算残差项)
   domesticHoldingsSource: "估算 (MSPD total − TIC foreign − FRED Fed SOMA) · 含ETF/州地方/非金融企业/经纪商/货币基金/共同基金等",
   
-  netForeignFlow: -138.4,            // 十亿美元 (TIC 3月 9348.7B vs 2月 9487.1B = -138.4B)
-  netForeignFlowSource: "TIC SLT Table 5 · 2026-03 vs 2026-02 · 持仓月变动",
+  netForeignFlow: +18.5,             // 十亿美元 (TIC 5月 9371.1B vs 4月 9352.6B = +18.5B)
+  netForeignFlowSource: "TIC SLT Table 5 · 2026-05 vs 2026-04 · 持仓月变动",
   
   netFedFlow: +37.4,                 // 十亿美元 (FRED TREAST 5周: 4/22→5/20 +$37.4B)
   netFedFlowSource: "FRED TREAST · 2026-04-22→2026-05-20 · 5周累计",
@@ -256,10 +256,10 @@ function buildMarginalFlows() {
   const signals1M = [
     {
       label: "外国持有变化",
-      change: -138.4,
+      change: +18.5,
       frequency: "TIC 月频",
-      dataDate: "2026-03",
-      source: "TIC SLT Table 5 · 2026-03 vs 2026-02 · 期末持仓月变动 · 面值",
+      dataDate: "2026-05",
+      source: "TIC SLT Table 5 · 2026-05 vs 2026-04 · 期末持仓月变动 · 面值",
       note: "TIC 外国持有人月末持仓变化，反映最新月度外资持仓边际方向。",
     },
     {
@@ -348,19 +348,19 @@ function buildMarginalFlows() {
 const marginalFlows = buildMarginalFlows();
 const keySignals = [
   {
-    type: "warning" as const,
-    title: "中国减持加速",
-    desc: "中国大陆3月持仓降至$652.3B，环比减少$41.0B，降至2008年金融危机以来低位。中长期看，地缘政治风险、外汇储备多元化及美元资产配置调整仍是主要解释变量。",
+    type: "positive" as const,
+    title: "中国持仓小幅回升",
+    desc: "中国大陆5月持仓升至$659.3B，环比增加$8.2B（+1.3%），但仍处于2008年金融危机以来的低位区间。地缘政治风险、外汇储备多元化及美元资产配置调整仍是中长期观察变量。",
   },
   {
     type: "warning" as const,
     title: "日本大幅减持",
-    desc: "日本3月持仓降至$1,191.6B，环比减少$47.7B（-3.8%）。该变化可能与日元汇率压力、利率上行环境下的资产再配置及估值波动有关；但TIC持仓为市值口径，不宜直接等同于主动净卖出。",
+    desc: "日本5月持仓降至$1,143.1B，环比减少$66.8B（-5.5%）。该变化可能与日元汇率压力、利率上行环境下的资产再配置及估值波动有关；但TIC持仓为市值口径，不宜直接等同于主动净卖出。",
   },
   {
     type: "info" as const,
     title: "英国逆势增持",
-    desc: "英国3月持仓升至$926.9B，环比增加$29.6B（+3.3%）。由于英国常作为全球投资者托管中心，该变化更可能反映全球基金、对冲基金或跨境托管账户的仓位调整，而非单纯英国本土机构行为。",
+    desc: "英国5月持仓升至$948.6B，环比增加$11.1B（+1.2%）。由于英国常作为全球投资者托管中心，该变化更可能反映全球基金、对冲基金或跨境托管账户的仓位调整，而非单纯英国本土机构行为。",
   },
   {
     type: "positive" as const,
