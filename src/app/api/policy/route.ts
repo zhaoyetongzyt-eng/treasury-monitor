@@ -54,23 +54,22 @@ export async function GET() {
   const fredApiKey = process.env.FRED_API_KEY || null;
 
   // ── Fallback：无 API key 时使用的内置最新值（手动更新）──
-  // 最后更新: 2026-06-17
-  // FOMC 降息至 3.50-3.75%，下次会议 2026-07-29
+  // 最后更新: 2026-07-22
   const FALLBACK = {
     ffTargetUpper: 3.75,
     ffTargetLower: 3.50,
-    ffTargetDate: "2026-06-17",
+    ffTargetDate: "2026-07-21",
     ffEffective: 3.63,
     iorbRate: 3.65,
     onRrpRate: 3.50,
-    fedBalanceSheet: 6.725,    // $ Trillion
-    fedBsDate: "2026-06-10",
-    fedBs4WkAgo: 6.75,
-    qtMonthlyPace: -45,       // $ Billion/month（估算）
-    twoYMinusFFR: 42,         // 2Y - FFR ≈ +42bp
-    tenYMinusFFR: 84,         // 10Y - FFR ≈ +84bp
-    spread5s30s: 79,          // 30Y - 5Y = 79bp (2026-06-15)
-    spread5s30sDate: null,
+    fedBalanceSheet: 6.74,      // $ Trillion (WALCL=6,743,028M, /1,000,000)
+    fedBsDate: "2026-07-15",
+    fedBs4WkAgo: 6.74,          // 2026-06-17 WALCL=6,736,424M
+    qtMonthlyPace: 22,          // +$B/月，4周净+6,604M，13/4 年化，正数=B/S微扩
+    twoYMinusFFR: 58,           // 2Y - FFR ≈ +58bp (DGS2 4.21%)
+    tenYMinusFFR: 97,           // 10Y - FFR ≈ +97bp (DGS10 4.60%)
+    spread5s30s: 78,            // 30Y - 5Y = 78bp (DGS30 4.83% − DGS5 4.05%)
+    spread5s30sDate: "2026-07-21",
   };
 
   if (!fredApiKey) {
@@ -153,15 +152,15 @@ export async function GET() {
       const latest = parseVal(walclData.obs[0]);    // most recent Wed
       const wk4 = parseVal(walclData.obs[4]);        // ~4 weeks ago
       if (latest !== null) {
-        fedBs = Math.round(latest / 1000 * 100) / 100;  // Millions → Trillions
+        fedBs = Math.round(latest / 1_000_000 * 100) / 100;  // Millions → Trillions (/1M)
         fedBsDate = walclData.obs[0].date;
       }
       if (wk4 !== null) {
-        fedBs4Wk = Math.round(wk4 / 1000 * 100) / 100;
+        fedBs4Wk = Math.round(wk4 / 1_000_000 * 100) / 100;
       }
       if (latest !== null && wk4 !== null) {
         // 4-week change ($B), annualize: ×(13/4) for monthly pace
-        const delta4wk = (latest - wk4) / 1000; // → Billions
+        const delta4wk = (latest - wk4) / 1000; // Millions → Billions
         qtPace = Math.round(delta4wk * (13 / 4) * 10) / 10;
       }
     }

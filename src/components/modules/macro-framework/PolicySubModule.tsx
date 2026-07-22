@@ -63,8 +63,9 @@ export default function PolicySubModule() {
   const fmtBp = (v: number | null) => v !== null ? `${v > 0 ? "+" : ""}${v.toFixed(0)}bp` : "--";
   const fmtQtPace = (v: number | null) => {
     if (v === null) return "--";
-    const abs = Math.abs(v);
-    return `-$${abs.toFixed(0)}B/月`;
+    if (v < 0) return `-$${Math.abs(v).toFixed(0)}B/月`;  // 缩表 QT
+    if (v > 0) return `+$${v.toFixed(0)}B/月`;            // 扩表
+    return `持平`;
   };
 
   // 利率走廊/FFR区间
@@ -107,9 +108,11 @@ export default function PolicySubModule() {
       unit: "$T",
       date: data.fedBsDate,
       sub: data.qtMonthlyPace !== null
-        ? `QT ${fmtQtPace(data.qtMonthlyPace)}`
+        ? (data.qtMonthlyPace < 0 ? `QT ${fmtQtPace(data.qtMonthlyPace)}` : `扩表 ${fmtQtPace(data.qtMonthlyPace)}`)
         : undefined,
-      trend: data.qtMonthlyPace !== null ? "down" : undefined,
+      trend: data.qtMonthlyPace !== null
+        ? (data.qtMonthlyPace < 0 ? "down" : data.qtMonthlyPace > 0 ? "up" : "flat")
+        : undefined,
       color: "text-gray-800",
     },
     {
