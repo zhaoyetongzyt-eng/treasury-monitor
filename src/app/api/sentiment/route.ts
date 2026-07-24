@@ -55,17 +55,17 @@ export async function GET() {
   // ── Fallback：无 API key 时使用的内置最新值（手动更新）──
   // 最后更新: 2026-07-22
   const FALLBACK = {
-    vix: 18.65,                // VIXCLS 收盘 (2026-07-20)
-    vixDate: "2026-07-20",
+    vix: 16.64,                // VIXCLS 收盘 (2026-07-20)
+    vixDate: "2026-07-22",
     hyOas: 2.69,               // ICE BofA US HY OAS Level (%)
-    hyOasDate: "2026-07-20",
+    hyOasDate: "2026-07-22",
     termPremium10Y: 78,        // THREEFYTP10 (FRED ACM), 0.78% → 78bp
     tpDate: "2026-07-17",
-    fwdBE5Y5Y: 2.24,           // T5YIFR 5Y5Y Forward BE (%)
-    fwdBEDate: "2026-07-21",
+    fwdBE5Y5Y: 2.27,           // T5YIFR 5Y5Y Forward BE (%)
+    fwdBEDate: "2026-07-23",
     spread10Y3M: 76,           // T10Y3M, 7/21 FRED +76bp
-    spreadDate: "2026-07-21",
-    dxyBroad: 120.5,           // DTWEXBGS Nominal Broad USD
+    spreadDate: "2026-07-23",
+    dxyBroad: 120.531,           // DTWEXBGS Nominal Broad USD
     dxyDate: "2026-07-17",
     moveIndex: 67.3,           // ICE BofA MOVE Index (2026-07-20 左右)
     moveDate: "2026-07-20",
