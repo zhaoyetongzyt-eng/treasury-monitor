@@ -30,7 +30,7 @@ def download_csv(series_id: str) -> Path:
     if path.exists() and (pd.Timestamp.now() - pd.Timestamp.fromtimestamp(path.stat().st_mtime)).seconds < 3600:
         return path  # 1 小时内缓存复用
     url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
-    subprocess.run(["curl", "-s", "-L", "-o", str(path), url], check=True, timeout=30)
+    subprocess.run(["curl", "-s", "-L", "--max-time", "15", "-o", str(path), url], check=True, timeout=30)
     return path
 
 def load_series(series_id: str) -> Optional[pd.DataFrame]:
