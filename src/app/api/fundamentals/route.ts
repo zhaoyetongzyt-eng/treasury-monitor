@@ -54,10 +54,10 @@ export async function GET() {
   // ── Fallback：无 API key 时使用的内置最新值（手动更新）──
   // 最后更新: 2026-07-22
   const FALLBACK = {
-    gdpQoQ: 2.1,           // Q1 2026: +2.1% SAAR (BEA 二次估计, 较初值1.6%上修)
-    gdpDate: "2026-Q1",
-    corePceYoY: 3.4,       // May 2026: 3.4% YoY (BEA PCE)
-    corePceDate: "2026-05",
+    gdpQoQ: 1.5,           // Q1 2026: +2.1% SAAR (BEA 二次估计, 较初值1.6%上修)
+    gdpDate: "2026-Q2",
+    corePceYoY: 3.3,       // May 2026: 3.4% YoY (BEA PCE)
+    corePceDate: "2026-06",
     cpiYoY: 3.5,           // Jun 2026: 3.5% YoY (BLS Headline CPI)
     cpiDate: "2026-06",
     unemployment: 4.2,     // Jun 2026: 4.2% (BLS)

@@ -1,3 +1,13 @@
+## 2026-07-27
+- **任务**: 日频数据自动刷新（自动化 8:00 触发）。
+- **脚本**: daily_refresh.py --update，首次运行时 curl 下载 CPIAUCSL 卡死，杀进程后给 curl 加 --max-time 15，重跑成功。
+- **数据变更**:
+  - 政策面: ffTargetDate 07-22→07-24, twoYMinusFFR 68→74, tenYMinusFFR 104→108, spread5s30s 74→71, spread5s30sDate 07-22→07-23
+  - 情绪面: vix 16.64→18.7, vixDate 07-22→07-23, hyOas 2.69→2.77, hyOasDate 07-22→07-23, fwdBEDate 07-23→07-24, spread10Y3M 76→73, spreadDate 07-23→07-24
+  - 基本面: 无变更
+- **脚本修复**: scripts/daily_refresh.py 为 curl 添加 --max-time 15 防止网络卡死。
+- **提交**: a91da39，push 成功至 main。Vercel 自动构建。
+
 ## 2026-07-16
 - **任务**: 响应用户指令，将网站中 TIC 数据更新到最新 2026-05。
 - **构建**: Next.js 16.2.6 (Turbopack) 构建成功，17 个路由全部通过（因环境无法拉取 Google Fonts，临时改用系统字体栈）。
