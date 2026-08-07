@@ -1,3 +1,12 @@
+## 2026-07-31
+- **任务**: 日频数据自动刷新（自动化 8:00 触发）。
+- **脚本**: daily_refresh.py --update 运行成功（耗时约 16 分钟，THREEFYTP10 CSV 下载超时但脚本跳过继续）。
+- **数据变更（共 22 项）**:
+  - 基本面(4): gdpQoQ 2.1→1.5, gdpDate Q1→Q2, corePceYoY 3.4→3.3, corePceDate 05→06
+  - 政策面(8): ffTargetDate→07-30, fedBsDate→07-29, fedBs4WkAgo 6.74→6.72, qtMonthlyPace 38.1→44.3, twoYMinusFFR 74→59, tenYMinusFFR 108→104, spread5s30s 71→83, spread5s30sDate→07-29
+  - 情绪面(10): vix 18.7→20.66, hyOas 2.77→2.87, fwdBE5Y5Y 2.27→2.3, spread10Y3M 73→86, dxyBroad 120.531→120.71 等及对应日期更新
+- **提交**: 59b4496，push 成功至 main。Vercel 自动构建。
+
 ## 2026-07-27
 - **任务**: 日频数据自动刷新（自动化 8:00 触发）。
 - **脚本**: daily_refresh.py --update，首次运行时 curl 下载 CPIAUCSL 卡死，杀进程后给 curl 加 --max-time 15，重跑成功。
