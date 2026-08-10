@@ -58,7 +58,7 @@ export async function GET() {
   const FALLBACK = {
     ffTargetUpper: 3.75,
     ffTargetLower: 3.50,
-    ffTargetDate: "2026-08-06",
+    ffTargetDate: "2026-08-09",
     ffEffective: 3.63,
     iorbRate: 3.65,
     onRrpRate: 3.50,

@@ -60,9 +60,9 @@ export async function GET() {
     corePceDate: "2026-06",
     cpiYoY: 3.5,           // Jun 2026: 3.5% YoY (BLS Headline CPI)
     cpiDate: "2026-06",
-    unemployment: 4.2,     // Jun 2026: 4.2% (BLS)
-    nfpMoM: 57,            // Jun 2026: +57K (BLS, 较5月172K明显走弱)
-    employmentDate: "2026-06",
+    unemployment: 4.1,     // Jun 2026: 4.2% (BLS)
+    nfpMoM: -23,            // Jun 2026: +57K (BLS, 较5月172K明显走弱)
+    employmentDate: "2026-07",
     deficitPctGDP: -5.77,  // FY 2025: -5.77% GDP (FRED FYFSGDA188S)
     deficitDate: "2025-FY",
   };
