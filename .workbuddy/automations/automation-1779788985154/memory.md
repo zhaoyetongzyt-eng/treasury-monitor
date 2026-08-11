@@ -1,3 +1,13 @@
+## 2026-08-10
+- **任务**: 日频数据自动刷新（自动化 8:00 触发）。
+- **脚本**: daily_refresh.py --update 运行成功（耗时约 16 分钟）。
+- **数据变更（共 16 项）**:
+  - 基本面(3): unemployment 4.2→4.1, nfpMoM 57→-23, employmentDate 2026-06→2026-07
+  - 政策面(1): ffTargetDate 2026-08-06→2026-08-09
+  - 情绪面(12): vix 17.09→15.15, vixDate 2026-07-30→2026-08-06, hyOas 2.75→2.71, hyOasDate 2026-08-05→2026-08-06, termPremium10Y 84→87, tpDate 2026-07-24→2026-07-31, fwdBE5Y5Y 2.3→2.28, fwdBEDate 2026-07-31→2026-08-07, spread10Y3M 92→78, spreadDate 2026-07-31→2026-08-07, dxyBroad 120.71→119.703, dxyDate 2026-07-24→2026-07-31
+- **下载异常**: DGS2、DGS30 CSV 下载超时（curl exit 28），脚本已跳过；依赖它们的 twoYMinusFFR / tenYMinusFFR / spread5s30s 今日未更新，等待下次刷新。
+- **提交**: 2cfd3e5，push 成功至 main。Vercel 自动构建。
+
 ## 2026-07-31
 - **任务**: 日频数据自动刷新（自动化 8:00 触发）。
 - **脚本**: daily_refresh.py --update 运行成功（耗时约 16 分钟，THREEFYTP10 CSV 下载超时但脚本跳过继续）。
