@@ -58,18 +58,18 @@ export async function GET() {
   const FALLBACK = {
     ffTargetUpper: 3.75,
     ffTargetLower: 3.50,
-    ffTargetDate: "2026-08-09",
+    ffTargetDate: "2026-08-25",
     ffEffective: 3.63,
     iorbRate: 3.65,
     onRrpRate: 3.50,
     fedBalanceSheet: 6.74,      // $ Trillion (WALCL=6,743,028M, /1,000,000)
-    fedBsDate: "2026-08-05",
+    fedBsDate: "2026-08-19",
     fedBs4WkAgo: 6.74,          // 2026-06-17 WALCL=6,736,424M
-    qtMonthlyPace: 42.1,          // +$B/月，4周净+6,604M，13/4 年化，正数=B/S微扩
-    twoYMinusFFR: 62,           // 2Y - FFR ≈ +58bp (DGS2 4.21%)
-    tenYMinusFFR: 109,           // 10Y - FFR ≈ +97bp (DGS10 4.60%)
-    spread5s30s: 84,            // 30Y - 5Y = 78bp (DGS30 4.83% − DGS5 4.05%)
-    spread5s30sDate: "2026-08-10",
+    qtMonthlyPace: -5.5,          // +$B/月，4周净+6,604M，13/4 年化，正数=B/S微扩
+    twoYMinusFFR: 61,           // 2Y - FFR ≈ +58bp (DGS2 4.21%)
+    tenYMinusFFR: 107,           // 10Y - FFR ≈ +97bp (DGS10 4.60%)
+    spread5s30s: 82,            // 30Y - 5Y = 78bp (DGS30 4.83% − DGS5 4.05%)
+    spread5s30sDate: "2026-08-24",
   };
 
   if (!fredApiKey) {

@@ -90,3 +90,12 @@
   - TIC: 2026-03
   - Leverage: 2025-Q3
 - 所有 10 个 API 端点正常响应
+
+## 2026-08-12
+- **任务**: 日频数据自动刷新（自动化 8:00 触发）。
+- **脚本**: daily_refresh.py --update 运行成功。
+- **数据变更（共 15 项）**:
+  - 政策面(4): twoYMinusFFR 59→62, tenYMinusFFR 104→109, spread5s30s 83→84, spread5s30sDate 2026-07-29→2026-08-10
+  - 情绪面(11): vix 15.15→15.46 (date→08-10), hyOasDate→08-10, termPremium10Y 87→83, tpDate→08-07, fwdBE5Y5Y 2.28→2.31, fwdBEDate→08-11, spread10Y3M 78→81, spreadDate→08-11, dxyBroad 119.703→119.065, dxyDate→08-07
+- **基本面**: 无变更
+- **提交**: de37fe0，push 成功至 main。Vercel 自动构建。

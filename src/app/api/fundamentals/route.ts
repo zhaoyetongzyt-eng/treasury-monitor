@@ -58,8 +58,8 @@ export async function GET() {
     gdpDate: "2026-Q2",
     corePceYoY: 3.3,       // May 2026: 3.4% YoY (BEA PCE)
     corePceDate: "2026-06",
-    cpiYoY: 3.5,           // Jun 2026: 3.5% YoY (BLS Headline CPI)
-    cpiDate: "2026-06",
+    cpiYoY: 3.3,           // Jun 2026: 3.5% YoY (BLS Headline CPI)
+    cpiDate: "2026-07",
     unemployment: 4.1,     // Jun 2026: 4.2% (BLS)
     nfpMoM: -23,            // Jun 2026: +57K (BLS, 较5月172K明显走弱)
     employmentDate: "2026-07",
