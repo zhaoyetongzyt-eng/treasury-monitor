@@ -56,20 +56,20 @@ export async function GET() {
   // ── Fallback：无 API key 时使用的内置最新值（手动更新）──
   // 最后更新: 2026-07-22
   const FALLBACK = {
-    ffTargetUpper: 3.75,
-    ffTargetLower: 3.50,
-    ffTargetDate: "2026-09-08",
-    ffEffective: 3.63,
-    iorbRate: 3.65,
-    onRrpRate: 3.50,
+    ffTargetUpper: 4,
+    ffTargetLower: 3.75,
+    ffTargetDate: "2026-10-22",
+    ffEffective: 3.88,
+    iorbRate: 3.9,
+    onRrpRate: 3.75,
     fedBalanceSheet: 6.74,      // $ Trillion (WALCL=6,743,028M, /1,000,000)
-    fedBsDate: "2026-09-02",
+    fedBsDate: "2026-10-21",
     fedBs4WkAgo: 6.74,          // 2026-06-17 WALCL=6,736,424M
-    qtMonthlyPace: -36.9,          // +$B/月，4周净+6,604M，13/4 年化，正数=B/S微扩
-    twoYMinusFFR: 74,           // 2Y - FFR ≈ +58bp (DGS2 4.21%)
-    tenYMinusFFR: 115,           // 10Y - FFR ≈ +97bp (DGS10 4.60%)
-    spread5s30s: 70,            // 30Y - 5Y = 78bp (DGS30 4.83% − DGS5 4.05%)
-    spread5s30sDate: "2026-09-04",
+    qtMonthlyPace: 19.2,          // +$B/月，4周净+6,604M，13/4 年化，正数=B/S微扩
+    twoYMinusFFR: 93,           // 2Y - FFR ≈ +58bp (DGS2 4.21%)
+    tenYMinusFFR: 125,           // 10Y - FFR ≈ +97bp (DGS10 4.60%)
+    spread5s30s: 47,            // 30Y - 5Y = 78bp (DGS30 4.83% − DGS5 4.05%)
+    spread5s30sDate: "2026-10-21",
   };
 
   if (!fredApiKey) {
