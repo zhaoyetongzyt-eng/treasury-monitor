@@ -58,7 +58,7 @@ export async function GET() {
   const FALLBACK = {
     ffTargetUpper: 4,
     ffTargetLower: 3.75,
-    ffTargetDate: "2026-10-22",
+    ffTargetDate: "2026-10-27",
     ffEffective: 3.88,
     iorbRate: 3.9,
     onRrpRate: 3.75,
@@ -66,10 +66,10 @@ export async function GET() {
     fedBsDate: "2026-10-21",
     fedBs4WkAgo: 6.74,          // 2026-06-17 WALCL=6,736,424M
     qtMonthlyPace: 19.2,          // +$B/月，4周净+6,604M，13/4 年化，正数=B/S微扩
-    twoYMinusFFR: 93,           // 2Y - FFR ≈ +58bp (DGS2 4.21%)
-    tenYMinusFFR: 125,           // 10Y - FFR ≈ +97bp (DGS10 4.60%)
+    twoYMinusFFR: 80,           // 2Y - FFR ≈ +58bp (DGS2 4.21%)
+    tenYMinusFFR: 112,           // 10Y - FFR ≈ +97bp (DGS10 4.60%)
     spread5s30s: 47,            // 30Y - 5Y = 78bp (DGS30 4.83% − DGS5 4.05%)
-    spread5s30sDate: "2026-10-21",
+    spread5s30sDate: "2026-10-26",
   };
 
   if (!fredApiKey) {

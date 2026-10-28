@@ -1,3 +1,28 @@
+## 2026-10-27
+- **任务**: 日频数据自动刷新（自动化 8:00 触发）。
+- **脚本**: daily_refresh.py --update 运行成功，venv 复用 /tmp/fred-venv，全程秒级完成。
+- **数据变更**: 无（基本面/政策面/情绪面均 up to date，Total updates: 0）。
+- **提交**: 未 commit/push（无站点数据变更；工作区仅 .workbuddy 记忆文件变动）。
+- **备注**: 连续第二日无变更（上次数据变更为 2026-10-23，提交 4f1a4d9），属正常情况。
+
+## 2026-10-26
+- **任务**: 日频数据自动刷新（自动化 8:00 触发）。
+- **脚本**: daily_refresh.py --update 运行成功，全部数据源下载正常。
+- **数据变更**: 无（基本面/政策面/情绪面均 up to date），未做 git commit/push。
+- **备注**: 距上次刷新（2026-10-23）仅 3 天且无新发布数据，属正常情况。工作区仅有 .workbuddy 内部记忆文件变动，与站点数据无关，未提交。
+
+## 2026-10-23
+- **任务**: 日频数据自动刷新（自动化 8:00 触发）。
+- **脚本**: daily_refresh.py --update 运行成功，耗时仅 26 秒（历史多为 11–16 分钟，本次网络顺畅）。
+- **数据变更（共 32 项，全部为 FALLBACK 常量）**:
+  - 基本面(8): gdpQoQ 1.5→2.2, corePceYoY 3.3→3.0 (date 07→08), cpiYoY 3.3→3.7 (date 07→09), unemployment 4.1→4.2, employmentDate 08→09, nfpMoM 162→29
+  - 政策面(12): ffTargetUpper 3.75→4.0, ffTargetLower 3.5→3.75, ffEffective 3.63→3.88, iorbRate 3.65→3.9, onRrpRate 3.5→3.75, ffTargetDate→10-22, fedBsDate→10-21, qtMonthlyPace -36.9→19.2, twoYMinusFFR 74→93, tenYMinusFFR 115→125, spread5s30s 70→47, spread5s30sDate→10-21
+  - 情绪面(12): vix 15.3→16.68 (date→10-21), hyOas 2.69→3.27 (date→10-21), termPremium10Y 89→99 (tpDate→10-16), fwdBE5Y5Y 2.33→2.19 (fwdBEDate→10-22), spread10Y3M 86→74 (spreadDate→10-22), dxyBroad 118.063→121.405 (dxyDate→10-16)
+- **下载异常**: 无（全部 CSV 下载成功）。
+- **变更文件**: api/fundamentals/route.ts、api/policy/route.ts、api/sentiment/route.ts（仅常量值，逻辑未动）。
+- **提交**: 4f1a4d9，push 成功 main (a5fd613..4f1a4d9)，远端已校验一致。Vercel 自动构建。
+- **备注**: 上次刷新为 2026-09-09（间隔约 6 周），故本次跨期变更较多，含一次政策利率上调（FFR 目标区间 +25bp）与信用利差显著走阔（HY OAS +58bp）。
+
 ## 2026-08-26
 - **任务**: 日频数据自动刷新（自动化 8:00 触发）。
 - **脚本**: daily_refresh.py --update 运行成功（耗时约 11 分钟）。
