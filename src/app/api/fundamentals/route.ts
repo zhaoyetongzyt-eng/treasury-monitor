@@ -54,16 +54,16 @@ export async function GET() {
   // ── Fallback：无 API key 时使用的内置最新值（手动更新）──
   // 最后更新: 2026-07-22
   const FALLBACK = {
-    gdpQoQ: 2.2,           // Q1 2026: +2.1% SAAR (BEA 二次估计, 较初值1.6%上修)
-    gdpDate: "2026-Q2",
-    corePceYoY: 3,       // May 2026: 3.4% YoY (BEA PCE)
-    corePceDate: "2026-08",
+    gdpQoQ: 3.4,           // Q1 2026: +2.1% SAAR (BEA 二次估计, 较初值1.6%上修)
+    gdpDate: "2026-Q3",
+    corePceYoY: 3.1,       // May 2026: 3.4% YoY (BEA PCE)
+    corePceDate: "2026-09",
     cpiYoY: 3.7,           // Jun 2026: 3.5% YoY (BLS Headline CPI)
     cpiDate: "2026-09",
     unemployment: 4.2,     // Jun 2026: 4.2% (BLS)
     nfpMoM: 29,            // Jun 2026: +57K (BLS, 较5月172K明显走弱)
     employmentDate: "2026-09",
-    deficitPctGDP: -5.77,  // FY 2025: -5.77% GDP (FRED FYFSGDA188S)
+    deficitPctGDP: -5.7527,  // FY 2025: -5.77% GDP (FRED FYFSGDA188S)
     deficitDate: "2025-FY",
   };
 
