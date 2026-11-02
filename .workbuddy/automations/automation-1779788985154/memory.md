@@ -1,3 +1,25 @@
+## 2026-10-31
+- **任务**: 日频数据自动刷新（自动化 8:00 触发）。
+- **脚本**: daily_refresh.py --update 运行成功，venv 复用 /tmp/fred-venv，全部数据源下载正常。
+- **数据变更（共 20 项，全部为 FALLBACK 常量）**:
+  - 基本面(5): gdpQoQ 2.2→3.4 (Q2→Q3), corePceYoY 3.0→3.1 (08→09), deficitPctGDP -5.77→-5.7527
+  - 政策面(7): ffTargetDate→10-30, fedBsDate→10-28, qtMonthlyPace 19.2→8.5, twoYMinusFFR 80→73, tenYMinusFFR 112→110, spread5s30s 47→54 (date→10-29)
+  - 情绪面(8): vix 18.39→17.2 (date→10-29), hyOas 3.3→3.26 (date→10-29), fwdBE5Y5Y 2.25→2.22 (fwdBEDate→10-30), spread10Y3M 77→78 (spreadDate→10-30)
+- **变更文件**: src/app/api/fundamentals/route.ts、src/app/api/policy/route.ts、src/app/api/sentiment/route.ts（仅常量，逻辑未动）。
+- **提交**: 35d5d90，push 成功 main (bd9e0c9..35d5d90)，local==remote 已校验。Vercel 自动构建。
+- **备注**: Q3 GDP 初值大幅上修至 3.4%；QT 月度节奏显著放缓（-19.2→-8.5）。
+
+## 2026-10-28
+- **任务**: 日频数据自动刷新（自动化 8:00 触发）。
+- **脚本**: daily_refresh.py --update 运行成功，耗时 5 秒，全部数据源下载正常无超时。
+- **数据变更（共 16 项，全部为 FALLBACK 常量）**:
+  - 基本面(0): 均 up to date
+  - 政策面(4): ffTargetDate 10-22→10-27, twoYMinusFFR 93→80, tenYMinusFFR 125→112, spread5s30sDate 10-21→10-26
+  - 情绪面(12): vix 16.68→18.39 (date→10-26), hyOas 3.27→3.30 (date→10-26), termPremium10Y 99→94 (tpDate→10-23), fwdBE5Y5Y 2.19→2.25 (fwdBEDate→10-27), spread10Y3M 74→77 (spreadDate→10-27), dxyBroad 121.405→121.32 (dxyDate→10-23)
+- **变更文件**: src/app/api/policy/route.ts、src/app/api/sentiment/route.ts（仅常量，逻辑未动）。
+- **提交**: bd9e0c9，push 成功 main (4f1a4d9..bd9e0c9)，local==remote 已校验。Vercel 自动构建。
+- **备注**: 距上次数据变更（2026-10-23）3 个交易日；VIX 由 16.68 升至 18.39、期限溢价回落 5bp，2Y/10Y 相对 FFR 的利差同步收窄 13bp。
+
 ## 2026-10-27
 - **任务**: 日频数据自动刷新（自动化 8:00 触发）。
 - **脚本**: daily_refresh.py --update 运行成功，venv 复用 /tmp/fred-venv，全程秒级完成。
@@ -135,3 +157,10 @@
   - 情绪面(11): vix 15.15→15.46 (date→08-10), hyOasDate→08-10, termPremium10Y 87→83, tpDate→08-07, fwdBE5Y5Y 2.28→2.31, fwdBEDate→08-11, spread10Y3M 78→81, spreadDate→08-11, dxyBroad 119.703→119.065, dxyDate→08-07
 - **基本面**: 无变更
 - **提交**: de37fe0，push 成功至 main。Vercel 自动构建。
+
+## 2026-11-01
+- **任务**: 日频数据自动刷新（自动化 8:00 触发）。
+- **脚本**: daily_refresh.py --update 运行成功，venv 复用 /tmp/fred-venv，全部数据源下载正常。
+- **数据变更**: 无（基本面/政策面/情绪面均 up to date，Total updates: 0）。
+- **提交**: 未 commit/push（无站点数据变更；工作区仅 .workbuddy 内部文件变动）。远端校验 local==remote (35d5d90)。
+- **备注**: 2026-10-31（周五）刚完成过一次较大更新（20 项），本次周末/月末无可新发布数据，属正常情况。
